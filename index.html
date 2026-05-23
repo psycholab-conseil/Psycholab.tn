@@ -1175,9 +1175,11 @@ const DAYS_FULL=['Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi','Dimanch
 //  INIT
 // ════════════════════════════════════════════════
 function init(){
-  const db=getDB();
-  if(!db.notifs)db.notifs=[];
-  saveDB(db);
+  // ── Effacer toutes les données de test ──
+  localStorage.removeItem('psycholab_db');
+  localStorage.removeItem('psycholab_session');
+  // ── Initialiser une base vide et propre ──
+  saveDB({users:[],pros:[],rdvs:[],notifs:[]});
   const session=getSession();
   if(session) applySession(session);
   renderHome();
