@@ -6,7 +6,13 @@
 <title>Psycholab – Santé Mentale · Plateforme Certifiée</title>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,400;1,500&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
-<script>emailjs.init('p6Lc3MHeM0w-YeGUO');</script>
+<script>
+emailjs.init({
+  publicKey: 'p6Lc3MHeM0w-YeGUO',
+  blockHeadless: false,
+  limitRate: {throttle: 2000}
+});
+</script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 :root{
