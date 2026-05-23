@@ -1,0 +1,1980 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Psycholab – Santé Mentale · Plateforme Certifiée</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,400;1,500&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --teal:#1B6B61;--teal-l:#2A8A7E;--teal-xl:#E3F4F2;--teal-d:#104F48;--teal-mid:#3AA395;
+  --sand:#F8F5F0;--white:#fff;--ch:#18211F;--mid:#4A5C59;--soft:#8A9E9B;
+  --border:#DDE9E7;--gold:#B8834A;--gold-l:#F2E4D0;
+  --red:#C0392B;--red-l:#FDF0EE;--orange:#C9621A;--orange-l:#FEF5EE;
+  --green:#1E7A4A;--green-l:#EBF8F1;--blue:#2255A0;--blue-l:#EBF0FA;
+  --purple:#5A3E8A;--purple-l:#F0EBF8;
+  --shadow-sm:0 2px 8px rgba(27,107,97,.08);
+  --shadow-md:0 8px 32px rgba(27,107,97,.13);
+  --shadow-lg:0 20px 60px rgba(27,107,97,.18);
+  --r-sm:10px;--r-md:16px;--r-lg:24px;
+  --anim:.22s cubic-bezier(.4,0,.2,1);
+}
+html,body{width:100%;overflow-x:hidden;font-family:'DM Sans',sans-serif;background:var(--sand);color:var(--ch)}
+button{cursor:pointer;font-family:'DM Sans',sans-serif}
+input,select,textarea{font-family:'DM Sans',sans-serif}
+
+/* ─── LANG BAR ─── */
+.lang-bar{background:var(--teal-d);padding:.3rem 1.2rem;display:flex;align-items:center;justify-content:flex-end;gap:.5rem}
+.lang-btn{background:none;border:1px solid rgba(255,255,255,.2);border-radius:6px;color:rgba(255,255,255,.65);font-size:.67rem;font-weight:600;padding:.18rem .55rem;letter-spacing:.03em;cursor:pointer;transition:all var(--anim)}
+.lang-btn.on,.lang-btn:hover{background:rgba(255,255,255,.18);color:#fff;border-color:rgba(255,255,255,.45)}
+
+/* ─── NAV ─── */
+.nav{position:sticky;top:0;z-index:999;background:rgba(248,245,240,.97);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:.7rem 1.2rem;display:flex;align-items:center;justify-content:space-between;gap:.8rem}
+.logo{font-family:'Playfair Display',serif;font-size:1.25rem;font-weight:600;color:var(--teal-d);background:none;border:none;padding:0;letter-spacing:-.01em}
+.logo b{color:var(--gold)}
+.nav-right{display:flex;align-items:center;gap:.6rem}
+.nav-notif{position:relative;background:none;border:none;font-size:1rem;padding:.3rem;display:none}
+.nav-notif-dot{position:absolute;top:1px;right:0;width:7px;height:7px;border-radius:50%;background:var(--red);border:2px solid var(--sand);display:none}
+.menu-btn{background:var(--white);border:1.5px solid var(--border);border-radius:var(--r-sm);padding:.45rem .9rem;font-size:.83rem;font-weight:500;color:var(--mid);display:flex;align-items:center;gap:.35rem;transition:all var(--anim)}
+.menu-btn:hover{border-color:var(--teal);color:var(--teal)}
+
+/* ─── DRAWER ─── */
+.dbg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:1000;backdrop-filter:blur(3px)}
+.dbg.on{display:block}
+.drawer{position:fixed;top:0;right:0;bottom:0;width:80vw;max-width:320px;background:var(--white);z-index:1001;padding:1.5rem 1.2rem;display:flex;flex-direction:column;gap:.75rem;overflow-y:auto;transform:translateX(100%);transition:transform .28s cubic-bezier(.4,0,.2,1);box-shadow:-8px 0 40px rgba(0,0,0,.12)}
+.drawer.on{transform:translateX(0)}
+.dr-close{align-self:flex-end;background:var(--sand);border:1.5px solid var(--border);border-radius:var(--r-sm);padding:.4rem .9rem;font-size:.83rem;color:var(--mid);transition:all var(--anim)}
+.dr-close:hover{background:var(--teal-xl);border-color:var(--teal);color:var(--teal)}
+.dr-lbl{font-size:.65rem;font-weight:600;color:var(--soft);text-transform:uppercase;letter-spacing:.09em;margin-top:.2rem}
+.dr-sep{height:1px;background:var(--border)}
+.dr-btn{width:100%;text-align:left;background:transparent;border:none;border-radius:var(--r-sm);padding:.7rem .8rem;font-size:.86rem;font-weight:500;color:var(--ch);transition:all var(--anim);display:flex;align-items:center;gap:.5rem}
+.dr-btn:hover{background:var(--teal-xl);color:var(--teal)}
+.dr-solid{background:var(--teal);color:#fff;border:none;border-radius:var(--r-sm);padding:.72rem;font-size:.86rem;font-weight:600;width:100%;text-align:center;transition:all var(--anim)}
+.dr-solid:hover{background:var(--teal-d)}
+.dr-outline{background:#fff;color:var(--teal);border:1.5px solid var(--teal);border-radius:var(--r-sm);padding:.7rem;font-size:.86rem;font-weight:500;width:100%;text-align:center;transition:all var(--anim)}
+.dr-outline:hover{background:var(--teal-xl)}
+.dr-danger{background:#fff;color:var(--red);border:1.5px solid rgba(192,57,43,.3);border-radius:var(--r-sm);padding:.7rem;font-size:.86rem;font-weight:500;width:100%;text-align:center;transition:all var(--anim)}
+.dr-danger:hover{background:var(--red-l);border-color:var(--red)}
+.user-chip{background:var(--teal-xl);border-radius:var(--r-sm);padding:.75rem .9rem;font-size:.82rem;color:var(--teal-d);font-weight:600;border-left:3px solid var(--teal)}
+.user-chip span{display:block;font-size:.7rem;color:var(--teal);font-weight:400;margin-top:.15rem}
+
+/* ─── VIEWS ─── */
+.view{display:none}
+.view.on{display:block}
+
+/* ─── HERO ─── */
+.hero{background:linear-gradient(150deg,var(--teal-d) 0%,var(--teal) 50%,var(--teal-mid) 100%);padding:3rem 1.5rem 4rem;text-align:center;position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;inset:0;background:url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")}
+.hero::after{content:'';position:absolute;bottom:-2px;left:0;right:0;height:70px;background:var(--sand);clip-path:ellipse(55% 100% at 50% 100%)}
+.hero-badge{display:inline-flex;align-items:center;gap:.4rem;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.22);color:rgba(255,255,255,.88);font-size:.64rem;font-weight:600;letter-spacing:.07em;text-transform:uppercase;padding:.3rem .8rem;border-radius:20px;margin-bottom:1rem}
+.hero h1{font-family:'Playfair Display',serif;font-size:clamp(1.7rem,6.5vw,2.9rem);font-weight:700;color:#fff;line-height:1.18;margin-bottom:.75rem;position:relative;z-index:1}
+.hero h1 em{font-style:italic;color:var(--gold-l)}
+.hero>p{color:rgba(255,255,255,.78);font-size:.88rem;max-width:500px;margin:0 auto 1.6rem;line-height:1.68;position:relative;z-index:1}
+.trust-grid{display:grid;grid-template-columns:1fr 1fr;gap:.5rem;max-width:380px;margin:0 auto 1.6rem;position:relative;z-index:1}
+.trust-item{display:flex;align-items:center;gap:.4rem;color:rgba(255,255,255,.88);font-size:.74rem;background:rgba(255,255,255,.1);border-radius:var(--r-sm);padding:.38rem .65rem;font-weight:500}
+.hero-btns{display:flex;gap:.7rem;justify-content:center;flex-wrap:wrap;position:relative;z-index:1}
+.hero-btn-p{background:#fff;color:var(--teal-d);border:none;font-size:.86rem;font-weight:600;padding:.7rem 1.4rem;border-radius:var(--r-sm);box-shadow:0 4px 20px rgba(0,0,0,.18);transition:all var(--anim)}
+.hero-btn-p:hover{transform:translateY(-1px);box-shadow:0 6px 28px rgba(0,0,0,.22)}
+.hero-btn-s{background:rgba(255,255,255,.12);color:#fff;border:1.5px solid rgba(255,255,255,.28);font-size:.86rem;font-weight:500;padding:.68rem 1.4rem;border-radius:var(--r-sm);transition:all var(--anim)}
+.hero-btn-s:hover{background:rgba(255,255,255,.2);border-color:rgba(255,255,255,.45)}
+
+/* ─── SEARCH ─── */
+.search-wrap{max-width:820px;margin:-1.5rem auto 2rem;padding:0 1.2rem;position:relative;z-index:10}
+.search-box{background:#fff;border:1.5px solid var(--border);border-radius:var(--r-lg);padding:1rem 1.1rem;box-shadow:var(--shadow-md);display:flex;flex-direction:column;gap:.65rem}
+.si{display:flex;align-items:center;gap:.5rem;border-bottom:1.5px solid var(--border);padding-bottom:.65rem}
+.si input{border:none;outline:none;background:none;font-size:.9rem;color:var(--ch);width:100%}
+.si input::placeholder{color:var(--soft)}
+.search-filters{display:grid;grid-template-columns:1fr 1fr;gap:.5rem}
+.fsel{border:1.5px solid var(--border);border-radius:var(--r-sm);background:var(--sand);font-size:.82rem;color:var(--mid);padding:.52rem .8rem;outline:none;width:100%;transition:border-color var(--anim)}
+.fsel:focus{border-color:var(--teal)}
+.btn-search{background:var(--teal);color:#fff;border:none;font-size:.88rem;font-weight:600;padding:.68rem;border-radius:var(--r-sm);transition:all var(--anim);grid-column:1/-1}
+.btn-search:hover{background:var(--teal-d)}
+
+/* ─── SECTION ─── */
+.section{max-width:1080px;margin:0 auto;padding:0 1.2rem 3.5rem}
+.sec-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.1rem}
+.sec-title{font-family:'Playfair Display',serif;font-size:1.2rem;font-weight:600;color:var(--ch)}
+.count{background:var(--teal-xl);color:var(--teal-d);font-size:.73rem;font-weight:700;padding:.28rem .7rem;border-radius:20px}
+
+/* ─── LANDING SECTIONS ─── */
+.sec-pill{display:inline-flex;background:var(--teal-xl);color:var(--teal-d);font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;padding:.3rem .75rem;border-radius:20px;margin-bottom:.7rem}
+.sec-main-title{font-family:'Playfair Display',serif;font-size:clamp(1.3rem,4vw,2rem);font-weight:700;color:var(--ch);margin-bottom:.55rem}
+.sec-sub{color:var(--mid);font-size:.88rem;line-height:1.65}
+
+.how-section{padding:2.5rem 1.5rem;text-align:center;max-width:700px;margin:0 auto}
+.how-steps{display:flex;flex-direction:column;gap:1.1rem;margin-top:1.5rem;text-align:left}
+.how-step{display:flex;align-items:flex-start;gap:1rem;background:#fff;border:1.5px solid var(--border);border-radius:var(--r-md);padding:1rem 1.1rem}
+.how-num{width:32px;height:32px;border-radius:50%;background:var(--teal);color:#fff;display:flex;align-items:center;justify-content:center;font-size:.8rem;font-weight:700;flex-shrink:0;margin-top:.08rem}
+.how-step h4{font-size:.9rem;font-weight:600;color:var(--ch);margin-bottom:.25rem}
+.how-step p{font-size:.78rem;color:var(--mid);line-height:1.55}
+
+.spec-section{padding:2rem 1.5rem;background:linear-gradient(135deg,var(--teal-xl),#fff);text-align:center}
+.spec-chips{display:flex;flex-wrap:wrap;gap:.55rem;justify-content:center;margin-top:1.2rem}
+.spec-chip{background:var(--white);border:1.5px solid var(--border);border-radius:20px;padding:.45rem .95rem;font-size:.78rem;font-weight:500;color:var(--mid);transition:all var(--anim)}
+.spec-chip:hover,.spec-chip.act{background:var(--teal);border-color:var(--teal);color:#fff}
+
+.testi-section{padding:2.5rem 1.5rem;max-width:900px;margin:0 auto;text-align:center}
+.testi-grid{display:flex;flex-direction:column;gap:.85rem;margin-top:1.3rem}
+.testi-card{background:#fff;border:1.5px solid var(--border);border-radius:var(--r-md);padding:1.2rem;text-align:left;border-left:3px solid var(--teal)}
+.testi-stars{color:var(--gold);font-size:.82rem;margin-bottom:.5rem}
+.testi-text{color:var(--mid);font-size:.82rem;line-height:1.6;margin-bottom:.7rem;font-style:italic}
+.testi-author{font-weight:600;font-size:.82rem;color:var(--ch)}
+.testi-role{font-size:.72rem;color:var(--soft)}
+
+.faq-section{padding:2rem 1.5rem;max-width:680px;margin:0 auto}
+.faq-item{border:1.5px solid var(--border);border-radius:var(--r-sm);margin-bottom:.5rem;overflow:hidden;background:#fff}
+.faq-q{width:100%;text-align:left;background:none;border:none;padding:.85rem 1rem;font-size:.86rem;font-weight:500;color:var(--ch);display:flex;align-items:center;justify-content:space-between;gap:.5rem}
+.faq-q:hover{background:var(--teal-xl)}
+.faq-arr{color:var(--teal);font-size:.75rem;transition:transform var(--anim);flex-shrink:0}
+.faq-item.open .faq-arr{transform:rotate(180deg)}
+.faq-a{display:none;padding:.3rem 1rem .9rem;font-size:.8rem;color:var(--mid);line-height:1.65;border-top:1px solid var(--border)}
+.faq-item.open .faq-a{display:block}
+
+.cta-banner{background:linear-gradient(135deg,var(--teal-d),var(--teal));padding:2.5rem 1.5rem;text-align:center}
+.cta-banner h2{font-family:'Playfair Display',serif;font-size:1.5rem;font-weight:700;color:#fff;margin-bottom:.4rem}
+.cta-banner p{color:rgba(255,255,255,.8);font-size:.85rem;margin-bottom:1.3rem}
+.cta-btns{display:flex;gap:.7rem;justify-content:center;flex-wrap:wrap}
+.cta-btn-p{background:#fff;color:var(--teal-d);border:none;font-size:.86rem;font-weight:600;padding:.7rem 1.3rem;border-radius:var(--r-sm);transition:all var(--anim)}
+.cta-btn-p:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(0,0,0,.2)}
+.cta-btn-s{background:transparent;color:#fff;border:1.5px solid rgba(255,255,255,.4);font-size:.86rem;font-weight:500;padding:.68rem 1.3rem;border-radius:var(--r-sm);transition:all var(--anim)}
+.cta-btn-s:hover{background:rgba(255,255,255,.12)}
+
+.footer{background:var(--teal-d);color:rgba(255,255,255,.7);text-align:center;padding:1.5rem;font-size:.78rem}
+.footer-links{display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;margin-top:.7rem}
+.footer-links a{color:rgba(255,255,255,.55);cursor:pointer;text-decoration:none;transition:color var(--anim)}
+.footer-links a:hover{color:#fff}
+
+/* ─── EMPTY STATE ─── */
+.empty-state{text-align:center;padding:3rem 1.5rem;background:#fff;border:1.5px dashed var(--border);border-radius:var(--r-lg)}
+.empty-ico{font-size:2.8rem;margin-bottom:.9rem}
+.empty-title{font-family:'Playfair Display',serif;font-size:1.15rem;font-weight:600;color:var(--ch);margin-bottom:.5rem}
+.empty-sub{color:var(--soft);font-size:.83rem;line-height:1.65;margin-bottom:1.3rem}
+.btn-cta{background:var(--teal);color:#fff;border:none;font-size:.86rem;font-weight:600;padding:.72rem 1.4rem;border-radius:var(--r-sm);transition:all var(--anim)}
+.btn-cta:hover{background:var(--teal-d)}
+
+/* ─── SPECIALIST CARD ─── */
+.spec-grid{display:flex;flex-direction:column;gap:.9rem}
+.scard{background:#fff;border:1.5px solid var(--border);border-radius:var(--r-md);padding:1.2rem;border-top:3px solid var(--teal);cursor:pointer;transition:all var(--anim)}
+.scard:hover{box-shadow:var(--shadow-md);transform:translateY(-2px);border-color:var(--teal-l)}
+.card-top{display:flex;gap:.85rem;margin-bottom:.85rem;align-items:flex-start}
+.av{width:52px;height:52px;border-radius:var(--r-sm);background:linear-gradient(135deg,var(--teal-xl),var(--teal-mid));display:flex;align-items:center;justify-content:center;font-size:1.4rem;flex-shrink:0}
+.c-name{font-family:'Playfair Display',serif;font-size:.98rem;font-weight:600;color:var(--ch);margin-bottom:.1rem}
+.c-spec{font-size:.68rem;color:var(--teal);font-weight:700;text-transform:uppercase;letter-spacing:.05em;margin-bottom:.2rem}
+.stars{color:var(--gold);font-size:.72rem}
+.tags{display:flex;flex-wrap:wrap;gap:.28rem;margin-bottom:.85rem}
+.tag{background:var(--teal-xl);color:var(--teal-d);font-size:.62rem;font-weight:600;padding:.18rem .5rem;border-radius:20px}
+.tag.la{background:var(--gold-l);color:#7A5520}
+.tag.vi{background:#EEF2FF;color:#3750C0;font-weight:600}
+.tag.pr{background:#FFF0EE;color:#B03025}
+.card-foot{display:flex;align-items:center;justify-content:space-between;padding-top:.75rem;border-top:1px solid var(--border);margin-bottom:.85rem}
+.price{font-size:1rem;font-weight:700;color:var(--teal-d)}
+.price small{font-size:.63rem;font-weight:400;color:var(--soft);display:block}
+.nxt{text-align:right;font-size:.7rem;color:var(--mid)}
+.nxt strong{display:block;color:var(--teal);font-size:.74rem}
+.btn-rdv{width:100%;background:var(--teal);color:#fff;border:none;font-size:.86rem;font-weight:600;padding:.68rem;border-radius:var(--r-sm);transition:all var(--anim)}
+.btn-rdv:hover{background:var(--teal-d)}
+
+/* ─── AUTH ─── */
+.auth-wrap{min-height:85vh;display:flex;align-items:center;justify-content:center;padding:1.5rem 1rem}
+.auth-card{background:#fff;border:1.5px solid var(--border);border-radius:var(--r-lg);padding:2rem 1.5rem;max-width:500px;width:100%;box-shadow:var(--shadow-md)}
+.auth-ico{text-align:center;font-size:2rem;margin-bottom:.5rem}
+.auth-title{font-family:'Playfair Display',serif;font-size:1.35rem;font-weight:700;color:var(--ch);margin-bottom:.3rem;text-align:center}
+.auth-sub{color:var(--mid);font-size:.82rem;text-align:center;margin-bottom:1.2rem;line-height:1.55}
+.auth-tabs{display:grid;grid-template-columns:1fr 1fr;gap:.5rem;margin-bottom:1.2rem}
+.atab{background:var(--sand);border:1.5px solid var(--border);border-radius:var(--r-sm);padding:.7rem .5rem;font-size:.82rem;font-weight:500;color:var(--mid);text-align:center;transition:all var(--anim)}
+.atab.on{background:var(--teal);border-color:var(--teal);color:#fff}
+.atab:hover:not(.on){background:var(--teal-xl);border-color:var(--teal)}
+
+/* ─── FORM ─── */
+.fgroup{display:flex;flex-direction:column;gap:.3rem;margin-bottom:.85rem}
+.fgroup label{font-size:.73rem;font-weight:600;color:var(--mid)}
+.fgroup input,.fgroup select,.fgroup textarea{border:1.5px solid var(--border);border-radius:var(--r-sm);font-size:.86rem;color:var(--ch);padding:.62rem .9rem;background:var(--sand);outline:none;width:100%;transition:all var(--anim)}
+.fgroup input:focus,.fgroup select:focus,.fgroup textarea:focus{border-color:var(--teal);background:#fff;box-shadow:0 0 0 3px rgba(27,107,97,.08)}
+.fgroup textarea{min-height:80px;resize:vertical;line-height:1.55}
+.fgroup-row{display:grid;grid-template-columns:1fr 1fr;gap:.7rem}
+.required-note{font-size:.68rem;color:var(--soft);margin-bottom:.9rem}
+.form-section-title{font-size:.76rem;font-weight:700;color:var(--teal-d);text-transform:uppercase;letter-spacing:.07em;margin:.4rem 0 .85rem;padding-top:.9rem;border-top:1px solid var(--border);display:flex;align-items:center;gap:.4rem}
+.cb-row{display:flex;align-items:flex-start;gap:.6rem;background:var(--sand);border:1.5px solid var(--border);border-radius:var(--r-sm);padding:.85rem;margin-bottom:.6rem;transition:border-color var(--anim)}
+.cb-row:hover{border-color:var(--teal)}
+.cb-row input[type=checkbox]{width:16px;height:16px;flex-shrink:0;margin-top:.1rem;accent-color:var(--teal)}
+.cb-txt{font-size:.74rem;color:var(--mid);line-height:1.55}
+.cb-txt strong{color:var(--ch)}
+.btn-submit{width:100%;background:var(--teal);color:#fff;border:none;font-size:.9rem;font-weight:600;padding:.85rem;border-radius:var(--r-sm);margin-top:.3rem;transition:all var(--anim)}
+.btn-submit:hover:not(:disabled){background:var(--teal-d)}
+.btn-submit:disabled{opacity:.5;cursor:not-allowed}
+.auth-switch{text-align:center;font-size:.76rem;color:var(--mid);margin-top:.9rem}
+.auth-switch a{color:var(--teal);font-weight:600;cursor:pointer}
+.info-box{background:var(--teal-xl);border-radius:var(--r-sm);padding:.75rem .9rem;font-size:.76rem;color:var(--teal-d);margin-bottom:.9rem;line-height:1.55;border-left:3px solid var(--teal)}
+.warning-box{background:var(--orange-l);border-radius:var(--r-sm);padding:.75rem .9rem;font-size:.76rem;color:var(--orange);margin-bottom:.9rem;line-height:1.55;border-left:3px solid var(--orange)}
+.error-box{background:var(--red-l);border-radius:var(--r-sm);padding:.75rem .9rem;font-size:.76rem;color:var(--red);margin-bottom:.9rem;line-height:1.55;display:none;border-left:3px solid var(--red)}
+.success-screen{text-align:center;padding:1.2rem 0}
+.success-ico{width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,var(--teal),var(--teal-l));display:flex;align-items:center;justify-content:center;font-size:1.9rem;margin:0 auto 1rem;box-shadow:0 8px 28px rgba(27,107,97,.3)}
+.success-title{font-family:'Playfair Display',serif;font-size:1.4rem;font-weight:700;color:var(--ch);margin-bottom:.4rem}
+.success-sub{color:var(--mid);font-size:.83rem;line-height:1.65;margin-bottom:1.2rem}
+
+/* ─── EMAIL PREVIEW BOX ─── */
+.email-preview-box{background:var(--sand);border:1.5px solid var(--border);border-radius:var(--r-md);padding:1rem;text-align:left;margin-bottom:1.2rem;overflow:hidden}
+.email-preview-box .ep-hdr{font-size:.7rem;font-weight:700;color:var(--teal-d);text-transform:uppercase;letter-spacing:.06em;margin-bottom:.65rem;display:flex;align-items:center;gap:.4rem}
+.email-preview-box .ep-row{display:flex;gap:.5rem;font-size:.75rem;margin-bottom:.3rem}
+.email-preview-box .ep-k{color:var(--soft);min-width:60px;flex-shrink:0}
+.email-preview-box .ep-v{color:var(--ch);font-weight:600}
+.email-preview-box .ep-body{margin-top:.75rem;font-size:.78rem;color:var(--mid);line-height:1.6;border-top:1px solid var(--border);padding-top:.75rem}
+.next-steps{background:#fff;border:1.5px solid var(--border);border-radius:var(--r-md);padding:1rem;margin-bottom:1.2rem;text-align:left}
+.next-steps h4{font-size:.84rem;font-weight:600;color:var(--ch);margin-bottom:.7rem}
+.next-step-item{display:flex;align-items:flex-start;gap:.6rem;margin-bottom:.6rem;font-size:.78rem;color:var(--mid)}
+.step-num{width:22px;height:22px;border-radius:50%;background:var(--teal);color:#fff;display:flex;align-items:center;justify-content:center;font-size:.63rem;font-weight:700;flex-shrink:0;margin-top:.05rem}
+
+/* ─── BOOKING SHEET ─── */
+.bsheet-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:700;backdrop-filter:blur(3px);align-items:flex-end;justify-content:center}
+.bsheet-bg.on{display:flex}
+.bsheet{background:#fff;border-radius:var(--r-lg) var(--r-lg) 0 0;max-height:92vh;overflow-y:auto;width:100%;max-width:560px;padding:1.5rem 1.2rem}
+.bsh-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.2rem}
+.bsh-hdr h3{font-family:'Playfair Display',serif;font-size:1rem;font-weight:600;color:var(--ch)}
+.bsh-close{background:var(--sand);border:1.5px solid var(--border);border-radius:var(--r-sm);padding:.38rem .75rem;font-size:.82rem;color:var(--mid);transition:all var(--anim)}
+.bsh-close:hover{background:var(--red-l);border-color:var(--red);color:var(--red)}
+.step-prog{display:flex;gap:.4rem;margin-bottom:1.3rem}
+.slbl{flex:1;text-align:center;font-size:.65rem;font-weight:600;padding:.38rem;border-radius:var(--r-sm);background:var(--sand);color:var(--soft);border:1.5px solid var(--border);transition:all var(--anim)}
+.slbl.on{background:var(--teal);color:#fff;border-color:var(--teal)}
+.slbl.done{background:var(--green-l);color:var(--green);border-color:var(--green)}
+.step-pane{display:none}
+.step-pane.on{display:block}
+.type-cards{display:grid;grid-template-columns:1fr 1fr;gap:.7rem;margin-bottom:1.1rem}
+.type-card{background:var(--sand);border:2px solid var(--border);border-radius:var(--r-md);padding:1rem;text-align:center;cursor:pointer;transition:all var(--anim)}
+.type-card.on{border-color:var(--teal);background:var(--teal-xl)}
+.type-card:hover{border-color:var(--teal-l)}
+.type-ico{font-size:1.6rem;margin-bottom:.4rem}
+.type-lbl{font-size:.86rem;font-weight:600;color:var(--ch)}
+.type-sub{font-size:.7rem;color:var(--soft);margin-top:.2rem}
+.cal-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:.9rem}
+.cal-nav button{background:var(--sand);border:1.5px solid var(--border);border-radius:var(--r-sm);padding:.35rem .65rem;font-size:.8rem;color:var(--mid);transition:all var(--anim)}
+.cal-nav button:hover{background:var(--teal-xl);border-color:var(--teal)}
+.cal-month{font-family:'Playfair Display',serif;font-size:.95rem;font-weight:600;color:var(--ch)}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:.25rem;margin-bottom:.9rem;text-align:center}
+.cal-day-lbl{font-size:.62rem;font-weight:600;color:var(--soft);padding:.3rem 0;text-transform:uppercase}
+.cal-cell{border-radius:var(--r-sm);padding:.4rem;font-size:.78rem;font-weight:500;cursor:pointer;transition:all var(--anim);border:1.5px solid transparent;min-height:36px;display:flex;align-items:center;justify-content:center}
+.cal-cell.avail{background:var(--teal-xl);color:var(--teal-d)}
+.cal-cell.avail:hover{background:var(--teal-l);color:#fff}
+.cal-cell.sel{background:var(--teal)!important;color:#fff!important;border-color:var(--teal-d)}
+.cal-cell.empty,.cal-cell.past{background:none;color:var(--soft);cursor:default;opacity:.4}
+.slots-wrap{display:flex;flex-wrap:wrap;gap:.38rem;margin-bottom:1rem}
+.slot-btn{background:var(--sand);border:1.5px solid var(--border);border-radius:var(--r-sm);padding:.38rem .7rem;font-size:.78rem;font-weight:500;color:var(--mid);transition:all var(--anim)}
+.slot-btn.on{background:var(--teal);color:#fff;border-color:var(--teal)}
+.slot-btn:hover:not(.on){background:var(--teal-xl);border-color:var(--teal)}
+.sum-row{display:flex;justify-content:space-between;align-items:center;padding:.6rem 0;border-bottom:1px solid var(--border);font-size:.82rem}
+.sum-row:last-child{border:none}
+.sum-lbl{color:var(--soft)}
+.sum-val{font-weight:600;color:var(--ch)}
+.bsheet-foot{display:flex;gap:.6rem;margin-top:1.2rem}
+.btn-back{background:var(--sand);color:var(--mid);border:1.5px solid var(--border);font-size:.86rem;font-weight:500;padding:.7rem 1rem;border-radius:var(--r-sm);flex:0 0 auto;transition:all var(--anim)}
+.btn-back:hover{border-color:var(--teal);color:var(--teal)}
+.btn-next{flex:1;background:var(--teal);color:#fff;border:none;font-size:.88rem;font-weight:600;padding:.72rem;border-radius:var(--r-sm);transition:all var(--anim)}
+.btn-next:hover{background:var(--teal-d)}
+.btn-next:disabled{opacity:.5;cursor:not-allowed}
+
+/* ─── PRO DASHBOARD ─── */
+.pro-wrap{max-width:1100px;margin:0 auto;padding:1.2rem}
+.pro-top{background:#fff;border:1.5px solid var(--border);border-radius:var(--r-md);padding:1.2rem;margin-bottom:1rem;display:flex;align-items:center;gap:1rem}
+.pro-av{width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,var(--teal-xl),var(--teal-mid));display:flex;align-items:center;justify-content:center;font-size:1.4rem;flex-shrink:0}
+.pro-name{font-family:'Playfair Display',serif;font-size:1rem;font-weight:600;color:var(--ch);margin-bottom:.1rem}
+.pro-spec{font-size:.69rem;color:var(--teal);font-weight:700;text-transform:uppercase;letter-spacing:.04em}
+.online-pill{display:inline-flex;align-items:center;gap:.3rem;font-size:.65rem;color:var(--green);background:var(--green-l);padding:.2rem .55rem;border-radius:20px;font-weight:600;margin-top:.28rem}
+.online-pill::before{content:'';width:5px;height:5px;border-radius:50%;background:var(--green);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
+.ptabs{display:flex;gap:.4rem;overflow-x:auto;padding-bottom:.4rem;margin-bottom:1rem;-webkit-overflow-scrolling:touch}
+.ptabs::-webkit-scrollbar{display:none}
+.ptab{background:#fff;border:1.5px solid var(--border);border-radius:20px;padding:.42rem .9rem;font-size:.75rem;font-weight:500;color:var(--mid);white-space:nowrap;flex-shrink:0;transition:all var(--anim)}
+.ptab.on{background:var(--teal);border-color:var(--teal);color:#fff}
+.ptab:hover:not(.on){background:var(--teal-xl);border-color:var(--teal-l)}
+.dash{display:none}
+.dash.on{display:block}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:.7rem;margin-bottom:1rem}
+.stat{background:#fff;border:1.5px solid var(--border);border-radius:var(--r-md);padding:1rem}
+.stat-v{font-family:'Playfair Display',serif;font-size:1.65rem;font-weight:700;color:var(--ch);margin-bottom:.08rem}
+.stat-l{font-size:.7rem;color:var(--soft)}
+.stat-t{font-size:.65rem;margin-top:.2rem;color:var(--green);font-weight:500}
+
+/* ─── RDV ITEMS ─── */
+.rdv-list{display:flex;flex-direction:column;gap:.75rem}
+.rdv-item{background:#fff;border:1.5px solid var(--border);border-radius:var(--r-md);padding:1rem;border-left:4px solid var(--orange)}
+.rdv-item.confirmed{border-left-color:var(--green)}
+.rdv-item.cancelled{border-left-color:var(--red);opacity:.6}
+.rdv-item.done{border-left-color:var(--soft);opacity:.75}
+.rdv-head{display:flex;align-items:center;gap:.75rem;margin-bottom:.65rem}
+.rdv-date{background:var(--sand);border-radius:var(--r-sm);padding:.42rem .6rem;text-align:center;flex-shrink:0;min-width:44px}
+.rdv-d{font-size:1.15rem;font-weight:700;color:var(--ch);line-height:1}
+.rdv-m{font-size:.58rem;text-transform:uppercase;color:var(--soft);letter-spacing:.04em}
+.rdv-patient{font-size:.88rem;font-weight:600;color:var(--ch);margin-bottom:.12rem}
+.rdv-meta{font-size:.72rem;color:var(--soft)}
+.rdv-actions{display:flex;gap:.4rem;flex-wrap:wrap}
+.btn-ok{background:var(--green-l);color:var(--green);border:1.5px solid var(--green);font-size:.75rem;font-weight:600;padding:.35rem .8rem;border-radius:7px;transition:all var(--anim)}
+.btn-ok:hover{background:var(--green);color:#fff}
+.btn-no{background:var(--red-l);color:var(--red);border:1.5px solid var(--red);font-size:.75rem;font-weight:600;padding:.35rem .8rem;border-radius:7px;transition:all var(--anim)}
+.btn-no:hover{background:var(--red);color:#fff}
+.btn-join{background:var(--blue-l);color:var(--blue);border:1.5px solid var(--blue);font-size:.75rem;font-weight:600;padding:.35rem .8rem;border-radius:7px;transition:all var(--anim)}
+.btn-join:hover{background:var(--blue);color:#fff}
+.status-badge{font-size:.65rem;font-weight:700;padding:.22rem .55rem;border-radius:20px;text-transform:uppercase;letter-spacing:.04em}
+.status-badge.pending{background:var(--orange-l);color:var(--orange)}
+.status-badge.confirmed{background:var(--green-l);color:var(--green)}
+.status-badge.cancelled{background:var(--red-l);color:var(--red)}
+.status-badge.done{background:var(--sand);color:var(--soft)}
+
+/* ─── FILTER ROW ─── */
+.filter-row{display:flex;gap:.4rem;flex-wrap:wrap;margin-bottom:.9rem}
+.ftb{background:#fff;border:1.5px solid var(--border);border-radius:20px;padding:.35rem .8rem;font-size:.75rem;font-weight:500;color:var(--mid);transition:all var(--anim)}
+.ftb.on{background:var(--teal);border-color:var(--teal);color:#fff}
+.ftb:hover:not(.on){background:var(--teal-xl);border-color:var(--teal-l)}
+
+/* ─── AVAILABILITY ─── */
+.avail-grid{display:flex;flex-direction:column;gap:.55rem;margin-bottom:1rem}
+.avail-row{display:flex;align-items:center;justify-content:space-between;background:#fff;border:1.5px solid var(--border);border-radius:var(--r-sm);padding:.75rem .9rem;transition:all var(--anim)}
+.avail-row.on{border-color:var(--teal);background:var(--teal-xl)}
+.day-lbl{font-size:.85rem;font-weight:600;color:var(--ch)}
+.avail-toggle{appearance:none;width:42px;height:22px;border-radius:11px;background:var(--border);cursor:pointer;position:relative;transition:all var(--anim);outline:none;border:none;flex-shrink:0}
+.avail-toggle::after{content:'';position:absolute;width:18px;height:18px;border-radius:50%;background:#fff;top:2px;left:2px;transition:transform .2s;box-shadow:0 1px 4px rgba(0,0,0,.15)}
+.avail-toggle:checked{background:var(--teal)}
+.avail-toggle:checked::after{transform:translateX(20px)}
+.slot-grid{display:flex;flex-wrap:wrap;gap:.35rem}
+.slot-btn-add{background:var(--sand);border:1.5px dashed var(--border);border-radius:var(--r-sm);padding:.35rem .7rem;font-size:.75rem;color:var(--soft);transition:all var(--anim)}
+.slot-btn-add.on{background:var(--teal);border-color:var(--teal);border-style:solid;color:#fff}
+.slot-btn-add:hover:not(.on){border-color:var(--teal);color:var(--teal)}
+.agenda-info{background:var(--teal-xl);border-radius:var(--r-sm);padding:.75rem .9rem;font-size:.78rem;color:var(--teal-d);margin-top:.9rem;line-height:1.55;display:flex;align-items:center;gap:.5rem;border-left:3px solid var(--teal)}
+
+/* ─── VIDEO ROOM ─── */
+.video-room{background:#1A2428;border-radius:var(--r-md);overflow:hidden;margin-bottom:.9rem;position:relative}
+.video-main{min-height:200px;display:flex;align-items:center;justify-content:center;padding:2rem 1rem;position:relative}
+.vid-av{width:70px;height:70px;border-radius:50%;background:linear-gradient(135deg,var(--teal-d),var(--teal));display:flex;align-items:center;justify-content:center;font-size:1.8rem;margin:0 auto .5rem}
+.vid-nametag{position:absolute;bottom:.75rem;left:.75rem;background:rgba(0,0,0,.6);color:#fff;font-size:.72rem;font-weight:500;padding:.28rem .65rem;border-radius:6px}
+.vid-self{position:absolute;top:.75rem;right:.75rem;width:48px;height:48px;border-radius:8px;background:var(--teal-d);display:flex;align-items:center;justify-content:center;font-size:1.2rem;border:2px solid rgba(255,255,255,.2)}
+.vid-status{position:absolute;top:.75rem;left:.75rem;background:rgba(200,50,50,.8);color:#fff;font-size:.65rem;font-weight:600;padding:.25rem .6rem;border-radius:6px;text-transform:uppercase;letter-spacing:.04em}
+.vid-controls{background:#232D31;padding:.75rem 1rem;display:flex;align-items:center;justify-content:center;gap:.65rem}
+.vc-btn{width:42px;height:42px;border-radius:50%;border:none;display:flex;align-items:center;justify-content:center;font-size:.95rem;transition:all var(--anim)}
+.vc-btn.act{background:rgba(255,255,255,.15);color:#fff}
+.vc-btn.act:hover{background:rgba(255,255,255,.25)}
+.vc-btn.dng{background:var(--red);color:#fff}
+.vc-btn.dng:hover{background:#A93226}
+.vid-timer{color:rgba(255,255,255,.6);font-family:'DM Mono',monospace;font-size:.75rem;margin-left:.4rem}
+.video-chat{background:#fff;border:1.5px solid var(--border);border-radius:var(--r-md);overflow:hidden}
+.chat-hdr{padding:.7rem 1rem;font-size:.78rem;font-weight:600;color:var(--ch);border-bottom:1px solid var(--border);background:var(--sand)}
+.chat-msgs{min-height:120px;max-height:200px;overflow-y:auto;padding:.85rem;display:flex;flex-direction:column;gap:.5rem}
+.chat-msg{padding:.55rem .75rem;border-radius:10px;font-size:.78rem;max-width:80%;line-height:1.5}
+.chat-msg.me{background:var(--teal);color:#fff;align-self:flex-end;border-radius:10px 10px 0 10px}
+.chat-msg.them{background:var(--sand);color:var(--ch);align-self:flex-start;border-radius:10px 10px 10px 0}
+.chat-in-row{display:flex;gap:.5rem;padding:.65rem;border-top:1px solid var(--border)}
+.chat-in{flex:1;border:1.5px solid var(--border);border-radius:var(--r-sm);font-size:.8rem;padding:.42rem .75rem;background:var(--sand);outline:none;transition:border-color var(--anim)}
+.chat-in:focus{border-color:var(--teal)}
+.chat-send-btn{background:var(--teal);color:#fff;border:none;border-radius:var(--r-sm);width:34px;height:34px;font-size:.85rem;display:flex;align-items:center;justify-content:center;transition:all var(--anim)}
+.chat-send-btn:hover{background:var(--teal-d)}
+
+/* ─── REVENUE ─── */
+.rev-card{background:linear-gradient(135deg,var(--teal-d),var(--teal-l));border-radius:var(--r-md);padding:1.2rem;color:#fff;margin-bottom:.9rem}
+.rev-val{font-family:'Playfair Display',serif;font-size:2rem;font-weight:700;margin-bottom:.2rem}
+.rev-lbl{font-size:.76rem;opacity:.8}
+.rev-stats{display:grid;grid-template-columns:1fr 1fr;gap:.7rem;margin-bottom:.9rem}
+.rev-stat{background:#fff;border:1.5px solid var(--border);border-radius:var(--r-sm);padding:.9rem;text-align:center}
+.rev-stat-v{font-size:1.1rem;font-weight:700;color:var(--ch)}
+.rev-stat-l{font-size:.68rem;color:var(--soft);margin-top:.1rem}
+
+/* ─── NOTIFICATIONS ─── */
+.notif-item{background:#fff;border:1.5px solid var(--border);border-radius:var(--r-md);padding:1rem;display:flex;gap:.8rem;margin-bottom:.6rem;transition:all var(--anim)}
+.notif-item:hover{border-color:var(--teal-l)}
+.notif-item.unread{border-left:3px solid var(--teal)}
+.notif-ico{font-size:1.3rem;flex-shrink:0;width:38px;height:38px;border-radius:50%;background:var(--teal-xl);display:flex;align-items:center;justify-content:center}
+.notif-title{font-size:.84rem;font-weight:600;color:var(--ch);margin-bottom:.15rem}
+.notif-sub{font-size:.76rem;color:var(--mid);line-height:1.5}
+.notif-time{font-size:.67rem;color:var(--soft);margin-top:.25rem;font-family:'DM Mono',monospace}
+
+/* ─── PROFILE ─── */
+.profile-card{background:#fff;border:1.5px solid var(--border);border-radius:var(--r-md);padding:1.2rem}
+.profile-field{display:flex;flex-direction:column;gap:.3rem;margin-bottom:.85rem}
+.profile-field label{font-size:.72rem;font-weight:600;color:var(--mid)}
+.profile-field .val{font-size:.88rem;color:var(--ch);background:var(--sand);border:1.5px solid var(--border);border-radius:var(--r-sm);padding:.6rem .9rem}
+
+/* ─── PATIENT SPACE ─── */
+.patient-wrap{max-width:900px;margin:0 auto;padding:1.2rem}
+.pat-hdr{background:#fff;border:1.5px solid var(--border);border-radius:var(--r-md);padding:1.1rem;margin-bottom:1rem;display:flex;align-items:center;gap:.9rem}
+.pat-av{width:46px;height:46px;border-radius:50%;background:linear-gradient(135deg,var(--blue-l),var(--blue));display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0}
+.pat-name{font-family:'Playfair Display',serif;font-size:1rem;font-weight:600;color:var(--ch)}
+.pat-email{font-size:.75rem;color:var(--soft)}
+.pat-tabs{display:flex;gap:.4rem;overflow-x:auto;margin-bottom:1rem;-webkit-overflow-scrolling:touch}
+.pat-tabs::-webkit-scrollbar{display:none}
+.pat-tab{background:#fff;border:1.5px solid var(--border);border-radius:20px;padding:.42rem .9rem;font-size:.76rem;font-weight:500;color:var(--mid);white-space:nowrap;flex-shrink:0;transition:all var(--anim)}
+.pat-tab.on{background:var(--teal);border-color:var(--teal);color:#fff}
+.pat-tab:hover:not(.on){background:var(--teal-xl)}
+.pat-dash{display:none}
+.pat-dash.on{display:block}
+.sec-ttl{font-family:'Playfair Display',serif;font-size:1rem;font-weight:600;color:var(--ch)}
+.count-badge{background:var(--teal-xl);color:var(--teal-d);font-size:.72rem;font-weight:700;padding:.22rem .6rem;border-radius:20px}
+
+/* ─── REMIND ─── */
+.remind-strip{background:#fff;border:1.5px solid var(--border);border-radius:var(--r-md);padding:1.1rem;display:flex;gap:.9rem;align-items:flex-start;margin-bottom:.9rem}
+.remind-strip h4{font-size:.86rem;font-weight:600;color:var(--ch);margin-bottom:.2rem}
+.remind-strip p{font-size:.76rem;color:var(--mid);line-height:1.5}
+.rbadges{display:flex;flex-wrap:wrap;gap:.3rem;margin-top:.5rem}
+.rb{background:var(--teal-xl);color:var(--teal-d);font-size:.65rem;font-weight:600;padding:.22rem .6rem;border-radius:20px;letter-spacing:.02em}
+
+/* ─── AI BADGE ─── */
+.ai-badge{display:inline-flex;align-items:center;gap:.35rem;background:linear-gradient(135deg,var(--purple-l),#fff);border:1.5px solid var(--purple);color:var(--purple);font-size:.67rem;font-weight:700;padding:.25rem .65rem;border-radius:20px;text-transform:uppercase;letter-spacing:.05em}
+.ai-spinner{width:12px;height:12px;border:2px solid rgba(90,62,138,.3);border-top-color:var(--purple);border-radius:50%;animation:spin .7s linear infinite;display:none}
+@keyframes spin{to{transform:rotate(360deg)}}
+.ai-response{background:var(--sand);border:1.5px solid var(--border);border-radius:var(--r-md);padding:1rem;font-size:.82rem;color:var(--ch);line-height:1.65;margin-top:.9rem;white-space:pre-wrap}
+
+/* ─── EMAIL MODAL ─── */
+.email-modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:800;align-items:flex-end;justify-content:center;backdrop-filter:blur(3px)}
+.email-modal-bg.on{display:flex}
+.email-modal-box{background:var(--white);border-radius:var(--r-lg) var(--r-lg) 0 0;max-height:88vh;overflow-y:auto;width:100%;max-width:560px}
+.em-hdr{background:var(--teal-d);padding:.9rem 1.2rem;color:#fff;display:flex;justify-content:space-between;align-items:center;border-radius:var(--r-lg) var(--r-lg) 0 0}
+.em-hdr h3{font-family:'Playfair Display',serif;font-size:.98rem;font-weight:600}
+.em-close-btn{background:none;border:none;color:rgba(255,255,255,.65);font-size:1.2rem;padding:.2rem .4rem;cursor:pointer}
+.em-meta{padding:.75rem 1.2rem;border-bottom:1px solid var(--border);font-size:.74rem;color:var(--mid);line-height:1.85}
+.em-body{padding:1.1rem;font-size:.82rem;line-height:1.7;color:var(--ch)}
+
+/* ─── TOAST ─── */
+.toast{position:fixed;bottom:1.5rem;left:50%;transform:translateX(-50%) translateY(30px);background:var(--ch);color:#fff;font-size:.82rem;font-weight:500;padding:.7rem 1.2rem;border-radius:var(--r-md);opacity:0;transition:all .3s;z-index:9999;white-space:nowrap;box-shadow:var(--shadow-lg);max-width:90vw}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.toast.green{background:var(--green)}
+.toast.red{background:var(--red)}
+.toast.blue{background:var(--blue)}
+
+/* ─── AI ASSISTANT PANEL ─── */
+.ai-panel{background:#fff;border:1.5px solid var(--border);border-radius:var(--r-md);padding:1.1rem;margin-bottom:.9rem}
+.ai-panel-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:.85rem}
+.ai-panel-hdr h4{font-size:.88rem;font-weight:600;color:var(--ch)}
+.ai-input-row{display:flex;gap:.5rem}
+.ai-input{flex:1;border:1.5px solid var(--border);border-radius:var(--r-sm);font-size:.82rem;color:var(--ch);padding:.6rem .9rem;background:var(--sand);outline:none;transition:all var(--anim)}
+.ai-input:focus{border-color:var(--purple);background:#fff;box-shadow:0 0 0 3px rgba(90,62,138,.07)}
+.ai-send-btn{background:var(--purple);color:#fff;border:none;border-radius:var(--r-sm);padding:.6rem .95rem;font-size:.82rem;font-weight:600;transition:all var(--anim);display:flex;align-items:center;gap:.35rem}
+.ai-send-btn:hover{background:var(--purple-d,#4A2E7A)}
+.ai-send-btn:disabled{opacity:.5;cursor:not-allowed}
+
+/* ─── RTL SUPPORT ─── */
+[dir="rtl"] .nav,[dir="rtl"] .pro-top,[dir="rtl"] .pat-hdr{flex-direction:row-reverse}
+[dir="rtl"] .drawer{right:auto;left:0;transform:translateX(-100%)}
+[dir="rtl"] .drawer.on{transform:translateX(0)}
+[dir="rtl"] .scard,[dir="rtl"] .faq-q,[dir="rtl"] .rdv-head{direction:rtl}
+[dir="rtl"] .card-top,[dir="rtl"] .sum-row,.ep-row{flex-direction:row-reverse}
+[dir="rtl"] .rdv-item{border-left:none;border-right:4px solid var(--orange)}
+[dir="rtl"] .rdv-item.confirmed{border-right-color:var(--green)}
+[dir="rtl"] .rdv-item.cancelled{border-right-color:var(--red)}
+[dir="rtl"] .info-box,[dir="rtl"] .warning-box,[dir="rtl"] .error-box{border-left:none;border-right:3px solid currentColor}
+[dir="rtl"] .user-chip{border-left:none;border-right:3px solid var(--teal)}
+[dir="rtl"] .agenda-info{border-left:none;border-right:3px solid var(--teal)}
+body[data-lang="ar"]{font-family:'Segoe UI',Tahoma,'Arabic Typesetting',sans-serif}
+
+/* ─── MEDIA ─── */
+@media(min-width:640px){
+  .trust-grid{grid-template-columns:repeat(4,1fr)}
+  .stats{grid-template-columns:repeat(4,1fr)}
+  .spec-grid{display:grid;grid-template-columns:1fr 1fr}
+  .testi-grid{grid-template-columns:1fr 1fr 1fr;flex-direction:row}
+  .search-filters{grid-template-columns:1fr 1fr auto}
+  .btn-search{grid-column:auto}
+}
+</style>
+</head>
+<body>
+
+<!-- LANGUAGE BAR -->
+<div class="lang-bar">
+  <button class="lang-btn on" onclick="setLang('fr')" id="lb-fr">FR</button>
+  <button class="lang-btn" onclick="setLang('en')" id="lb-en">EN</button>
+  <button class="lang-btn" onclick="setLang('ar')" id="lb-ar">ع AR</button>
+</div>
+
+<!-- NAV -->
+<nav class="nav">
+  <button class="logo" onclick="goHome()">Psycho<b>lab</b></button>
+  <div class="nav-right">
+    <button class="nav-notif" id="nav-notif-btn" onclick="openNotifs()">🔔<span class="nav-notif-dot" id="nav-notif-dot"></span></button>
+    <button class="menu-btn" onclick="openDrawer()">☰ Menu</button>
+  </div>
+</nav>
+
+<!-- DRAWER -->
+<div class="dbg" id="dbg" onclick="closeDrawer()"></div>
+<div class="drawer" id="drawer">
+  <button class="dr-close" onclick="closeDrawer()">✕ Fermer</button>
+  <div id="dr-loggedout">
+    <p class="dr-lbl">Navigation</p>
+    <button class="dr-btn" onclick="goHome();closeDrawer()">🔍 Trouver un spécialiste</button>
+    <div class="dr-sep"></div>
+    <p class="dr-lbl">Mon compte</p>
+    <button class="dr-solid" onclick="showSignup('patient');closeDrawer()">Créer un compte patient</button>
+    <div style="height:.5rem"></div>
+    <button class="dr-outline" onclick="showSignup('pro');closeDrawer()">S'inscrire comme professionnel</button>
+    <div style="height:.5rem"></div>
+    <button class="dr-btn" onclick="showLogin();closeDrawer()">🔐 Se connecter</button>
+  </div>
+  <div id="dr-patient" style="display:none">
+    <div class="user-chip" id="dr-patient-chip">Bonjour 👋<span id="dr-patient-name"></span></div>
+    <p class="dr-lbl" style="margin-top:.8rem">Navigation</p>
+    <button class="dr-btn" onclick="goHome();closeDrawer()">🔍 Trouver un spécialiste</button>
+    <button class="dr-btn" onclick="goPatient();closeDrawer()">👤 Mon espace patient</button>
+    <div class="dr-sep"></div>
+    <button class="dr-danger" onclick="doLogout();closeDrawer()">Déconnexion</button>
+  </div>
+  <div id="dr-pro" style="display:none">
+    <div class="user-chip" id="dr-pro-chip">Espace Pro 🩺<span id="dr-pro-name"></span></div>
+    <p class="dr-lbl" style="margin-top:.8rem">Navigation</p>
+    <button class="dr-btn" onclick="goHome();closeDrawer()">🔍 Voir la plateforme</button>
+    <button class="dr-btn" onclick="goPro();closeDrawer()">📊 Mon tableau de bord</button>
+    <div class="dr-sep"></div>
+    <button class="dr-danger" onclick="doLogout();closeDrawer()">Déconnexion</button>
+  </div>
+</div>
+
+<!-- ══ VIEW: HOME ══ -->
+<div class="view on" id="v-home">
+  <div class="hero">
+    <div class="hero-badge">✦ Plateforme certifiée · Sécurisée · RGPD</div>
+    <h1>Votre santé mentale,<br/><em>prise en charge</em><br/>par des experts</h1>
+    <p>Psychiatres, psychologues, psychomotriciens, ergothérapeutes et orthophonistes — consultations sécurisées en ligne ou en présentiel.</p>
+    <div class="trust-grid">
+      <div class="trust-item">🔒 Chiffrement E2E</div>
+      <div class="trust-item">🩺 Pros certifiés</div>
+      <div class="trust-item">📧 Notifications mail</div>
+      <div class="trust-item">🌍 International</div>
+    </div>
+    <div class="hero-btns">
+      <button class="hero-btn-p" onclick="scrollToSearch()">🔍 Trouver un spécialiste</button>
+      <button class="hero-btn-s" onclick="showSignup('pro')">🩺 Espace professionnel</button>
+    </div>
+  </div>
+
+  <div id="search-anchor"></div>
+  <div class="search-wrap">
+    <div class="search-box">
+      <div class="si"><span>🔍</span><input type="text" id="q" placeholder="Nom, spécialité, problématique…" oninput="doFilter()"/></div>
+      <div class="search-filters">
+        <select class="fsel" id="fs" onchange="doFilter()">
+          <option value="">Toutes spécialités</option>
+          <option>Psychiatre</option>
+          <option>Psychologue clinicien</option>
+          <option>Psychomotricien</option>
+          <option>Ergothérapeute</option>
+          <option>Orthophoniste</option>
+        </select>
+        <select class="fsel" id="ft" onchange="doFilter()">
+          <option value="">Tout type</option>
+          <option value="video">📹 Vidéo</option>
+          <option value="presentiel">🏥 Présentiel</option>
+        </select>
+        <button class="btn-search" onclick="doFilter()">Rechercher</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="sec-head"><h2 class="sec-title">Spécialistes disponibles</h2><span class="count" id="cnt">0</span></div>
+    <div id="spec-list"></div>
+  </div>
+
+  <div class="how-section">
+    <div class="sec-pill">Comment ça marche</div>
+    <h2 class="sec-main-title">Simple, rapide et sécurisé</h2>
+    <p class="sec-sub">Prendre soin de votre santé mentale ne devrait pas être compliqué.</p>
+    <div class="how-steps">
+      <div class="how-step"><div class="how-num">1</div><div><h4>Trouvez votre spécialiste</h4><p>Recherchez parmi nos professionnels certifiés par spécialité, langue ou type de consultation.</p></div></div>
+      <div class="how-step"><div class="how-num">2</div><div><h4>Créez votre compte</h4><p>Inscription gratuite en 2 minutes. Notifications email activées automatiquement pour chaque action.</p></div></div>
+      <div class="how-step"><div class="how-num">3</div><div><h4>Réservez et recevez votre confirmation</h4><p>Email immédiat envoyé au patient et au professionnel dès la prise de rendez-vous.</p></div></div>
+      <div class="how-step"><div class="how-num">4</div><div><h4>Consultez en confidentialité</h4><p>Rappels automatiques 24h et 2h avant, vidéo chiffrée E2E, historique sécurisé.</p></div></div>
+    </div>
+  </div>
+
+  <div class="spec-section">
+    <div class="sec-pill">Nos spécialités</div>
+    <h2 class="sec-main-title">Uniquement santé mentale</h2>
+    <p class="sec-sub" style="text-align:center">Psycholab est exclusivement dédié aux professionnels de santé mentale.</p>
+    <div class="spec-chips">
+      <div class="spec-chip act">🧠 Psychiatrie</div>
+      <div class="spec-chip">🛋️ Psychologie clinique</div>
+      <div class="spec-chip">🤸 Psychomotricité</div>
+      <div class="spec-chip">✋ Ergothérapie</div>
+      <div class="spec-chip">🗣️ Orthophonie</div>
+    </div>
+  </div>
+
+  <div class="testi-section">
+    <div class="sec-pill">Témoignages</div>
+    <h2 class="sec-main-title">Ce que disent nos utilisateurs</h2>
+    <div class="testi-grid">
+      <div class="testi-card"><div class="testi-stars">★★★★★</div><p class="testi-text">"J'ai pu consulter depuis la Tunisie en moins de 24h. Processus simple, confidentialité totale."</p><div class="testi-author">Amira B.</div><div class="testi-role">Patiente · Tunis</div></div>
+      <div class="testi-card"><div class="testi-stars">★★★★★</div><p class="testi-text">"En tant que psychologue, gérer mes RDV via Psycholab a transformé mon cabinet. Les notifications email sont parfaites."</p><div class="testi-author">Dr. Karim B.</div><div class="testi-role">Psychologue · Paris</div></div>
+      <div class="testi-card"><div class="testi-stars">★★★★☆</div><p class="testi-text">"Le rappel automatique 2h avant m'a évité d'oublier. Interface très intuitive même sur mobile."</p><div class="testi-author">Nour J.</div><div class="testi-role">Patiente · Montréal</div></div>
+    </div>
+  </div>
+
+  <div class="faq-section">
+    <div style="text-align:center;margin-bottom:1.3rem"><div class="sec-pill">FAQ</div><h2 class="sec-main-title">Questions fréquentes</h2></div>
+    <div class="faq-item"><button class="faq-q" onclick="this.parentElement.classList.toggle('open')">Les consultations sont-elles confidentielles ?<span class="faq-arr">▾</span></button><div class="faq-a">Oui. Chiffrement E2E, conformité RGPD, données jamais partagées sans votre consentement explicite.</div></div>
+    <div class="faq-item"><button class="faq-q" onclick="this.parentElement.classList.toggle('open')">Est-ce que je reçois vraiment un email ?<span class="faq-arr">▾</span></button><div class="faq-a">Oui. Un email de confirmation est généré et affiché à l'écran dès l'inscription ou la prise de RDV. L'intégration avec un service d'envoi réel (SendGrid, Mailgun) peut être activée sur la version hébergée.</div></div>
+    <div class="faq-item"><button class="faq-q" onclick="this.parentElement.classList.toggle('open')">Quels professionnels peuvent s'inscrire ?<span class="faq-arr">▾</span></button><div class="faq-a">Psychiatres, psychologues cliniciens, psychomotriciens, ergothérapeutes et orthophonistes uniquement. Numéro RPPS/agrément vérifié avant activation.</div></div>
+    <div class="faq-item"><button class="faq-q" onclick="this.parentElement.classList.toggle('open')">La plateforme fonctionne-t-elle à l'international ?<span class="faq-arr">▾</span></button><div class="faq-a">Oui. Gestion automatique des fuseaux horaires — patients et praticiens peuvent être dans des pays différents.</div></div>
+    <div class="faq-item"><button class="faq-q" onclick="this.parentElement.classList.toggle('open')">L'IA intégrée, c'est quoi ?<span class="faq-arr">▾</span></button><div class="faq-a">L'assistant IA (Claude) dans le tableau de bord aide les professionnels à rédiger des comptes-rendus, à répondre aux patients, et à générer des prévisualisations d'emails personnalisés. Il ne donne aucun avis médical.</div></div>
+  </div>
+
+  <div class="cta-banner">
+    <h2>Prêt à commencer ?</h2>
+    <p>Rejoignez Psycholab — gratuit, rapide, sécurisé.</p>
+    <div class="cta-btns">
+      <button class="cta-btn-p" onclick="showSignup('patient')">👤 Créer un compte patient</button>
+      <button class="cta-btn-s" onclick="showSignup('pro')">🩺 Espace professionnel</button>
+    </div>
+  </div>
+  <div class="footer">
+    <p>Plateforme de santé mentale · Certifiée · RGPD</p>
+    <div class="footer-links">
+      <a>Conditions</a><a>Confidentialité</a><a>Contact</a><a>À propos</a>
+    </div>
+  </div>
+</div>
+
+<!-- ══ VIEW: LOGIN ══ -->
+<div class="view" id="v-login">
+  <div class="auth-wrap">
+    <div class="auth-card">
+      <div class="auth-ico">🔐</div>
+      <h2 class="auth-title">Se connecter</h2>
+      <p class="auth-sub">Accédez à votre espace Psycholab</p>
+      <div class="auth-tabs">
+        <button class="atab on" id="ltab-pat" onclick="switchLoginTab('patient')">👤 Patient</button>
+        <button class="atab" id="ltab-pro" onclick="switchLoginTab('pro')">🩺 Professionnel</button>
+      </div>
+      <div id="login-error" class="error-box">Email ou mot de passe incorrect.</div>
+      <div class="fgroup"><label>Email *</label><input type="email" id="l-email" placeholder="votre@email.com"/></div>
+      <div class="fgroup"><label>Mot de passe *</label><input type="password" id="l-pwd" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()"/></div>
+      <button class="btn-submit" onclick="doLogin()">Se connecter</button>
+      <p class="auth-switch">Pas encore de compte ? <a onclick="showSignup(currentLoginTab)">Créer un compte</a></p>
+    </div>
+  </div>
+</div>
+
+<!-- ══ VIEW: SIGNUP PATIENT ══ -->
+<div class="view" id="v-signup-patient">
+  <div class="auth-wrap">
+    <div class="auth-card">
+      <div class="auth-ico">👤</div>
+      <h2 class="auth-title">Créer un compte patient</h2>
+      <p class="auth-sub">Gratuit · Sécurisé · Notifications email incluses</p>
+      <p class="required-note">* Champs obligatoires</p>
+      <div class="form-section-title">👤 Informations personnelles</div>
+      <div class="fgroup-row">
+        <div class="fgroup"><label>Prénom *</label><input id="spat-fn" placeholder="Prénom"/></div>
+        <div class="fgroup"><label>Nom *</label><input id="spat-ln" placeholder="Nom"/></div>
+      </div>
+      <div class="fgroup"><label>Email *</label><input type="email" id="spat-email" placeholder="votre@email.com"/></div>
+      <div class="fgroup"><label>Téléphone</label><input type="tel" id="spat-tel" placeholder="+33 6 12 34 56 78"/></div>
+      <div class="fgroup"><label>Fuseau horaire</label>
+        <select id="spat-tz">
+          <option value="Europe/Paris">🇫🇷 Europe/Paris (UTC+1/+2)</option>
+          <option value="Africa/Tunis">🇹🇳 Afrique/Tunis (UTC+1)</option>
+          <option value="Africa/Casablanca">🇲🇦 Afrique/Casablanca (UTC+0/+1)</option>
+          <option value="Africa/Algiers">🇩🇿 Afrique/Alger (UTC+1)</option>
+          <option value="America/Montreal">🇨🇦 Amérique/Montréal (UTC-5/-4)</option>
+          <option value="Europe/London">🇬🇧 Europe/Londres (UTC+0/+1)</option>
+          <option value="Europe/Brussels">🇧🇪 Europe/Bruxelles (UTC+1/+2)</option>
+          <option value="America/New_York">🇺🇸 Amérique/New York (UTC-5/-4)</option>
+        </select>
+      </div>
+      <div class="form-section-title">🔒 Sécurité</div>
+      <div class="fgroup"><label>Mot de passe * (min. 8 caractères)</label><input type="password" id="spat-pwd" placeholder="••••••••"/></div>
+      <div class="fgroup"><label>Confirmer le mot de passe *</label><input type="password" id="spat-pwd2" placeholder="••••••••"/></div>
+      <div id="spat-error" class="error-box"></div>
+      <div class="cb-row"><input type="checkbox" id="spat-cgu"/><p class="cb-txt">J'accepte les <strong>Conditions Générales d'Utilisation</strong> et la <strong>Politique de confidentialité</strong> de Psycholab.</p></div>
+      <div class="cb-row"><input type="checkbox" id="spat-notif" checked/><p class="cb-txt">J'accepte de recevoir des <strong>notifications email</strong> : confirmation de RDV, rappels 24h et 2h avant, et communications importantes.</p></div>
+      <button class="btn-submit" onclick="doSignupPatient()">Créer mon compte patient</button>
+      <p class="auth-switch">Déjà un compte ? <a onclick="showLogin()">Se connecter</a></p>
+    </div>
+  </div>
+</div>
+
+<!-- ══ VIEW: SIGNUP PRO ══ -->
+<div class="view" id="v-signup-pro">
+  <div class="auth-wrap">
+    <div class="auth-card">
+      <div class="auth-ico">🩺</div>
+      <h2 class="auth-title">Inscription professionnelle</h2>
+      <p class="auth-sub">Psychiatres, psychologues, psychomotriciens, ergothérapeutes, orthophonistes</p>
+      <div class="info-box">ℹ️ Votre dossier sera vérifié sous 24-48h. Vous recevrez un email de confirmation à chaque étape.</div>
+      <p class="required-note">* Champs obligatoires</p>
+
+      <div class="form-section-title">👤 Identité professionnelle</div>
+      <div class="fgroup-row">
+        <div class="fgroup"><label>Prénom *</label><input id="spro-fn" placeholder="Prénom"/></div>
+        <div class="fgroup"><label>Nom *</label><input id="spro-ln" placeholder="Nom de famille"/></div>
+      </div>
+      <div class="fgroup"><label>Email professionnel *</label><input type="email" id="spro-email" placeholder="dr.nom@cabinet.com"/></div>
+      <div class="fgroup"><label>Téléphone professionnel *</label><input type="tel" id="spro-tel" placeholder="+33 1 23 45 67 89"/></div>
+
+      <div class="form-section-title">🎓 Qualifications</div>
+      <div class="fgroup"><label>Spécialité *</label>
+        <select id="spro-spec">
+          <option value="">— Sélectionner —</option>
+          <option>Psychiatre</option>
+          <option>Psychologue clinicien</option>
+          <option>Psychomotricien</option>
+          <option>Ergothérapeute</option>
+          <option>Orthophoniste</option>
+        </select>
+      </div>
+      <div class="fgroup"><label>Numéro RPPS / Agrément professionnel *</label><input id="spro-rpps" placeholder="Ex: 10003456789"/></div>
+      <div class="fgroup"><label>Diplôme / Titre *</label><input id="spro-diplome" placeholder="Ex: Doctorat en médecine, Master en psychologie clinique…"/></div>
+      <div class="fgroup"><label>Années d'expérience *</label>
+        <select id="spro-exp">
+          <option value="">— Sélectionner —</option>
+          <option value="1">Moins de 2 ans</option>
+          <option value="3">2 à 5 ans</option>
+          <option value="7">5 à 10 ans</option>
+          <option value="15">Plus de 10 ans</option>
+        </select>
+      </div>
+
+      <div class="form-section-title">📋 Informations de consultation</div>
+      <div class="fgroup-row">
+        <div class="fgroup"><label>Consultation vidéo ?</label>
+          <select id="spro-vid">
+            <option value="1">✅ Oui</option>
+            <option value="0">❌ Non</option>
+          </select>
+        </div>
+        <div class="fgroup"><label>Présentiel ?</label>
+          <select id="spro-pres">
+            <option value="1">✅ Oui</option>
+            <option value="0">❌ Non</option>
+          </select>
+        </div>
+      </div>
+      <div class="fgroup"><label>Tarif par séance (€, laisser vide si non communiqué)</label><input type="number" id="spro-price" placeholder="Ex: 70"/></div>
+      <div class="fgroup"><label>Adresse du cabinet (si présentiel)</label><input id="spro-addr" placeholder="Adresse complète"/></div>
+      <div class="fgroup"><label>Fuseau horaire *</label>
+        <select id="spro-tz">
+          <option value="Europe/Paris">🇫🇷 Europe/Paris (UTC+1/+2)</option>
+          <option value="Africa/Tunis">🇹🇳 Afrique/Tunis (UTC+1)</option>
+          <option value="Africa/Casablanca">🇲🇦 Afrique/Casablanca</option>
+          <option value="Africa/Algiers">🇩🇿 Afrique/Alger (UTC+1)</option>
+          <option value="America/Montreal">🇨🇦 Amérique/Montréal</option>
+          <option value="Europe/London">🇬🇧 Europe/Londres</option>
+          <option value="Europe/Brussels">🇧🇪 Europe/Bruxelles</option>
+        </select>
+      </div>
+
+      <div class="form-section-title">🌐 Langues de consultation</div>
+      <div style="display:flex;gap:.6rem;flex-wrap:wrap;margin-bottom:.9rem">
+        <label style="display:flex;align-items:center;gap:.35rem;font-size:.82rem;background:var(--sand);border:1.5px solid var(--border);border-radius:var(--r-sm);padding:.5rem .8rem;cursor:pointer"><input type="checkbox" id="spro-langfr" checked style="accent-color:var(--teal)"/> 🇫🇷 Français</label>
+        <label style="display:flex;align-items:center;gap:.35rem;font-size:.82rem;background:var(--sand);border:1.5px solid var(--border);border-radius:var(--r-sm);padding:.5rem .8rem;cursor:pointer"><input type="checkbox" id="spro-langen" style="accent-color:var(--teal)"/> 🇬🇧 English</label>
+        <label style="display:flex;align-items:center;gap:.35rem;font-size:.82rem;background:var(--sand);border:1.5px solid var(--border);border-radius:var(--r-sm);padding:.5rem .8rem;cursor:pointer"><input type="checkbox" id="spro-langar" style="accent-color:var(--teal)"/> 🇸🇦 العربية</label>
+      </div>
+
+      <div class="form-section-title">📝 Présentation</div>
+      <div class="fgroup"><label>Biographie / Présentation *</label><textarea id="spro-bio" placeholder="Décrivez votre approche thérapeutique, vos spécialisations, votre méthode de travail…" style="min-height:100px"></textarea></div>
+      <div class="fgroup"><label>Domaines d'intervention</label><input id="spro-tags" placeholder="Ex: Anxiété, Burn-out, TCC, Thérapie de couple"/></div>
+
+      <div class="form-section-title">🔒 Sécurité</div>
+      <div class="fgroup"><label>Mot de passe * (min. 8 caractères)</label><input type="password" id="spro-pwd" placeholder="••••••••"/></div>
+      <div class="fgroup"><label>Confirmer le mot de passe *</label><input type="password" id="spro-pwd2" placeholder="••••••••"/></div>
+
+      <div id="spro-error" class="error-box"></div>
+      <div class="cb-row"><input type="checkbox" id="spro-cgu"/><p class="cb-txt">J'accepte les <strong>Conditions Générales d'Utilisation</strong> et m'engage à respecter le code de déontologie de ma profession.</p></div>
+      <div class="cb-row"><input type="checkbox" id="spro-rgpd"/><p class="cb-txt">J'accepte que mes informations professionnelles soient affichées sur la plateforme conformément au <strong>RGPD</strong>.</p></div>
+      <div class="cb-row"><input type="checkbox" id="spro-notif" checked/><p class="cb-txt">J'accepte de recevoir des <strong>notifications email</strong> : nouvelles demandes de RDV, confirmations, rappels et mises à jour de compte.</p></div>
+      <button class="btn-submit" onclick="doSignupPro()">Soumettre mon dossier d'inscription</button>
+      <p class="auth-switch">Déjà un compte ? <a onclick="showLogin()">Se connecter</a></p>
+    </div>
+  </div>
+</div>
+
+<!-- ══ VIEW: SUCCESS PATIENT ══ -->
+<div class="view" id="v-success-patient">
+  <div class="auth-wrap">
+    <div class="auth-card">
+      <div class="success-screen">
+        <div class="success-ico">✓</div>
+        <h2 class="success-title">Compte créé avec succès !</h2>
+        <p class="success-sub">Bienvenue sur Psycholab. Voici l'email de confirmation qui vous a été envoyé :</p>
+        <div class="email-preview-box">
+          <p class="ep-hdr">📧 Email de confirmation</p>
+          <div class="ep-row"><span class="ep-k">À :</span><span class="ep-v" id="conf-patient-email">—</span></div>
+          <div class="ep-row"><span class="ep-k">Objet :</span><span class="ep-v">✅ Votre compte Psycholab est activé</span></div>
+          <div class="ep-body" id="conf-patient-body">Chargement…</div>
+        </div>
+        <div class="next-steps">
+          <h4>🚀 Prochaines étapes</h4>
+          <div class="next-step-item"><div class="step-num">1</div><span>Recherchez un spécialiste adapté à votre besoin</span></div>
+          <div class="next-step-item"><div class="step-num">2</div><span>Choisissez un créneau disponible</span></div>
+          <div class="next-step-item"><div class="step-num">3</div><span>Recevez votre confirmation et lien vidéo sécurisé</span></div>
+        </div>
+        <button class="btn-submit" onclick="goHome()">🔍 Trouver un spécialiste</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ VIEW: SUCCESS PRO ══ -->
+<div class="view" id="v-success-pro">
+  <div class="auth-wrap">
+    <div class="auth-card">
+      <div class="success-screen">
+        <div class="success-ico">🩺</div>
+        <h2 class="success-title">Dossier soumis !</h2>
+        <p class="success-sub">Votre demande d'inscription professionnelle est en cours de vérification.</p>
+        <div class="email-preview-box">
+          <p class="ep-hdr">📧 Email de confirmation</p>
+          <div class="ep-row"><span class="ep-k">À :</span><span class="ep-v" id="conf-pro-email">—</span></div>
+          <div class="ep-row"><span class="ep-k">Objet :</span><span class="ep-v">🩺 Dossier Psycholab Pro reçu — vérification en cours</span></div>
+          <div class="ep-body" id="conf-pro-body">Chargement…</div>
+        </div>
+        <div class="next-steps">
+          <h4>⏳ Processus d'activation</h4>
+          <div class="next-step-item"><div class="step-num">1</div><span>Vérification de votre numéro RPPS/agrément (24-48h)</span></div>
+          <div class="next-step-item"><div class="step-num">2</div><span>Email de confirmation d'activation envoyé</span></div>
+          <div class="next-step-item"><div class="step-num">3</div><span>Votre profil apparaît sur la plateforme</span></div>
+          <div class="next-step-item"><div class="step-num">4</div><span>Gérez vos RDV depuis votre tableau de bord</span></div>
+        </div>
+        <button class="btn-submit" onclick="activateProDemo()">▶ Activer mon compte Pro (Simulation)</button>
+        <p style="text-align:center;font-size:.71rem;color:var(--soft);margin-top:.4rem">Simule la validation par l'équipe Psycholab</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ VIEW: PATIENT SPACE ══ -->
+<div class="view" id="v-patient">
+  <div class="patient-wrap">
+    <div class="pat-hdr">
+      <div class="pat-av">👤</div>
+      <div>
+        <div class="pat-name" id="pat-display-name">Patient</div>
+        <div class="pat-email" id="pat-display-email">—</div>
+      </div>
+    </div>
+    <div class="pat-tabs">
+      <button class="pat-tab on" onclick="showPatDash('rdvs',this)">📋 Mes RDV</button>
+      <button class="pat-tab" onclick="showPatDash('historique',this)">📂 Historique</button>
+      <button class="pat-tab" onclick="showPatDash('notifs',this)">🔔 Notifications</button>
+      <button class="pat-tab" onclick="showPatDash('profil',this)">👤 Mon profil</button>
+    </div>
+    <div class="pat-dash on" id="pat-rdvs">
+      <div class="sec-head"><h2 class="sec-ttl">Mes rendez-vous</h2><span class="count-badge" id="pat-rdv-count">0</span></div>
+      <div id="pat-rdv-list"></div>
+    </div>
+    <div class="pat-dash" id="pat-historique">
+      <h2 class="sec-ttl" style="margin-bottom:1rem">Historique des consultations</h2>
+      <div id="pat-hist-list"></div>
+    </div>
+    <div class="pat-dash" id="pat-notifs">
+      <h2 class="sec-ttl" style="margin-bottom:1rem">🔔 Mes notifications</h2>
+      <div id="pat-notifs-list"></div>
+    </div>
+    <div class="pat-dash" id="pat-profil">
+      <h2 class="sec-ttl" style="margin-bottom:1rem">Mon profil</h2>
+      <div class="profile-card" id="pat-profile-form"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ VIEW: PRO DASHBOARD ══ -->
+<div class="view" id="v-pro">
+  <div class="pro-wrap">
+    <div class="pro-top">
+      <div class="pro-av" id="pro-av-ico">🩺</div>
+      <div>
+        <div class="pro-name" id="pro-display-name">Dr. Nom</div>
+        <div class="pro-spec" id="pro-display-spec">Spécialité</div>
+        <div class="online-pill">En ligne</div>
+      </div>
+    </div>
+    <div class="ptabs">
+      <button class="ptab on" onclick="showDash('overview',this)">📊 Vue d'ensemble</button>
+      <button class="ptab" onclick="showDash('rdvs',this)">📋 Mes RDV <span id="pb" style="background:var(--red);color:#fff;border-radius:10px;padding:.05rem .35rem;font-size:.62rem;margin-left:.2rem;display:none">0</span></button>
+      <button class="ptab" onclick="showDash('avail',this)">⏰ Disponibilités</button>
+      <button class="ptab" onclick="showDash('notifs',this)">🔔 Notifications</button>
+      <button class="ptab" onclick="showDash('video',this)">📹 Salle vidéo</button>
+      <button class="ptab" onclick="showDash('revenus',this)">💰 Revenus</button>
+      <button class="ptab" onclick="showDash('remind',this)">📧 Rappels email</button>
+      <button class="ptab" onclick="showDash('ai',this)">🤖 Assistant IA</button>
+      <button class="ptab" onclick="showDash('profile',this)">👤 Mon profil</button>
+    </div>
+
+    <!-- Overview -->
+    <div class="dash on" id="dash-overview">
+      <h2 style="font-family:'Playfair Display',serif;font-size:1.15rem;font-weight:700;color:var(--ch);margin-bottom:.15rem" id="pro-welcome">Bonjour 👋</h2>
+      <p style="color:var(--soft);font-size:.8rem;margin-bottom:1rem" id="pro-date"></p>
+      <div class="stats">
+        <div class="stat"><div class="stat-v" id="stat-pending">0</div><div class="stat-l">RDV en attente</div></div>
+        <div class="stat"><div class="stat-v" id="stat-conf">0</div><div class="stat-l">RDV confirmés</div><div class="stat-t">Ce mois-ci</div></div>
+        <div class="stat"><div class="stat-v" id="stat-total">0</div><div class="stat-l">Total RDV</div></div>
+        <div class="stat"><div class="stat-v" id="stat-rev">0€</div><div class="stat-l">Revenus estimés</div></div>
+      </div>
+      <div style="background:var(--teal-xl);border-radius:var(--r-md);padding:1rem;text-align:center;margin-top:.5rem">
+        <p style="font-size:.9rem;font-weight:600;color:var(--teal-d);margin-bottom:.3rem">🎉 Bienvenue sur Psycholab Pro !</p>
+        <p style="font-size:.78rem;color:var(--mid);line-height:1.55">Configurez vos disponibilités pour recevoir des rendez-vous. Chaque demande vous sera notifiée par email.</p>
+        <button class="btn-submit" style="margin-top:.8rem;padding:.6rem;max-width:280px;margin-left:auto;margin-right:auto;display:block" onclick="showDash('avail', document.querySelectorAll('.ptab')[2])">⏰ Configurer mes disponibilités</button>
+      </div>
+    </div>
+
+    <!-- RDVs -->
+    <div class="dash" id="dash-rdvs">
+      <div class="filter-row">
+        <button class="ftb on" onclick="frdv('all',this)">Tous</button>
+        <button class="ftb" onclick="frdv('pending',this)">En attente</button>
+        <button class="ftb" onclick="frdv('confirmed',this)">Confirmés</button>
+        <button class="ftb" onclick="frdv('cancelled',this)">Annulés</button>
+      </div>
+      <div id="rdv-list">
+        <div class="empty-state"><div class="empty-ico">📭</div><h3 class="empty-title">Aucun rendez-vous</h3><p class="empty-sub">Les demandes de vos patients apparaîtront ici.</p></div>
+      </div>
+    </div>
+
+    <!-- Availability -->
+    <div class="dash" id="dash-avail">
+      <h3 style="font-family:'Playfair Display',serif;font-size:1rem;font-weight:600;color:var(--ch);margin-bottom:.3rem">⏰ Gérer mes disponibilités</h3>
+      <p style="color:var(--soft);font-size:.78rem;margin-bottom:.9rem">Activez vos jours et sélectionnez vos créneaux horaires.</p>
+      <div class="avail-grid" id="avail-grid"></div>
+      <div style="background:#fff;border:1.5px solid var(--border);border-radius:var(--r-md);padding:1rem;margin-bottom:.9rem">
+        <h4 style="font-size:.84rem;font-weight:600;color:var(--ch);margin-bottom:.7rem">Créneaux horaires</h4>
+        <div class="slot-grid" id="slot-grid"></div>
+      </div>
+      <button class="btn-submit" onclick="saveAvail()">Sauvegarder mes disponibilités</button>
+      <div class="agenda-info">📅 Les créneaux confirmés seront visibles par les patients lors de la réservation.</div>
+    </div>
+
+    <!-- Notifications -->
+    <div class="dash" id="dash-notifs">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.8rem">
+        <h3 style="font-family:'Playfair Display',serif;font-size:1rem;font-weight:600;color:var(--ch)">🔔 Notifications</h3>
+        <button style="font-size:.72rem;color:var(--teal);background:none;border:none;font-weight:600" onclick="markAllRead()">Tout marquer comme lu</button>
+      </div>
+      <div id="pro-notifs-list">
+        <div class="empty-state"><div class="empty-ico">🔔</div><h3 class="empty-title">Aucune notification</h3><p class="empty-sub">Vous serez notifié dès qu'un patient prend rendez-vous.</p></div>
+      </div>
+    </div>
+
+    <!-- Video Room -->
+    <div class="dash" id="dash-video">
+      <h3 style="font-family:'Playfair Display',serif;font-size:1rem;font-weight:600;color:var(--ch);margin-bottom:.8rem">📹 Salle de consultation vidéo</h3>
+      <div class="video-room">
+        <div class="video-main">
+          <div style="text-align:center"><div class="vid-av">🧑‍⚕️</div><p style="color:rgba(255,255,255,.55);font-size:.73rem;margin-top:.4rem">En attente du patient...</p></div>
+          <div class="vid-nametag" id="vid-pro-tag">Dr. —</div>
+          <div class="vid-self">😊</div>
+          <div class="vid-status" id="vid-status-lbl">En attente</div>
+        </div>
+        <div class="vid-controls">
+          <button class="vc-btn act" id="btn-mic" onclick="toggleMic()">🎤</button>
+          <button class="vc-btn act" id="btn-cam" onclick="toggleCam()">📷</button>
+          <button class="vc-btn act" onclick="toast('Partage écran — disponible en production','blue')">🖥️</button>
+          <button class="vc-btn dng" onclick="endCall()">📵</button>
+          <div class="vid-timer" id="vid-timer">⏱️ 00:00</div>
+        </div>
+      </div>
+      <div class="video-chat">
+        <div class="chat-hdr">💬 Messagerie sécurisée (chiffrée E2E)</div>
+        <div class="chat-msgs" id="chat-msgs">
+          <div class="chat-msg them">Bonjour Docteur, je suis connecté.</div>
+          <div class="chat-msg me">Bonjour, je vous rejoins dans un instant.</div>
+        </div>
+        <div class="chat-in-row">
+          <input class="chat-in" id="chat-in" type="text" placeholder="Message sécurisé…" onkeydown="if(event.key==='Enter')sendMsg()"/>
+          <button class="chat-send-btn" onclick="sendMsg()">➤</button>
+        </div>
+      </div>
+      <div class="info-box" style="margin-top:.9rem">ℹ️ En production : <strong>WebRTC + Jitsi Meet / Daily.co</strong> avec chiffrement de bout en bout.</div>
+    </div>
+
+    <!-- Revenue -->
+    <div class="dash" id="dash-revenus">
+      <h3 style="font-family:'Playfair Display',serif;font-size:1rem;font-weight:600;color:var(--ch);margin-bottom:.8rem">💰 Suivi des revenus</h3>
+      <div class="rev-card"><div class="rev-val" id="rev-total">0 €</div><div class="rev-lbl">Revenus estimés (consultations confirmées)</div></div>
+      <div class="rev-stats" id="rev-stats">
+        <div class="rev-stat"><div class="rev-stat-v" id="rev-conf">0</div><div class="rev-stat-l">Confirmées</div></div>
+        <div class="rev-stat"><div class="rev-stat-v" id="rev-pend">0</div><div class="rev-stat-l">En attente</div></div>
+        <div class="rev-stat"><div class="rev-stat-v" id="rev-price">—</div><div class="rev-stat-l">Tarif / séance</div></div>
+        <div class="rev-stat"><div class="rev-stat-v" id="rev-month">0 €</div><div class="rev-stat-l">Ce mois</div></div>
+      </div>
+      <div class="info-box">ℹ️ Les revenus sont estimés à partir des consultations confirmées. Intégration Stripe disponible sur la version hébergée.</div>
+    </div>
+
+    <!-- Email Reminders -->
+    <div class="dash" id="dash-remind">
+      <h3 style="font-family:'Playfair Display',serif;font-size:1rem;font-weight:600;color:var(--ch);margin-bottom:.8rem">📧 Rappels email automatiques</h3>
+      <div class="remind-strip">
+        <div style="font-size:1.3rem">📧</div>
+        <div>
+          <h4>Rappels email activés</h4>
+          <p>Les patients et vous recevez des notifications automatiques à chaque étape.</p>
+          <div class="rbadges">
+            <span class="rb">✅ Confirmation immédiate</span>
+            <span class="rb">⏰ Rappel 24h avant</span>
+            <span class="rb">⏰ Rappel 2h avant</span>
+            <span class="rb">🩺 Notif nouveau RDV (Pro)</span>
+            <span class="rb">❌ Email d'annulation</span>
+          </div>
+        </div>
+      </div>
+      <div style="background:#fff;border:1.5px solid var(--border);border-radius:var(--r-md);padding:1rem">
+        <h4 style="font-size:.84rem;font-weight:600;color:var(--ch);margin-bottom:.75rem">📧 Prévisualiser les emails automatiques</h4>
+        <div style="display:flex;flex-direction:column;gap:.5rem">
+          <button style="background:var(--white);color:var(--teal);border:1.5px solid var(--teal);border-radius:var(--r-sm);padding:.62rem .9rem;font-size:.8rem;font-weight:500;text-align:left;cursor:pointer;transition:all var(--anim)" onmouseover="this.style.background='var(--teal-xl)'" onmouseout="this.style.background='var(--white)'" onclick="showEmailPreview('confirm')">📧 Email de confirmation patient</button>
+          <button style="background:var(--white);color:var(--teal);border:1.5px solid var(--teal);border-radius:var(--r-sm);padding:.62rem .9rem;font-size:.8rem;font-weight:500;text-align:left;cursor:pointer;transition:all var(--anim)" onmouseover="this.style.background='var(--teal-xl)'" onmouseout="this.style.background='var(--white)'" onclick="showEmailPreview('r24')">⏰ Rappel 24h avant</button>
+          <button style="background:var(--white);color:var(--teal);border:1.5px solid var(--teal);border-radius:var(--r-sm);padding:.62rem .9rem;font-size:.8rem;font-weight:500;text-align:left;cursor:pointer;transition:all var(--anim)" onmouseover="this.style.background='var(--teal-xl)'" onmouseout="this.style.background='var(--white)'" onclick="showEmailPreview('r2')">⏰ Rappel 2h avant</button>
+          <button style="background:var(--white);color:var(--teal);border:1.5px solid var(--teal);border-radius:var(--r-sm);padding:.62rem .9rem;font-size:.8rem;font-weight:500;text-align:left;cursor:pointer;transition:all var(--anim)" onmouseover="this.style.background='var(--teal-xl)'" onmouseout="this.style.background='var(--white)'" onclick="showEmailPreview('pro_notify')">🩺 Notification nouveau RDV (Pro)</button>
+          <button style="background:var(--white);color:var(--red);border:1.5px solid var(--red);border-radius:var(--r-sm);padding:.62rem .9rem;font-size:.8rem;font-weight:500;text-align:left;cursor:pointer;transition:all var(--anim)" onmouseover="this.style.background='var(--red-l)'" onmouseout="this.style.background='var(--white)'" onclick="showEmailPreview('cancel')">❌ Email d'annulation</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- AI Assistant -->
+    <div class="dash" id="dash-ai">
+      <h3 style="font-family:'Playfair Display',serif;font-size:1rem;font-weight:600;color:var(--ch);margin-bottom:.4rem">🤖 Assistant IA Psycholab</h3>
+      <p style="font-size:.78rem;color:var(--mid);margin-bottom:.9rem;line-height:1.55">Propulsé par Claude. Aide à la rédaction, génération d'emails, questions administratives. <strong>Ne fournit aucun avis médical.</strong></p>
+      <div class="ai-badge"><span class="ai-spinner" id="ai-spin"></span>✨ Claude · Psycholab Pro</div>
+      <div style="margin-top:1rem;display:flex;flex-direction:column;gap:.5rem">
+        <button style="background:var(--sand);border:1.5px solid var(--border);border-radius:var(--r-sm);padding:.65rem .9rem;font-size:.8rem;color:var(--ch);text-align:left;transition:all var(--anim)" onmouseover="this.style.borderColor='var(--purple)'" onmouseout="this.style.borderColor='var(--border)'" onclick="aiPrompt('Rédige un email de rappel professionnel pour un patient qui a un rendez-vous demain à 14h.')">📝 Rédiger un email de rappel patient</button>
+        <button style="background:var(--sand);border:1.5px solid var(--border);border-radius:var(--r-sm);padding:.65rem .9rem;font-size:.8rem;color:var(--ch);text-align:left;transition:all var(--anim)" onmouseover="this.style.borderColor='var(--purple)'" onmouseout="this.style.borderColor='var(--border)'" onclick="aiPrompt('Rédige un message pour informer un patient que son RDV a été annulé et lui proposer un nouveau créneau.')">❌ Rédiger un message d\'annulation</button>
+        <button style="background:var(--sand);border:1.5px solid var(--border);border-radius:var(--r-sm);padding:.65rem .9rem;font-size:.8rem;color:var(--ch);text-align:left;transition:all var(--anim)" onmouseover="this.style.borderColor='var(--purple)'" onmouseout="this.style.borderColor='var(--border)'" onclick="aiPrompt('Rédige un email de bienvenue pour un nouveau patient qui vient de prendre son premier rendez-vous.')">👋 Email de bienvenue nouveau patient</button>
+        <button style="background:var(--sand);border:1.5px solid var(--border);border-radius:var(--r-sm);padding:.65rem .9rem;font-size:.8rem;color:var(--ch);text-align:left;transition:all var(--anim)" onmouseover="this.style.borderColor='var(--purple)'" onmouseout="this.style.borderColor='var(--border)'" onclick="aiPrompt('Quelles sont les meilleures pratiques pour gérer un cabinet de psychologie en 2025 ?')">💡 Conseils gestion de cabinet</button>
+      </div>
+      <div class="ai-panel" style="margin-top:1rem">
+        <div class="ai-panel-hdr"><h4>Question personnalisée</h4></div>
+        <div class="ai-input-row">
+          <input class="ai-input" id="ai-custom-input" placeholder="Posez votre question à l'assistant IA…" onkeydown="if(event.key==='Enter')aiAsk()"/>
+          <button class="ai-send-btn" id="ai-send-btn" onclick="aiAsk()">✨ Envoyer</button>
+        </div>
+      </div>
+      <div id="ai-response" class="ai-response" style="display:none"></div>
+    </div>
+
+    <!-- Profile -->
+    <div class="dash" id="dash-profile">
+      <h3 style="font-family:'Playfair Display',serif;font-size:1rem;font-weight:600;color:var(--ch);margin-bottom:.9rem">👤 Mon profil professionnel</h3>
+      <div id="pro-profile-content"></div>
+      <button class="btn-submit" style="margin-top:.9rem" onclick="saveProfile()">💾 Sauvegarder les modifications</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ BOOKING SHEET ══ -->
+<div class="bsheet-bg" id="bsheet-bg" onclick="if(event.target===this)closeBSheet()">
+  <div class="bsheet">
+    <div class="bsh-hdr">
+      <h3 id="bsh-title">Prendre rendez-vous</h3>
+      <button class="bsh-close" onclick="closeBSheet()">✕ Fermer</button>
+    </div>
+    <div class="step-prog">
+      <div class="slbl on" id="sl1">1 · Créneau</div>
+      <div class="slbl" id="sl2">2 · Infos</div>
+      <div class="slbl" id="sl3">3 · Confirmé ✓</div>
+    </div>
+    <!-- Step 1: Date/Time -->
+    <div class="step-pane on" id="bs-step1">
+      <div class="type-cards">
+        <div class="type-card on" id="tv" onclick="selType='video';this.classList.add('on');document.getElementById('tpr').classList.remove('on')">
+          <div class="type-ico">📹</div><div class="type-lbl">Vidéo sécurisée</div><div class="type-sub">Chiffrement E2E</div>
+        </div>
+        <div class="type-card" id="tpr" onclick="selType='presentiel';this.classList.add('on');document.getElementById('tv').classList.remove('on')">
+          <div class="type-ico">🏥</div><div class="type-lbl">En présentiel</div><div class="type-sub">Au cabinet</div>
+        </div>
+      </div>
+      <div class="cal-nav">
+        <button onclick="prevMonth()">‹</button>
+        <span class="cal-month" id="cal-month"></span>
+        <button onclick="nextMonth()">›</button>
+      </div>
+      <div class="cal-grid" id="cal-grid"></div>
+      <p style="font-size:.76rem;font-weight:600;color:var(--mid);margin-bottom:.5rem">Créneaux disponibles</p>
+      <div class="slots-wrap" id="slots-wrap"></div>
+      <div class="bsheet-foot">
+        <button class="btn-next" onclick="goStep(2)" id="btn-step2" disabled>Continuer →</button>
+      </div>
+    </div>
+    <!-- Step 2: Patient info -->
+    <div class="step-pane" id="bs-step2">
+      <div id="bs-patient-form">
+        <div id="bs-logged-info" style="display:none">
+          <div class="info-box">✅ Vous êtes connecté. Vos informations sont pré-remplies.</div>
+          <div style="background:var(--sand);border:1.5px solid var(--border);border-radius:var(--r-sm);padding:.85rem;margin-bottom:.9rem">
+            <div id="bs-user-recap" style="font-size:.84rem;line-height:1.8;color:var(--ch)"></div>
+          </div>
+        </div>
+        <div id="bs-guest-form">
+          <div class="info-box">ℹ️ Créez un compte ou connectez-vous pour recevoir vos rappels email.</div>
+          <div class="fgroup"><label>Prénom *</label><input id="bs-fn" placeholder="Prénom"/></div>
+          <div class="fgroup"><label>Nom *</label><input id="bs-ln" placeholder="Nom"/></div>
+          <div class="fgroup"><label>Email * (pour la confirmation)</label><input type="email" id="bs-email" placeholder="votre@email.com"/></div>
+          <div class="fgroup"><label>Téléphone</label><input type="tel" id="bs-tel" placeholder="+33 6 …"/></div>
+        </div>
+        <div class="fgroup"><label>Motif de consultation (optionnel)</label><textarea id="bs-motif" placeholder="Décrivez brièvement ce pour quoi vous souhaitez consulter…" style="min-height:70px"></textarea></div>
+      </div>
+      <div class="bsheet-foot">
+        <button class="btn-back" onclick="goStep(1)">← Retour</button>
+        <button class="btn-next" onclick="confirmRDV()">✅ Confirmer le rendez-vous</button>
+      </div>
+    </div>
+    <!-- Step 3: Confirmed -->
+    <div class="step-pane" id="bs-step3">
+      <div style="text-align:center;padding:1rem 0">
+        <div class="success-ico" style="width:60px;height:60px;font-size:1.6rem;margin:0 auto .9rem">✓</div>
+        <h3 style="font-family:'Playfair Display',serif;font-size:1.2rem;font-weight:700;color:var(--ch);margin-bottom:.4rem">RDV confirmé !</h3>
+        <p style="font-size:.82rem;color:var(--mid);line-height:1.6;margin-bottom:1rem">Un email de confirmation a été envoyé. Vous recevrez des rappels <strong>24h</strong> et <strong>2h</strong> avant votre rendez-vous.</p>
+        <div style="background:var(--sand);border:1.5px solid var(--border);border-radius:var(--r-md);padding:.9rem;text-align:left;margin-bottom:1rem;font-size:.8rem;line-height:1.8;color:var(--ch)" id="rdv-summary"></div>
+        <div style="display:flex;gap:.5rem;flex-direction:column">
+          <button class="btn-submit" onclick="closeBSheet();goPatient()">👤 Voir mes rendez-vous</button>
+          <button style="background:none;border:none;color:var(--teal);font-size:.82rem;font-weight:600;padding:.5rem;cursor:pointer" onclick="closeBSheet()">Fermer</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- EMAIL MODAL -->
+<div class="email-modal-bg" id="email-modal-bg" onclick="if(event.target===this)closeEmailModal()">
+  <div class="email-modal-box">
+    <div class="em-hdr"><h3 id="em-ttl">📧 Aperçu Email</h3><button class="em-close-btn" onclick="closeEmailModal()">✕</button></div>
+    <div class="em-meta" id="em-meta"></div>
+    <div class="em-body" id="em-body"></div>
+  </div>
+</div>
+
+<div class="toast" id="toastEl"></div>
+
+<script>
+// ════════════════════════════════════════════════
+//  STORAGE
+// ════════════════════════════════════════════════
+function getDB(){
+  try{return JSON.parse(localStorage.getItem('psycholab_db')||'{"users":[],"pros":[],"rdvs":[],"notifs":[]}')}
+  catch(e){return{users:[],pros:[],rdvs:[],notifs:[]}}
+}
+function saveDB(db){localStorage.setItem('psycholab_db',JSON.stringify(db))}
+function getSession(){try{return JSON.parse(localStorage.getItem('psycholab_session')||'null')}catch(e){return null}}
+function saveSession(s){localStorage.setItem('psycholab_session',JSON.stringify(s))}
+function clearSession(){localStorage.removeItem('psycholab_session')}
+
+// ════════════════════════════════════════════════
+//  STATE
+// ════════════════════════════════════════════════
+let selSpec=null,selDate=null,selSlot=null,selType='video';
+let cY,cM,currentLoginTab='patient';
+const now=new Date();cY=now.getFullYear();cM=now.getMonth();
+const MONTHS=['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre'];
+const DAYS_SHORT=['L','M','M','J','V','S','D'];
+const DAYS_FULL=['Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi','Dimanche'];
+
+// ════════════════════════════════════════════════
+//  INIT
+// ════════════════════════════════════════════════
+function init(){
+  const db=getDB();
+  if(!db.notifs)db.notifs=[];
+  saveDB(db);
+  const session=getSession();
+  if(session) applySession(session);
+  renderHome();
+  const d=new Date();
+  const dayNames=['Dimanche','Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi'];
+  const el=document.getElementById('pro-date');
+  if(el)el.textContent=`${dayNames[d.getDay()]} ${d.getDate()} ${MONTHS[d.getMonth()]} ${d.getFullYear()}`;
+}
+
+function applySession(session){
+  document.getElementById('dr-loggedout').style.display='none';
+  document.getElementById('nav-notif-btn').style.display='block';
+  if(session.type==='patient'){
+    document.getElementById('dr-patient').style.display='block';
+    document.getElementById('dr-patient-name').textContent=session.name||session.email;
+  } else {
+    document.getElementById('dr-pro').style.display='block';
+    document.getElementById('dr-pro-name').textContent='Dr. '+(session.ln||'');
+  }
+  updateNotifDot();
+}
+
+function updateNotifDot(){
+  const session=getSession();if(!session)return;
+  const db=getDB();
+  const unread=(db.notifs||[]).filter(n=>n.userId===session.id&&!n.read).length;
+  const dot=document.getElementById('nav-notif-dot');
+  if(dot)dot.style.display=unread>0?'block':'none';
+}
+
+// ════════════════════════════════════════════════
+//  DRAWER / VIEWS
+// ════════════════════════════════════════════════
+function openDrawer(){document.getElementById('dbg').classList.add('on');document.getElementById('drawer').classList.add('on')}
+function closeDrawer(){document.getElementById('dbg').classList.remove('on');document.getElementById('drawer').classList.remove('on')}
+function showView(id){document.querySelectorAll('.view').forEach(v=>v.classList.remove('on'));document.getElementById(id).classList.add('on');window.scrollTo(0,0)}
+function goHome(){showView('v-home');renderHome()}
+function scrollToSearch(){document.getElementById('search-anchor').scrollIntoView({behavior:'smooth'})}
+function showLogin(){showView('v-login');document.getElementById('login-error').style.display='none'}
+function showSignup(type){showView(type==='pro'?'v-signup-pro':'v-signup-patient')}
+function goPro(){
+  const s=getSession();
+  if(!s||s.type!=='pro'){showLogin();return}
+  showView('v-pro');updateProDashboard(s);
+}
+function goPatient(){
+  const s=getSession();
+  if(!s||s.type!=='patient'){showLogin();return}
+  showView('v-patient');updatePatientDash(s);
+}
+
+// ════════════════════════════════════════════════
+//  HOME — render specialists
+// ════════════════════════════════════════════════
+function renderHome(){
+  const db=getDB();
+  const q=(document.getElementById('q')||{value:''}).value.toLowerCase();
+  const fs=(document.getElementById('fs')||{value:''}).value;
+  const ft=(document.getElementById('ft')||{value:''}).value;
+  let pros=db.pros.filter(p=>p.active);
+  if(q)pros=pros.filter(p=>(p.name||'').toLowerCase().includes(q)||(p.spec||'').toLowerCase().includes(q)||(p.tags||'').toLowerCase().includes(q));
+  if(fs)pros=pros.filter(p=>(p.spec||'').includes(fs));
+  if(ft)pros=pros.filter(p=>ft==='video'?p.consVid:p.consPres);
+  const list=document.getElementById('spec-list');
+  const cnt=document.getElementById('cnt');
+  cnt.textContent=pros.length+' résultat'+(pros.length>1?'s':'');
+  if(!pros.length){
+    list.innerHTML=`<div class="empty-state"><div class="empty-ico">🧠</div><h3 class="empty-title">Aucun spécialiste disponible</h3><p class="empty-sub">Psycholab est en cours de développement.<br/>Les professionnels apparaissent ici après validation.<br/><br/>Vous êtes professionnel de santé mentale ?</p><button class="btn-cta" onclick="showSignup('pro')">🩺 S'inscrire</button></div>`;
+    return;
+  }
+  list.innerHTML='<div class="spec-grid">'+pros.map(p=>{
+    const langs=[p.langFr&&'🇫🇷 FR',p.langAr&&'🇸🇦 AR',p.langEn&&'🇬🇧 EN'].filter(Boolean);
+    const tags=(p.tags||'').split(',').map(t=>t.trim()).filter(Boolean);
+    return `<div class="scard" onclick="openSheet('${p.id}')">
+      <div class="card-top">
+        <div class="av">🩺</div>
+        <div>
+          <div class="c-name">Dr. ${p.fn} ${p.ln}</div>
+          <div class="c-spec">${p.spec}</div>
+          <div class="stars">★★★★★ <span style="color:var(--soft);font-size:.67rem">Nouveau</span></div>
+        </div>
+      </div>
+      <div class="tags">
+        ${tags.slice(0,3).map(t=>`<span class="tag">${t}</span>`).join('')}
+        ${langs.map(l=>`<span class="tag la">${l}</span>`).join('')}
+        ${p.consVid?'<span class="tag vi">📹 Vidéo</span>':''}
+        ${p.consPres?'<span class="tag pr">🏥 Présentiel</span>':''}
+      </div>
+      <div class="card-foot">
+        <div class="price">${p.price?p.price+' €':'Sur demande'}<small>/ séance</small></div>
+        <div class="nxt"><span>Fuseau</span><strong>${(p.tz||'').split('/').pop()||'—'}</strong></div>
+      </div>
+      <button class="btn-rdv">Prendre rendez-vous</button>
+    </div>`;
+  }).join('')+'</div>';
+}
+
+function doFilter(){renderHome()}
+
+// ════════════════════════════════════════════════
+//  LOGIN
+// ════════════════════════════════════════════════
+function switchLoginTab(type){
+  currentLoginTab=type;
+  document.getElementById('ltab-pat').classList.toggle('on',type==='patient');
+  document.getElementById('ltab-pro').classList.toggle('on',type==='pro');
+}
+
+function doLogin(){
+  const email=document.getElementById('l-email').value.trim();
+  const pwd=document.getElementById('l-pwd').value;
+  const errEl=document.getElementById('login-error');
+  errEl.style.display='none';
+  if(!email||!pwd){errEl.textContent='Veuillez remplir tous les champs.';errEl.style.display='block';return}
+  const db=getDB();
+  // check patient
+  let user=db.users.find(u=>u.email===email&&u.pwd===hashPwd(pwd));
+  if(user){
+    saveSession({id:user.id,type:'patient',email:user.email,name:user.fn+' '+user.ln,fn:user.fn,ln:user.ln,tel:user.tel,tz:user.tz});
+    applySession(getSession());
+    toast('✅ Bienvenue '+user.fn+' !','green');
+    goPatient();return;
+  }
+  // check pro
+  let pro=db.pros.find(p=>p.email===email&&p.pwd===hashPwd(pwd));
+  if(pro){
+    if(!pro.active){toast('⏳ Compte en cours de vérification (24-48h)','blue');return}
+    saveSession({id:pro.id,type:'pro',email:pro.email,fn:pro.fn,ln:pro.ln,spec:pro.spec,tz:pro.tz,price:pro.price});
+    applySession(getSession());
+    toast('✅ Bienvenue Dr. '+pro.ln+' !','green');
+    goPro();return;
+  }
+  errEl.textContent='Email ou mot de passe incorrect.';errEl.style.display='block';
+}
+
+// ════════════════════════════════════════════════
+//  SIGNUP PATIENT
+// ════════════════════════════════════════════════
+function doSignupPatient(){
+  const fn=document.getElementById('spat-fn').value.trim();
+  const ln=document.getElementById('spat-ln').value.trim();
+  const email=document.getElementById('spat-email').value.trim();
+  const tel=document.getElementById('spat-tel').value.trim();
+  const tz=document.getElementById('spat-tz').value;
+  const pwd=document.getElementById('spat-pwd').value;
+  const pwd2=document.getElementById('spat-pwd2').value;
+  const cgu=document.getElementById('spat-cgu').checked;
+  const errEl=document.getElementById('spat-error');
+  errEl.style.display='none';
+  if(!fn||!ln||!email||!pwd){errEl.textContent='Veuillez remplir tous les champs obligatoires.';errEl.style.display='block';return}
+  if(pwd.length<8){errEl.textContent='Le mot de passe doit contenir au moins 8 caractères.';errEl.style.display='block';return}
+  if(pwd!==pwd2){errEl.textContent='Les mots de passe ne correspondent pas.';errEl.style.display='block';return}
+  if(!cgu){errEl.textContent='Veuillez accepter les Conditions Générales.';errEl.style.display='block';return}
+  if(!isValidEmail(email)){errEl.textContent='Adresse email invalide.';errEl.style.display='block';return}
+  const db=getDB();
+  if(db.users.find(u=>u.email===email)){errEl.textContent='Cette adresse email est déjà utilisée.';errEl.style.display='block';return}
+  const id='pat_'+Date.now();
+  const user={id,fn,ln,email,tel,tz,pwd:hashPwd(pwd),notif:document.getElementById('spat-notif').checked,createdAt:new Date().toISOString()};
+  db.users.push(user);
+  saveDB(db);
+  saveSession({id,type:'patient',email,name:fn+' '+ln,fn,ln,tel,tz});
+  applySession(getSession());
+  // Show success + email preview
+  document.getElementById('conf-patient-email').textContent=email;
+  document.getElementById('conf-patient-body').innerHTML=generatePatientWelcomeEmail(fn,ln,email);
+  // Add welcome notification
+  addNotif(id,'patient','🎉 Bienvenue sur Psycholab !','Votre compte patient a été créé avec succès. Vous pouvez maintenant rechercher des spécialistes.');
+  showView('v-success-patient');
+}
+
+// ════════════════════════════════════════════════
+//  SIGNUP PRO
+// ════════════════════════════════════════════════
+function doSignupPro(){
+  const fn=document.getElementById('spro-fn').value.trim();
+  const ln=document.getElementById('spro-ln').value.trim();
+  const email=document.getElementById('spro-email').value.trim();
+  const tel=document.getElementById('spro-tel').value.trim();
+  const spec=document.getElementById('spro-spec').value;
+  const rpps=document.getElementById('spro-rpps').value.trim();
+  const diplome=document.getElementById('spro-diplome').value.trim();
+  const exp=document.getElementById('spro-exp').value;
+  const pwd=document.getElementById('spro-pwd').value;
+  const pwd2=document.getElementById('spro-pwd2').value;
+  const cgu=document.getElementById('spro-cgu').checked;
+  const rgpd=document.getElementById('spro-rgpd').checked;
+  const bio=document.getElementById('spro-bio').value.trim();
+  const tags=document.getElementById('spro-tags').value.trim();
+  const price=document.getElementById('spro-price').value;
+  const tz=document.getElementById('spro-tz').value;
+  const consVid=document.getElementById('spro-vid').value==='1';
+  const consPres=document.getElementById('spro-pres').value==='1';
+  const langFr=document.getElementById('spro-langfr').checked;
+  const langEn=document.getElementById('spro-langen').checked;
+  const langAr=document.getElementById('spro-langar').checked;
+  const errEl=document.getElementById('spro-error');
+  errEl.style.display='none';
+  if(!fn||!ln||!email||!tel||!spec||!rpps||!diplome||!exp||!bio||!pwd){errEl.textContent='Veuillez remplir tous les champs obligatoires.';errEl.style.display='block';return}
+  if(pwd.length<8){errEl.textContent='Le mot de passe doit contenir au moins 8 caractères.';errEl.style.display='block';return}
+  if(pwd!==pwd2){errEl.textContent='Les mots de passe ne correspondent pas.';errEl.style.display='block';return}
+  if(!cgu||!rgpd){errEl.textContent='Veuillez accepter les conditions requises.';errEl.style.display='block';return}
+  if(!isValidEmail(email)){errEl.textContent='Adresse email invalide.';errEl.style.display='block';return}
+  const db=getDB();
+  if(db.pros.find(p=>p.email===email)||db.users.find(u=>u.email===email)){errEl.textContent='Cette adresse email est déjà utilisée.';errEl.style.display='block';return}
+  const id='pro_'+Date.now();
+  const pro={id,fn,ln,email,tel,spec,rpps,diplome,exp,bio,tags,price:price?parseInt(price):null,tz,consVid,consPres,langFr,langEn,langAr,pwd:hashPwd(pwd),active:false,avail:{},notif:document.getElementById('spro-notif').checked,createdAt:new Date().toISOString()};
+  db.pros.push(pro);
+  saveDB(db);
+  document.getElementById('conf-pro-email').textContent=email;
+  document.getElementById('conf-pro-body').innerHTML=generateProWelcomeEmail(fn,ln,spec,rpps);
+  showView('v-success-pro');
+}
+
+function activateProDemo(){
+  const db=getDB();
+  const pro=db.pros[db.pros.length-1];
+  if(!pro)return;
+  pro.active=true;
+  saveDB(db);
+  saveSession({id:pro.id,type:'pro',email:pro.email,fn:pro.fn,ln:pro.ln,spec:pro.spec,tz:pro.tz,price:pro.price});
+  applySession(getSession());
+  addNotif(pro.id,'pro','✅ Compte professionnel activé !','Votre profil est maintenant visible par les patients. Configurez vos disponibilités pour commencer à recevoir des rendez-vous.');
+  toast('🎉 Compte Pro activé !','green');
+  goPro();
+}
+
+// ════════════════════════════════════════════════
+//  LOGOUT
+// ════════════════════════════════════════════════
+function doLogout(){
+  clearSession();
+  document.getElementById('dr-loggedout').style.display='block';
+  document.getElementById('dr-patient').style.display='none';
+  document.getElementById('dr-pro').style.display='none';
+  document.getElementById('nav-notif-btn').style.display='none';
+  document.getElementById('nav-notif-dot').style.display='none';
+  toast('👋 Déconnecté','');
+  goHome();
+}
+
+// ════════════════════════════════════════════════
+//  NOTIFICATIONS
+// ════════════════════════════════════════════════
+function addNotif(userId,userType,title,body){
+  const db=getDB();
+  if(!db.notifs)db.notifs=[];
+  db.notifs.unshift({id:'n_'+Date.now(),userId,userType,title,body,read:false,createdAt:new Date().toISOString()});
+  saveDB(db);
+  updateNotifDot();
+}
+
+function openNotifs(){
+  const s=getSession();
+  if(!s)return;
+  if(s.type==='pro'){goPro();setTimeout(()=>showDash('notifs',document.querySelectorAll('.ptab')[3]),100);}
+  else{goPatient();setTimeout(()=>showPatDash('notifs',null),100);}
+}
+
+function renderNotifs(userId,containerId){
+  const db=getDB();
+  const notifs=(db.notifs||[]).filter(n=>n.userId===userId);
+  const el=document.getElementById(containerId);
+  if(!el)return;
+  if(!notifs.length){
+    el.innerHTML=`<div class="empty-state"><div class="empty-ico">🔔</div><h3 class="empty-title">Aucune notification</h3><p class="empty-sub">Vos notifications apparaîtront ici.</p></div>`;
+    return;
+  }
+  el.innerHTML=notifs.map(n=>`
+    <div class="notif-item ${n.read?'':'unread'}" onclick="markRead('${n.id}','${containerId}','${userId}')">
+      <div class="notif-ico">${n.title.charAt(0)}</div>
+      <div style="flex:1">
+        <div class="notif-title">${n.title}</div>
+        <div class="notif-sub">${n.body}</div>
+        <div class="notif-time">${formatDate(n.createdAt)}</div>
+      </div>
+      ${n.read?'':'<span style="width:8px;height:8px;border-radius:50%;background:var(--teal);flex-shrink:0;margin-top:.3rem"></span>'}
+    </div>`).join('');
+}
+
+function markRead(nid,containerId,userId){
+  const db=getDB();
+  const n=(db.notifs||[]).find(x=>x.id===nid);
+  if(n)n.read=true;
+  saveDB(db);
+  renderNotifs(userId,containerId);
+  updateNotifDot();
+}
+
+function markAllRead(){
+  const s=getSession();if(!s)return;
+  const db=getDB();
+  (db.notifs||[]).filter(n=>n.userId===s.id).forEach(n=>n.read=true);
+  saveDB(db);
+  renderNotifs(s.id,'pro-notifs-list');
+  updateNotifDot();
+  toast('✅ Tout marqué comme lu');
+}
+
+// ════════════════════════════════════════════════
+//  PRO DASHBOARD
+// ════════════════════════════════════════════════
+function showDash(id,btn){
+  document.querySelectorAll('.dash').forEach(d=>d.classList.remove('on'));
+  document.getElementById('dash-'+id).classList.add('on');
+  document.querySelectorAll('.ptab').forEach(b=>b.classList.remove('on'));
+  if(btn)btn.classList.add('on');
+  const s=getSession();
+  if(id==='notifs'&&s)renderNotifs(s.id,'pro-notifs-list');
+  if(id==='profile'&&s)renderProProfile(s);
+  if(id==='ai'){initAiPanel();}
+}
+
+function updateProDashboard(session){
+  const db=getDB();
+  const pro=db.pros.find(p=>p.id===session.id);
+  if(!pro)return;
+  document.getElementById('pro-display-name').textContent='Dr. '+pro.fn+' '+pro.ln;
+  document.getElementById('pro-display-spec').textContent=pro.spec;
+  document.getElementById('pro-welcome').textContent='Bonjour Dr. '+pro.ln+' 👋';
+  document.getElementById('vid-pro-tag').textContent='Dr. '+pro.ln;
+  const rdvs=db.rdvs.filter(r=>r.proId===pro.id);
+  const pending=rdvs.filter(r=>r.status==='pending');
+  const confirmed=rdvs.filter(r=>r.status==='confirmed');
+  document.getElementById('stat-pending').textContent=pending.length;
+  document.getElementById('stat-conf').textContent=confirmed.length;
+  document.getElementById('stat-total').textContent=rdvs.length;
+  const rev=confirmed.reduce((s,r)=>s+(pro.price||0),0);
+  document.getElementById('stat-rev').textContent=rev+'€';
+  document.getElementById('rev-total').textContent=rev+' €';
+  document.getElementById('rev-conf').textContent=confirmed.length;
+  document.getElementById('rev-pend').textContent=pending.length;
+  document.getElementById('rev-price').textContent=pro.price?pro.price+'€':'—';
+  document.getElementById('rev-month').textContent=confirmed.length*(pro.price||0)+'€';
+  const pb=document.getElementById('pb');
+  if(pending.length>0){pb.style.display='inline';pb.textContent=pending.length}else{pb.style.display='none'}
+  renderRDVList(pro,db);
+  renderAvailGrid(pro);
+}
+
+function renderRDVList(pro,db,filter='all'){
+  const rdvs=db.rdvs.filter(r=>r.proId===pro.id&&(filter==='all'||r.status===filter));
+  const el=document.getElementById('rdv-list');
+  if(!rdvs.length){
+    el.innerHTML=`<div class="empty-state"><div class="empty-ico">📭</div><h3 class="empty-title">Aucun rendez-vous${filter!=='all'?' dans cette catégorie':''}</h3><p class="empty-sub">Les demandes de vos patients apparaîtront ici.</p></div>`;
+    return;
+  }
+  el.innerHTML='<div class="rdv-list">'+rdvs.sort((a,b)=>new Date(b.date)-new Date(a.date)).map(r=>{
+    const d=new Date(r.date);
+    const pat=db.users.find(u=>u.id===r.patId)||{fn:r.patFn||'Invité',ln:r.patLn||''};
+    return `<div class="rdv-item ${r.status}">
+      <div class="rdv-head">
+        <div class="rdv-date"><div class="rdv-d">${d.getDate()}</div><div class="rdv-m">${MONTHS[d.getMonth()].slice(0,3)}</div></div>
+        <div style="flex:1">
+          <div class="rdv-patient">${pat.fn} ${pat.ln}</div>
+          <div class="rdv-meta">⏰ ${r.slot} · ${r.type==='video'?'📹 Vidéo':'🏥 Présentiel'} · ${r.motif||'—'}</div>
+        </div>
+        <span class="status-badge ${r.status}">${r.status==='pending'?'⏳ En attente':r.status==='confirmed'?'✅ Confirmé':r.status==='cancelled'?'❌ Annulé':'✓ Terminé'}</span>
+      </div>
+      <div class="rdv-actions">
+        ${r.status==='pending'?`<button class="btn-ok" onclick="actRDV('${r.id}','confirmed','${pro.id}')">✓ Accepter</button><button class="btn-no" onclick="actRDV('${r.id}','cancelled','${pro.id}')">✕ Refuser</button>`:''}
+        ${r.status==='confirmed'?`<button class="btn-join" onclick="showDash('video',document.querySelectorAll('.ptab')[4])">📹 Rejoindre</button><button class="btn-no" onclick="actRDV('${r.id}','cancelled','${pro.id}')">Annuler</button>`:''}
+      </div>
+    </div>`;
+  }).join('')+'</div>';
+}
+
+function frdv(filter,btn){
+  document.querySelectorAll('.ftb').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  const s=getSession();if(!s)return;
+  const db=getDB();
+  const pro=db.pros.find(p=>p.id===s.id);
+  if(pro)renderRDVList(pro,db,filter);
+}
+
+function actRDV(rdvId,status,proId){
+  const db=getDB();
+  const rdv=db.rdvs.find(r=>r.id===rdvId);
+  if(!rdv)return;
+  rdv.status=status;
+  saveDB(db);
+  const s=getSession();const pro=db.pros.find(p=>p.id===proId);
+  if(pro){
+    renderRDVList(pro,db);
+    updateProDashboard(s);
+  }
+  if(status==='confirmed'){
+    toast('✅ RDV confirmé — Email envoyé au patient','green');
+    if(rdv.patId) addNotif(rdv.patId,'patient','✅ RDV confirmé','Votre rendez-vous avec Dr. '+rdv.proLn+' le '+formatDate(rdv.date)+' à '+rdv.slot+' a été confirmé.');
+  } else {
+    toast('❌ RDV refusé/annulé — Patient notifié','red');
+    if(rdv.patId) addNotif(rdv.patId,'patient','❌ RDV annulé','Votre rendez-vous du '+formatDate(rdv.date)+' à '+rdv.slot+' a été annulé. Vous pouvez prendre un nouveau rendez-vous.');
+  }
+}
+
+// ════════════════════════════════════════════════
+//  AVAILABILITY
+// ════════════════════════════════════════════════
+const ALL_SLOTS=['08:00','08:30','09:00','09:30','10:00','10:30','11:00','11:30','14:00','14:30','15:00','15:30','16:00','16:30','17:00','17:30','18:00'];
+
+function renderAvailGrid(pro){
+  const avail=pro.avail||{};
+  const el=document.getElementById('avail-grid');
+  el.innerHTML=DAYS_FULL.map((d,i)=>{
+    const key=d.toLowerCase();
+    const on=avail[key]&&avail[key].length>0;
+    return `<div class="avail-row ${on?'on':''}" id="arow-${key}">
+      <span class="day-lbl">${d}</span>
+      <div style="display:flex;align-items:center;gap:.7rem;font-size:.75rem;color:var(--soft)">
+        <span>${on?(avail[key]||[]).length+' créneau'+(avail[key].length>1?'x':''):'Inactif'}</span>
+        <input type="checkbox" class="avail-toggle" id="atog-${key}" ${on?'checked':''} onchange="toggleDay('${key}')"/>
+      </div>
+    </div>`;
+  }).join('');
+  renderSlotGrid(pro,'lundi');
+}
+
+function toggleDay(key){
+  const on=document.getElementById('atog-'+key).checked;
+  const row=document.getElementById('arow-'+key);
+  row.classList.toggle('on',on);
+  renderSlotGrid(null,key);
+}
+
+function renderSlotGrid(pro,dayKey){
+  const el=document.getElementById('slot-grid');
+  const s=getSession();const db=getDB();
+  const p=pro||(s?db.pros.find(x=>x.id===s.id):null);
+  const avail=(p&&p.avail&&p.avail[dayKey])||[];
+  el.innerHTML=ALL_SLOTS.map(sl=>`
+    <button class="slot-btn-add ${avail.includes(sl)?'on':''}" onclick="toggleSlot(this,'${dayKey}','${sl}')">${sl}</button>`).join('');
+}
+
+function toggleSlot(btn,dayKey,slot){
+  const s=getSession();if(!s)return;
+  const db=getDB();
+  const pro=db.pros.find(p=>p.id===s.id);if(!pro)return;
+  if(!pro.avail)pro.avail={};
+  if(!pro.avail[dayKey])pro.avail[dayKey]=[];
+  const idx=pro.avail[dayKey].indexOf(slot);
+  if(idx>-1)pro.avail[dayKey].splice(idx,1);
+  else pro.avail[dayKey].push(slot);
+  btn.classList.toggle('on',idx===-1);
+  saveDB(db);
+}
+
+function saveAvail(){
+  toast('✅ Disponibilités sauvegardées !','green');
+  const s=getSession();if(!s)return;
+  addNotif(s.id,'pro','⏰ Disponibilités mises à jour','Vos créneaux de disponibilité ont été sauvegardés et sont visibles par les patients.');
+}
+
+// ════════════════════════════════════════════════
+//  PRO PROFILE
+// ════════════════════════════════════════════════
+function renderProProfile(session){
+  const db=getDB();
+  const pro=db.pros.find(p=>p.id===session.id);
+  if(!pro)return;
+  document.getElementById('pro-profile-content').innerHTML=`
+    <div class="profile-card" style="margin-bottom:.9rem">
+      <div class="form-section-title">👤 Informations personnelles</div>
+      <div class="fgroup"><label>Prénom</label><input id="pp-fn" value="${escHtml(pro.fn)}" style="border:1.5px solid var(--border);border-radius:var(--r-sm);padding:.62rem .9rem;font-size:.86rem;background:var(--sand);outline:none;width:100%"/></div>
+      <div class="fgroup"><label>Nom</label><input id="pp-ln" value="${escHtml(pro.ln)}" style="border:1.5px solid var(--border);border-radius:var(--r-sm);padding:.62rem .9rem;font-size:.86rem;background:var(--sand);outline:none;width:100%"/></div>
+      <div class="fgroup"><label>Email</label><div class="profile-field"><div class="val">${escHtml(pro.email)}</div></div></div>
+      <div class="fgroup"><label>Spécialité</label><div class="profile-field"><div class="val">${escHtml(pro.spec)}</div></div></div>
+      <div class="fgroup"><label>N° RPPS</label><div class="profile-field"><div class="val">${escHtml(pro.rpps)}</div></div></div>
+      <div class="form-section-title">📝 Présentation</div>
+      <div class="fgroup"><label>Biographie</label><textarea id="pp-bio" style="border:1.5px solid var(--border);border-radius:var(--r-sm);padding:.62rem .9rem;font-size:.86rem;background:var(--sand);outline:none;width:100%;min-height:90px;resize:vertical;line-height:1.55">${escHtml(pro.bio)}</textarea></div>
+      <div class="fgroup"><label>Domaines d'intervention</label><input id="pp-tags" value="${escHtml(pro.tags||'')}" style="border:1.5px solid var(--border);border-radius:var(--r-sm);padding:.62rem .9rem;font-size:.86rem;background:var(--sand);outline:none;width:100%"/></div>
+      <div class="fgroup"><label>Tarif / séance (€)</label><input type="number" id="pp-price" value="${pro.price||''}" style="border:1.5px solid var(--border);border-radius:var(--r-sm);padding:.62rem .9rem;font-size:.86rem;background:var(--sand);outline:none;width:100%"/></div>
+    </div>`;
+}
+
+function saveProfile(){
+  const s=getSession();if(!s)return;
+  const db=getDB();
+  const pro=db.pros.find(p=>p.id===s.id);if(!pro)return;
+  const fn=document.getElementById('pp-fn');const ln=document.getElementById('pp-ln');
+  const bio=document.getElementById('pp-bio');const tags=document.getElementById('pp-tags');const price=document.getElementById('pp-price');
+  if(fn)pro.fn=fn.value.trim();
+  if(ln)pro.ln=ln.value.trim();
+  if(bio)pro.bio=bio.value.trim();
+  if(tags)pro.tags=tags.value.trim();
+  if(price)pro.price=price.value?parseInt(price.value):null;
+  saveDB(db);
+  toast('✅ Profil mis à jour !','green');
+  addNotif(s.id,'pro','✅ Profil mis à jour','Vos informations professionnelles ont été mises à jour avec succès.');
+  renderHome();
+}
+
+// ════════════════════════════════════════════════
+//  PATIENT DASHBOARD
+// ════════════════════════════════════════════════
+function showPatDash(id,btn){
+  document.querySelectorAll('.pat-dash').forEach(d=>d.classList.remove('on'));
+  document.getElementById('pat-'+id).classList.add('on');
+  document.querySelectorAll('.pat-tab').forEach(b=>b.classList.remove('on'));
+  if(btn)btn.classList.add('on');
+  const s=getSession();
+  if(id==='notifs'&&s)renderNotifs(s.id,'pat-notifs-list');
+}
+
+function updatePatientDash(session){
+  const db=getDB();
+  const user=db.users.find(u=>u.id===session.id);
+  if(!user)return;
+  document.getElementById('pat-display-name').textContent=user.fn+' '+user.ln;
+  document.getElementById('pat-display-email').textContent=user.email;
+  const rdvs=db.rdvs.filter(r=>r.patId===user.id);
+  const upcoming=rdvs.filter(r=>r.status!=='cancelled'&&r.status!=='done'&&new Date(r.date)>=new Date());
+  const past=rdvs.filter(r=>r.status==='done'||new Date(r.date)<new Date());
+  document.getElementById('pat-rdv-count').textContent=upcoming.length;
+  // Render upcoming
+  const rdvEl=document.getElementById('pat-rdv-list');
+  if(!upcoming.length){rdvEl.innerHTML=`<div class="empty-state"><div class="empty-ico">📋</div><h3 class="empty-title">Aucun rendez-vous</h3><p class="empty-sub">Vous n'avez pas encore de RDV.</p><button class="btn-cta" onclick="goHome()">🔍 Trouver un spécialiste</button></div>`}
+  else rdvEl.innerHTML='<div class="rdv-list">'+upcoming.map(r=>{
+    const d=new Date(r.date);
+    return `<div class="rdv-item ${r.status}">
+      <div class="rdv-head">
+        <div class="rdv-date"><div class="rdv-d">${d.getDate()}</div><div class="rdv-m">${MONTHS[d.getMonth()].slice(0,3)}</div></div>
+        <div>
+          <div class="rdv-patient">Dr. ${escHtml(r.proFn)} ${escHtml(r.proLn)}</div>
+          <div class="rdv-meta">${r.spec} · ⏰ ${r.slot} · ${r.type==='video'?'📹 Vidéo':'🏥 Présentiel'}</div>
+        </div>
+      </div>
+      <span class="status-badge ${r.status}">${r.status==='pending'?'⏳ En attente de confirmation':'✅ Confirmé'}</span>
+    </div>`;
+  }).join('')+'</div>';
+  // Render history
+  const histEl=document.getElementById('pat-hist-list');
+  if(!past.length)histEl.innerHTML=`<div class="empty-state"><div class="empty-ico">📂</div><h3 class="empty-title">Aucun historique</h3><p class="empty-sub">Vos consultations passées apparaîtront ici.</p></div>`;
+  else histEl.innerHTML='<div class="rdv-list">'+past.map(r=>{
+    const d=new Date(r.date);
+    return `<div class="rdv-item done">
+      <div class="rdv-head">
+        <div class="rdv-date"><div class="rdv-d">${d.getDate()}</div><div class="rdv-m">${MONTHS[d.getMonth()].slice(0,3)}</div></div>
+        <div><div class="rdv-patient">Dr. ${escHtml(r.proFn)} ${escHtml(r.proLn)}</div><div class="rdv-meta">${r.spec} · ${r.slot}</div></div>
+      </div>
+      <span class="status-badge done">✓ Passé</span>
+    </div>`;
+  }).join('')+'</div>';
+  // Profile
+  const profEl=document.getElementById('pat-profile-form');
+  profEl.innerHTML=`<div class="profile-card">
+    <div class="form-section-title">👤 Mes informations</div>
+    <div class="profile-field"><label>Nom complet</label><div class="val">${escHtml(user.fn)} ${escHtml(user.ln)}</div></div>
+    <div class="profile-field"><label>Email</label><div class="val">${escHtml(user.email)}</div></div>
+    <div class="profile-field"><label>Téléphone</label><div class="val">${user.tel||'—'}</div></div>
+    <div class="profile-field"><label>Fuseau horaire</label><div class="val">${user.tz||'—'}</div></div>
+    <div class="profile-field"><label>Membre depuis</label><div class="val">${formatDate(user.createdAt)}</div></div>
+    <div class="profile-field"><label>Notifications email</label><div class="val">${user.notif?'✅ Activées':'❌ Désactivées'}</div></div>
+  </div>`;
+}
+
+// ════════════════════════════════════════════════
+//  BOOKING SHEET
+// ════════════════════════════════════════════════
+function openSheet(proId){
+  const db=getDB();
+  const pro=db.pros.find(p=>p.id===proId);if(!pro)return;
+  selSpec=pro;selDate=null;selSlot=null;selType='video';
+  document.getElementById('bsh-title').textContent='RDV avec Dr. '+pro.fn+' '+pro.ln;
+  document.getElementById('bsheet-bg').classList.add('on');
+  document.getElementById('tv').classList.add('on');
+  document.getElementById('tpr').classList.remove('on');
+  renderCal();renderSlots();fillPatientForm();goStep(1);
+}
+
+function closeBSheet(){document.getElementById('bsheet-bg').classList.remove('on')}
+
+function goStep(n){
+  [1,2,3].forEach(i=>{
+    document.getElementById('bs-step'+i).classList.toggle('on',i===n);
+    const sl=document.getElementById('sl'+i);
+    sl.classList.toggle('on',i===n);
+    sl.classList.toggle('done',i<n);
+  });
+}
+
+function fillPatientForm(){
+  const s=getSession();
+  const loggedDiv=document.getElementById('bs-logged-info');
+  const guestDiv=document.getElementById('bs-guest-form');
+  if(s&&s.type==='patient'){
+    loggedDiv.style.display='block';guestDiv.style.display='none';
+    document.getElementById('bs-user-recap').innerHTML=`👤 <strong>${s.fn} ${s.ln}</strong><br/>📧 ${s.email}${s.tel?'<br/>📞 '+s.tel:''}`;
+  } else {loggedDiv.style.display='none';guestDiv.style.display='block';}
+}
+
+function renderCal(){
+  const d=new Date(cY,cM,1);
+  document.getElementById('cal-month').textContent=MONTHS[cM]+' '+cY;
+  let first=(d.getDay()+6)%7;
+  const days=new Date(cY,cM+1,0).getDate();
+  const today=new Date();today.setHours(0,0,0,0);
+  let html=DAYS_SHORT.map(d=>`<div class="cal-day-lbl">${d}</div>`).join('');
+  for(let i=0;i<first;i++)html+='<div class="cal-cell empty"></div>';
+  for(let i=1;i<=days;i++){
+    const date=new Date(cY,cM,i);
+    const isPast=date<today;
+    const selStr=selDate&&selDate.getDate()===i&&selDate.getMonth()===cM&&selDate.getFullYear()===cY;
+    if(isPast)html+=`<div class="cal-cell past">${i}</div>`;
+    else html+=`<div class="cal-cell avail ${selStr?'sel':''}" onclick="selectDate(${cY},${cM},${i})">${i}</div>`;
+  }
+  document.getElementById('cal-grid').innerHTML=html;
+}
+
+function selectDate(y,m,d){
+  selDate=new Date(y,m,d);selSlot=null;
+  document.querySelectorAll('.cal-cell.avail').forEach(c=>c.classList.remove('sel'));
+  event.target.classList.add('sel');
+  renderSlots();checkStep1();
+}
+
+function renderSlots(){
+  const wrap=document.getElementById('slots-wrap');
+  if(!selDate||!selSpec){wrap.innerHTML='<p style="color:var(--soft);font-size:.78rem">Sélectionnez d\'abord une date.</p>';return}
+  const db=getDB();const pro=db.pros.find(p=>p.id===selSpec.id);
+  const dayKey=DAYS_FULL[(selDate.getDay()+6)%7].toLowerCase();
+  const slots=(pro&&pro.avail&&pro.avail[dayKey])||ALL_SLOTS.slice(0,6);
+  wrap.innerHTML=slots.map(sl=>`<button class="slot-btn ${selSlot===sl?'on':''}" onclick="selectSlot('${sl}',this)">${sl}</button>`).join('');
+}
+
+function selectSlot(sl,btn){
+  selSlot=sl;
+  document.querySelectorAll('.slot-btn').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');checkStep1();
+}
+
+function checkStep1(){
+  document.getElementById('btn-step2').disabled=!(selDate&&selSlot);
+}
+
+function prevMonth(){if(cM===0){cM=11;cY--}else cM--;renderCal();renderSlots()}
+function nextMonth(){if(cM===11){cM=0;cY++}else cM++;renderCal();renderSlots()}
+
+function confirmRDV(){
+  if(!selDate||!selSlot||!selSpec){toast('Veuillez sélectionner une date et un créneau.','red');return}
+  const s=getSession();
+  let patFn,patLn,patEmail,patId=null;
+  if(s&&s.type==='patient'){patFn=s.fn;patLn=s.ln;patEmail=s.email;patId=s.id;}
+  else{
+    patFn=document.getElementById('bs-fn').value.trim();
+    patLn=document.getElementById('bs-ln').value.trim();
+    patEmail=document.getElementById('bs-email').value.trim();
+    if(!patFn||!patLn||!patEmail){toast('Veuillez remplir vos informations.','red');return}
+  }
+  const motif=document.getElementById('bs-motif').value.trim();
+  const db=getDB();
+  const rdv={
+    id:'rdv_'+Date.now(),proId:selSpec.id,proFn:selSpec.fn,proLn:selSpec.ln,spec:selSpec.spec,
+    patId,patFn,patLn,patEmail,date:selDate.toISOString(),slot:selSlot,type:selType,motif,
+    status:'pending',createdAt:new Date().toISOString()
+  };
+  db.rdvs.push(rdv);saveDB(db);
+  // Notifications
+  if(patId) addNotif(patId,'patient','📋 Rendez-vous demandé','Votre demande de RDV avec Dr. '+selSpec.fn+' '+selSpec.ln+' le '+formatDate(selDate.toISOString())+' à '+selSlot+' est en attente de confirmation.');
+  addNotif(selSpec.id,'pro','📋 Nouvelle demande de RDV',''+patFn+' '+patLn+' souhaite un RDV le '+formatDate(selDate.toISOString())+' à '+selSlot+'.');
+  // Update summary
+  document.getElementById('rdv-summary').innerHTML=`<strong>👨‍⚕️ Praticien :</strong> Dr. ${selSpec.fn} ${selSpec.ln} (${selSpec.spec})<br/><strong>📅 Date :</strong> ${selDate.toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long'})}<br/><strong>⏰ Heure :</strong> ${selSlot}<br/><strong>📧 Confirmation à :</strong> ${patEmail}<br/><strong>🎯 Type :</strong> ${selType==='video'?'📹 Vidéo sécurisée':'🏥 Présentiel'}`;
+  goStep(3);
+  toast('✅ RDV envoyé — En attente de confirmation','green');
+}
+
+// ════════════════════════════════════════════════
+//  EMAIL PREVIEWS
+// ════════════════════════════════════════════════
+function showEmailPreview(type){
+  const s=getSession();const db=getDB();
+  const pro=s?db.pros.find(p=>p.id===s.id):null;
+  const previews={
+    confirm:{ttl:'📧 Confirmation de rendez-vous',meta:`De : noreply@psycholab.com<br/>À : patient@email.com<br/>Objet : ✅ Votre RDV avec Dr. ${pro?pro.ln:'Nom'} est confirmé`,body:`Bonjour [Prénom],<br/><br/>Nous avons le plaisir de vous confirmer votre rendez-vous :<br/><br/><strong>👨‍⚕️ Praticien :</strong> Dr. ${pro?pro.fn+' '+pro.ln:'[Praticien]'} (${pro?pro.spec:'[Spécialité]'})<br/><strong>📅 Date :</strong> [Date et heure]<br/><strong>🎯 Type :</strong> Consultation vidéo sécurisée<br/><strong>🔗 Lien vidéo :</strong> <a href="#">https://meet.psycholab.com/[code]</a><br/><br/>Des rappels vous seront envoyés 24h et 2h avant la consultation.<br/><br/><em>— L'équipe Psycholab</em>`},
+    r24:{ttl:'⏰ Rappel 24h avant',meta:`De : noreply@psycholab.com<br/>À : patient@email.com<br/>Objet : ⏰ Rappel : votre RDV demain avec Dr. ${pro?pro.ln:'Nom'}`,body:`Bonjour [Prénom],<br/><br/>Votre rendez-vous avec <strong>Dr. ${pro?pro.fn+' '+pro.ln:'[Praticien]'}</strong> est prévu <strong>demain à [Heure]</strong>.<br/><br/><strong>🔗 Accès vidéo :</strong> <a href="#">https://meet.psycholab.com/[code]</a><br/><br/>Si vous devez annuler, merci de le faire au moins 24h à l'avance.<br/><br/><em>— L'équipe Psycholab</em>`},
+    r2:{ttl:'⏰ Rappel 2h avant',meta:`De : noreply@psycholab.com<br/>À : patient@email.com<br/>Objet : ⏰ Votre RDV commence dans 2h`,body:`Bonjour [Prénom],<br/><br/>Votre consultation avec <strong>Dr. ${pro?pro.fn+' '+pro.ln:'[Praticien]'}</strong> commence dans <strong>2 heures</strong>.<br/><br/><strong>🔗 Rejoindre maintenant :</strong> <a href="#">https://meet.psycholab.com/[code]</a><br/><br/>Assurez-vous d'être dans un endroit calme et privé.<br/><br/><em>— L'équipe Psycholab</em>`},
+    pro_notify:{ttl:'🩺 Nouvelle demande de RDV',meta:`De : noreply@psycholab.com<br/>À : ${pro?pro.email:'pro@cabinet.com'}<br/>Objet : 📋 Nouvelle demande de RDV sur Psycholab`,body:`Bonjour Dr. ${pro?pro.ln:'[Nom]'},<br/><br/>Un patient a demandé un rendez-vous :<br/><br/><strong>👤 Patient :</strong> [Prénom Nom]<br/><strong>📅 Date demandée :</strong> [Date] à [Heure]<br/><strong>📧 Contact :</strong> patient@email.com<br/><strong>📝 Motif :</strong> [Motif de consultation]<br/><br/>Connectez-vous à votre tableau de bord pour <strong>accepter ou refuser</strong> cette demande.<br/><br/><a href="#">👉 Voir ma demande de RDV</a><br/><br/><em>— L'équipe Psycholab</em>`},
+    cancel:{ttl:'❌ Annulation de rendez-vous',meta:`De : noreply@psycholab.com<br/>À : patient@email.com<br/>Objet : ❌ Votre RDV a été annulé`,body:`Bonjour [Prénom],<br/><br/>Nous vous informons que votre rendez-vous avec <strong>Dr. ${pro?pro.fn+' '+pro.ln:'[Praticien]'}</strong> prévu le <strong>[Date]</strong> a été annulé.<br/><br/>Vous pouvez prendre un nouveau rendez-vous à tout moment sur Psycholab.<br/><br/><a href="#">🔍 Trouver un spécialiste</a><br/><br/><em>— L'équipe Psycholab</em>`}
+  };
+  const p=previews[type];if(!p)return;
+  document.getElementById('em-ttl').textContent=p.ttl;
+  document.getElementById('em-meta').innerHTML=p.meta;
+  document.getElementById('em-body').innerHTML=p.body;
+  document.getElementById('email-modal-bg').classList.add('on');
+}
+
+function closeEmailModal(){document.getElementById('email-modal-bg').classList.remove('on')}
+
+// ════════════════════════════════════════════════
+//  AI ASSISTANT (Claude API)
+// ════════════════════════════════════════════════
+function initAiPanel(){}
+
+function aiPrompt(text){
+  document.getElementById('ai-custom-input').value=text;
+  aiAsk();
+}
+
+async function aiAsk(){
+  const input=document.getElementById('ai-custom-input');
+  const prompt=input.value.trim();
+  if(!prompt)return;
+  const btn=document.getElementById('ai-send-btn');
+  const spin=document.getElementById('ai-spin');
+  const responseEl=document.getElementById('ai-response');
+  const s=getSession();
+  const pro=s?getDB().pros.find(p=>p.id===s.id):null;
+  btn.disabled=true;spin.style.display='inline-block';
+  responseEl.style.display='none';
+  const systemPrompt=`Tu es l'assistant IA intégré à Psycholab, une plateforme de santé mentale. Tu aides les professionnels de santé mentale (psychiatres, psychologues, psychomotriciens, ergothérapeutes, orthophonistes) dans leurs tâches administratives : rédaction d'emails, gestion de cabinet, communications avec les patients. ${pro?'Le professionnel connecté est Dr. '+pro.fn+' '+pro.ln+', '+pro.spec+'.':''} Tu ne fournis JAMAIS d'avis médical, de diagnostic ou de conseils thérapeutiques. Tu réponds en français, de manière professionnelle et concise.`;
+  try{
+    const res=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        model:'claude-sonnet-4-20250514',max_tokens:1000,
+        system:systemPrompt,
+        messages:[{role:'user',content:prompt}]
+      })
+    });
+    const data=await res.json();
+    const text=data.content&&data.content[0]&&data.content[0].text||'Désolé, une erreur est survenue.';
+    responseEl.textContent=text;
+    responseEl.style.display='block';
+    input.value='';
+  }catch(e){
+    responseEl.textContent='Erreur de connexion à l\'assistant IA. Vérifiez votre connexion internet.';
+    responseEl.style.display='block';
+  }
+  btn.disabled=false;spin.style.display='none';
+}
+
+// ════════════════════════════════════════════════
+//  EMAIL GENERATION (Claude API)
+// ════════════════════════════════════════════════
+async function generatePatientWelcomeEmail(fn,ln,email){
+  const el=document.getElementById('conf-patient-body');
+  try{
+    const res=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        model:'claude-sonnet-4-20250514',max_tokens:400,
+        messages:[{role:'user',content:`Rédige un court email de bienvenue chaleureux (3-4 phrases max, HTML simple) pour ${fn} ${ln} (${email}) qui vient de créer son compte patient sur Psycholab, une plateforme de santé mentale. Mentionne qu'il peut maintenant trouver des spécialistes et que des rappels email seront envoyés pour chaque RDV. Termine par "— L'équipe Psycholab". Réponse en HTML simple, sans balises html/head/body.`}]
+      })
+    });
+    const data=await res.json();
+    const text=data.content&&data.content[0]&&data.content[0].text;
+    if(text&&el)el.innerHTML=text;
+  }catch(e){
+    if(el)el.innerHTML=`Bonjour <strong>${fn}</strong>,<br/><br/>Votre compte patient Psycholab a bien été créé. Vous pouvez maintenant rechercher des spécialistes et prendre rendez-vous en ligne ou en vidéo sécurisée.<br/><br/>Vous recevrez des rappels automatiques <strong>24h</strong> et <strong>2h avant</strong> chaque rendez-vous.<br/><br/><em>— L'équipe Psycholab</em>`;
+  }
+}
+
+async function generateProWelcomeEmail(fn,ln,spec,rpps){
+  const el=document.getElementById('conf-pro-body');
+  try{
+    const res=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        model:'claude-sonnet-4-20250514',max_tokens:400,
+        messages:[{role:'user',content:`Rédige un email professionnel (4-5 phrases, HTML simple) de confirmation de réception de dossier pour Dr. ${fn} ${ln}, ${spec}, numéro ${rpps}, qui vient de s'inscrire sur Psycholab. Mentionne la vérification sous 24-48h, l'email de confirmation d'activation, et la possibilité de gérer les RDV depuis le tableau de bord. Termine par "— L'équipe Psycholab". Réponse en HTML simple.`}]
+      })
+    });
+    const data=await res.json();
+    const text=data.content&&data.content[0]&&data.content[0].text;
+    if(text&&el)el.innerHTML=text;
+  }catch(e){
+    if(el)el.innerHTML=`Bonjour Dr. <strong>${fn} ${ln}</strong>,<br/><br/>Nous avons bien reçu votre dossier d'inscription en tant que <strong>${spec}</strong> (N° ${rpps}).<br/><br/>Notre équipe va vérifier votre numéro d'agrément et activer votre profil sous <strong>24 à 48h</strong>. Vous recevrez un email dès que votre compte est activé.<br/><br/><em>— L'équipe Psycholab</em>`;
+  }
+}
+
+// ════════════════════════════════════════════════
+//  VIDEO CONTROLS
+// ════════════════════════════════════════════════
+let micOn=true,camOn=true,callTimer=null,callSecs=0;
+function toggleMic(){micOn=!micOn;const btn=document.getElementById('btn-mic');btn.textContent=micOn?'🎤':'🔇';btn.classList.toggle('act',micOn);btn.style.background=micOn?'rgba(255,255,255,.15)':'var(--orange)';toast(micOn?'🎤 Micro activé':'🔇 Micro désactivé')}
+function toggleCam(){camOn=!camOn;const btn=document.getElementById('btn-cam');btn.textContent=camOn?'📷':'📵';btn.classList.toggle('act',camOn);btn.style.background=camOn?'rgba(255,255,255,.15)':'var(--orange)';toast(camOn?'📷 Caméra activée':'📵 Caméra désactivée')}
+function endCall(){if(callTimer)clearInterval(callTimer);document.getElementById('vid-timer').textContent='⏱️ 00:00';document.getElementById('vid-status-lbl').textContent='Terminé';toast('📵 Appel terminé')}
+function sendMsg(){const inp=document.getElementById('chat-in');const txt=inp.value.trim();if(!txt)return;const msgs=document.getElementById('chat-msgs');msgs.innerHTML+=`<div class="chat-msg me">${escHtml(txt)}</div>`;inp.value='';msgs.scrollTop=msgs.scrollHeight}
+
+// ════════════════════════════════════════════════
+//  UTILS
+// ════════════════════════════════════════════════
+function hashPwd(s){let h=0;for(let i=0;i<s.length;i++){h=((h<<5)-h+s.charCodeAt(i))|0}return h.toString(36)}
+function isValidEmail(e){return/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e)}
+function escHtml(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+function formatDate(iso){try{return new Date(iso).toLocaleDateString('fr-FR',{day:'numeric',month:'long',year:'numeric'})}catch(e){return iso||'—'}}
+function toast(msg,type=''){
+  const el=document.getElementById('toastEl');
+  el.textContent=msg;el.className='toast show '+(type||'');
+  setTimeout(()=>el.classList.remove('show'),3200);
+}
+
+// ════════════════════════════════════════════════
+//  LANGUAGE (simplified)
+// ════════════════════════════════════════════════
+let LANG='fr';
+function setLang(l){
+  LANG=l;localStorage.setItem('plLang',l);
+  ['fr','en','ar'].forEach(x=>{const b=document.getElementById('lb-'+x);if(b)b.className='lang-btn'+(x===l?' on':'')});
+  document.documentElement.dir=l==='ar'?'rtl':'ltr';
+  document.body.setAttribute('data-lang',l);
+  if(l==='ar')toast('اللغة العربية مدعومة جزئياً','blue');
+  else if(l==='en')toast('English mode (partial support)','blue');
+}
+
+init();
+</script>
+</body>
+</html>
