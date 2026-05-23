@@ -457,7 +457,8 @@ input,select,textarea{font-family:'DM Sans',sans-serif}
 .fgroup{display:flex;flex-direction:column;gap:.3rem;margin-bottom:.85rem}
 .fgroup label{font-size:.73rem;font-weight:600;color:var(--mid)}
 .fgroup input,.fgroup select,.fgroup textarea{border:1.5px solid var(--border);border-radius:var(--r-sm);font-size:.86rem;color:var(--ch);padding:.62rem .9rem;background:var(--sand);outline:none;width:100%;transition:all var(--anim)}
-.fgroup input:focus,.fgroup select:focus,.fgroup textarea:focus{border-color:var(--teal);background:#fff;box-shadow:0 0 0 3px rgba(27,107,97,.08)}
+.fgroup input:valid:not(:placeholder-shown),.fgroup select:valid:not([value=""]) {border-color:var(--green);}
+.fgroup input.error,.fgroup select.error,.fgroup textarea.error{border-color:var(--red)!important;background:#FFF5F5!important;}
 .fgroup textarea{min-height:80px;resize:vertical;line-height:1.55}
 .fgroup-row{display:grid;grid-template-columns:1fr 1fr;gap:.7rem}
 .required-note{font-size:.68rem;color:var(--soft);margin-bottom:.9rem}
@@ -474,7 +475,8 @@ input,select,textarea{font-family:'DM Sans',sans-serif}
 .auth-switch a{color:var(--teal);font-weight:600;cursor:pointer}
 .info-box{background:var(--teal-xl);border-radius:var(--r-sm);padding:.75rem .9rem;font-size:.76rem;color:var(--teal-d);margin-bottom:.9rem;line-height:1.55;border-left:3px solid var(--teal)}
 .warning-box{background:var(--orange-l);border-radius:var(--r-sm);padding:.75rem .9rem;font-size:.76rem;color:var(--orange);margin-bottom:.9rem;line-height:1.55;border-left:3px solid var(--orange)}
-.error-box{background:var(--red-l);border-radius:var(--r-sm);padding:.75rem .9rem;font-size:.76rem;color:var(--red);margin-bottom:.9rem;line-height:1.55;display:none;border-left:3px solid var(--red)}
+.error-box{background:#FDF0EE;border-radius:var(--r-sm);padding:.85rem 1rem;font-size:.82rem;color:var(--red);margin-bottom:.9rem;display:none;border:1.5px solid var(--red);border-left:4px solid var(--red);font-weight:500;line-height:1.55}
+.error-box::before{content:'⚠️ ';}
 .success-screen{text-align:center;padding:1.2rem 0}
 .success-ico{width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,var(--teal),var(--teal-l));display:flex;align-items:center;justify-content:center;font-size:1.9rem;margin:0 auto 1rem;box-shadow:0 8px 28px rgba(27,107,97,.3)}
 .success-title{font-family:'Playfair Display',serif;font-size:1.4rem;font-weight:700;color:var(--ch);margin-bottom:.4rem}
@@ -1942,6 +1944,17 @@ function getSession(){try{return JSON.parse(localStorage.getItem('psycholab_sess
 function saveSession(s){localStorage.setItem('psycholab_session',JSON.stringify(s))}
 function clearSession(){localStorage.removeItem('psycholab_session')}
 
+// ── Fonction pour effacer les données de test (appeler depuis console) ──
+function resetDatabase(){
+  if(confirm('⚠️ Effacer TOUTES les données (comptes de test, RDV, messages) ?\n\nCette action est irréversible.')){
+    localStorage.removeItem('psycholab_db');
+    localStorage.removeItem('psycholab_session');
+    saveDB({users:[],pros:[],rdvs:[],notifs:[],fiches:[],messages:[],factures:[],paiements:[]});
+    toast('🗑️ Base de données réinitialisée','');
+    setTimeout(()=>location.reload(),1500);
+  }
+}
+
 // ════════════════════════════════════════════════
 //  STATE
 // ════════════════════════════════════════════════
@@ -1978,6 +1991,19 @@ function init(){
   const dayNames=['Dimanche','Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi'];
   const el=document.getElementById('pro-date');
   if(el)el.textContent=`${dayNames[d.getDay()]} ${d.getDate()} ${MONTHS[d.getMonth()]} ${d.getFullYear()}`;
+  // ── Effacer erreurs champs au clic ──
+  document.querySelectorAll('input,select,textarea').forEach(el=>{
+    el.addEventListener('input',function(){
+      this.style.borderColor='';this.style.background='';
+      const err=document.getElementById('err-'+this.id);
+      if(err)err.remove();
+    });
+    el.addEventListener('change',function(){
+      this.style.borderColor='';this.style.background='';
+      const err=document.getElementById('err-'+this.id);
+      if(err)err.remove();
+    });
+  });
 }
 
 function applySession(session){
@@ -2118,37 +2144,80 @@ function doLogin(){
 }
 
 // ════════════════════════════════════════════════
+//  VALIDATION HELPER
+// ════════════════════════════════════════════════
+function showFieldError(inputId,message){
+  const input=document.getElementById(inputId);
+  if(!input)return;
+  input.style.borderColor='var(--red)';
+  input.style.background='#FFF5F5';
+  // Remove old error if exists
+  const old=document.getElementById('err-'+inputId);
+  if(old)old.remove();
+  const err=document.createElement('div');
+  err.id='err-'+inputId;
+  err.style.cssText='color:var(--red);font-size:.72rem;font-weight:600;margin-top:.2rem;display:flex;align-items:center;gap:.3rem';
+  err.innerHTML='⚠️ '+message;
+  input.parentNode.appendChild(err);
+  input.scrollIntoView({behavior:'smooth',block:'center'});
+}
+
+function clearFieldError(inputId){
+  const input=document.getElementById(inputId);
+  if(!input)return;
+  input.style.borderColor='';
+  input.style.background='';
+  const old=document.getElementById('err-'+inputId);
+  if(old)old.remove();
+}
+
+function clearAllErrors(prefix){
+  document.querySelectorAll('[id^="err-'+prefix+'"]').forEach(e=>e.remove());
+  document.querySelectorAll('input,select,textarea').forEach(el=>{el.style.borderColor='';el.style.background='';});
+}
+
+// ════════════════════════════════════════════════
 //  SIGNUP PATIENT
 // ════════════════════════════════════════════════
 function doSignupPatient(){
+  clearAllErrors('spat');
   const fn=document.getElementById('spat-fn').value.trim();
   const ln=document.getElementById('spat-ln').value.trim();
   const email=document.getElementById('spat-email').value.trim();
-  const tel=document.getElementById('spat-tel').value.trim();
-  const tz=document.getElementById('spat-tz').value;
   const pwd=document.getElementById('spat-pwd').value;
   const pwd2=document.getElementById('spat-pwd2').value;
   const cgu=document.getElementById('spat-cgu').checked;
   const errEl=document.getElementById('spat-error');
   errEl.style.display='none';
-  if(!fn||!ln||!email||!pwd){errEl.textContent='Veuillez remplir tous les champs obligatoires.';errEl.style.display='block';return}
-  if(pwd.length<8){errEl.textContent='Le mot de passe doit contenir au moins 8 caractères.';errEl.style.display='block';return}
-  if(pwd!==pwd2){errEl.textContent='Les mots de passe ne correspondent pas.';errEl.style.display='block';return}
-  if(!cgu){errEl.textContent='Veuillez accepter les Conditions Générales.';errEl.style.display='block';return}
-  if(!isValidEmail(email)){errEl.textContent='Adresse email invalide.';errEl.style.display='block';return}
+  let hasError=false;
+
+  if(!fn){showFieldError('spat-fn','Le prénom est obligatoire');hasError=true;}
+  if(!ln){showFieldError('spat-ln','Le nom est obligatoire');hasError=true;}
+  if(!email){showFieldError('spat-email','L\'adresse email est obligatoire');hasError=true;}
+  else if(!isValidEmail(email)){showFieldError('spat-email','Adresse email invalide (ex: nom@email.com)');hasError=true;}
+  if(!pwd){showFieldError('spat-pwd','Le mot de passe est obligatoire');hasError=true;}
+  else if(pwd.length<8){showFieldError('spat-pwd','Minimum 8 caractères requis (ex: MonPwd123)');hasError=true;}
+  if(pwd&&pwd2&&pwd!==pwd2){showFieldError('spat-pwd2','Les mots de passe ne correspondent pas');hasError=true;}
+  if(!cgu){
+    errEl.innerHTML='⚠️ Vous devez accepter les <strong>Conditions Générales</strong> pour continuer.';
+    errEl.style.display='block';hasError=true;
+  }
+  if(hasError)return;
+
   const db=getDB();
-  if(db.users.find(u=>u.email===email)){errEl.textContent='Cette adresse email est déjà utilisée.';errEl.style.display='block';return}
+  if(db.users.find(u=>u.email===email)||db.pros.find(p=>p.email===email)){
+    showFieldError('spat-email','Cette adresse email est déjà utilisée sur Psycholab');return;
+  }
   const id='pat_'+Date.now();
-  const user={id,fn,ln,email,tel,tz,pwd:hashPwd(pwd),notif:document.getElementById('spat-notif').checked,createdAt:new Date().toISOString()};
+  const tel=document.getElementById('spat-tel')?document.getElementById('spat-tel').value.trim():'';
+  const user={id,fn,ln,email,tel,tz:'Europe/Paris',pwd:hashPwd(pwd),notif:document.getElementById('spat-notif').checked,createdAt:new Date().toISOString()};
   db.users.push(user);
   saveDB(db);
-  sbSaveUser(user); // ── Sauvegarde en ligne Supabase ──
-  saveSession({id,type:'patient',email,name:fn+' '+ln,fn,ln,tel,tz});
+  sbSaveUser(user);
+  saveSession({id,type:'patient',email,name:fn+' '+ln,fn,ln,tel,tz:'Europe/Paris'});
   applySession(getSession());
-  // Show success + email preview
   document.getElementById('conf-patient-email').textContent=email;
-  document.getElementById('conf-patient-body').innerHTML=generatePatientWelcomeEmail(fn,ln,email);
-  // Add welcome notification
+  generatePatientWelcomeEmail(fn,ln,email);
   addNotif(id,'patient','🎉 Bienvenue sur Psycholab !','Votre compte patient a été créé avec succès. Vous pouvez maintenant rechercher des spécialistes.');
   showView('v-success-patient');
 }
@@ -2157,6 +2226,7 @@ function doSignupPatient(){
 //  SIGNUP PRO
 // ════════════════════════════════════════════════
 function doSignupPro(){
+  clearAllErrors('spro');
   const fn=document.getElementById('spro-fn').value.trim();
   const ln=document.getElementById('spro-ln').value.trim();
   const email=document.getElementById('spro-email').value.trim();
@@ -2176,13 +2246,32 @@ function doSignupPro(){
   const langAr=document.getElementById('spro-langar').checked;
   const errEl=document.getElementById('spro-error');
   errEl.style.display='none';
-  if(!fn||!ln||!email||!tel||!spec||!bio||!pwd){errEl.textContent='Veuillez remplir tous les champs obligatoires.';errEl.style.display='block';return}
-  if(pwd.length<8){errEl.textContent='Le mot de passe doit contenir au moins 8 caractères.';errEl.style.display='block';return}
-  if(pwd!==pwd2){errEl.textContent='Les mots de passe ne correspondent pas.';errEl.style.display='block';return}
-  if(!cgu||!rgpd){errEl.textContent='Veuillez accepter les conditions requises.';errEl.style.display='block';return}
-  if(!isValidEmail(email)){errEl.textContent='Adresse email invalide.';errEl.style.display='block';return}
+  let hasError=false;
+
+  if(!fn){showFieldError('spro-fn','Le prénom est obligatoire');hasError=true;}
+  if(!ln){showFieldError('spro-ln','Le nom est obligatoire');hasError=true;}
+  if(!email){showFieldError('spro-email','L\'adresse email professionnelle est obligatoire');hasError=true;}
+  else if(!isValidEmail(email)){showFieldError('spro-email','Adresse email invalide (ex: dr.nom@cabinet.com)');hasError=true;}
+  if(!tel){showFieldError('spro-tel','Le numéro de téléphone est obligatoire');hasError=true;}
+  if(!spec){showFieldError('spro-spec','Veuillez sélectionner votre spécialité');hasError=true;}
+  if(!bio||bio.length<20){showFieldError('spro-bio','La biographie est obligatoire (minimum 20 caractères)');hasError=true;}
+  if(!pwd){showFieldError('spro-pwd','Le mot de passe est obligatoire');hasError=true;}
+  else if(pwd.length<8){showFieldError('spro-pwd','Minimum 8 caractères requis');hasError=true;}
+  if(pwd&&pwd2&&pwd!==pwd2){showFieldError('spro-pwd2','Les mots de passe ne correspondent pas');hasError=true;}
+  if(!langFr&&!langEn&&!langAr){
+    errEl.innerHTML='⚠️ Veuillez sélectionner <strong>au moins une langue</strong> de consultation.';
+    errEl.style.display='block';hasError=true;
+  }
+  if(!cgu||!rgpd){
+    errEl.innerHTML='⚠️ Vous devez accepter les <strong>Conditions Générales</strong> et le <strong>RGPD</strong> pour continuer.';
+    errEl.style.display='block';hasError=true;
+  }
+  if(hasError)return;
+
   const db=getDB();
-  if(db.pros.find(p=>p.email===email)||db.users.find(u=>u.email===email)){errEl.textContent='Cette adresse email est déjà utilisée.';errEl.style.display='block';return}
+  if(db.pros.find(p=>p.email===email)||db.users.find(u=>u.email===email)){
+    showFieldError('spro-email','Cette adresse email est déjà utilisée sur Psycholab');return;
+  }
   const id='pro_'+Date.now();
   const pro={id,fn,ln,email,tel,spec,rpps:'',diplome:'',exp:'',bio,tags,price:price?parseInt(price):null,tz:'Europe/Paris',consVid,consPres,langFr,langEn,langAr,pwd:hashPwd(pwd),active:false,avail:{},notif:document.getElementById('spro-notif').checked,createdAt:new Date().toISOString()};
   db.pros.push(pro);
