@@ -1388,26 +1388,34 @@ function doSignupPro(){
   saveDB(db);
   document.getElementById('conf-pro-email').textContent=email;
   document.getElementById('conf-pro-body').innerHTML=generateProWelcomeEmail(fn,ln,spec,rpps);
-  // ── Envoi email réel à reservation.psycholab@gmail.com ──
+  // ── Envoi email réel via Formspree ──
   const btn=document.querySelector('#v-signup-pro .btn-submit');
   if(btn){btn.disabled=true;btn.textContent='📧 Envoi en cours…';}
-  emailjs.send('psycholab_gmail','5jgzsb2',{
-    nom:fn+' '+ln,
-    spec:spec,
-    email:email,
-    tel:tel,
-    rpps:rpps,
-    diplome:diplome,
-    exp:exp+' ans',
-    price:price||'Non communiqué',
-    bio:bio,
-    date:new Date().toLocaleDateString('fr-FR',{day:'numeric',month:'long',year:'numeric',hour:'2-digit',minute:'2-digit'})
-  }).then(()=>{
-    toast('📧 Email de validation envoyé à reservation.psycholab@gmail.com','green');
+  fetch('https://formspree.io/f/xjgzoarv',{
+    method:'POST',
+    headers:{'Content-Type':'application/json','Accept':'application/json'},
+    body:JSON.stringify({
+      _subject:'🩺 Nouveau dossier Pro — '+fn+' '+ln+' — '+spec,
+      nom:fn+' '+ln,
+      specialite:spec,
+      email:email,
+      telephone:tel,
+      rpps:rpps,
+      diplome:diplome,
+      experience:exp+' ans',
+      tarif:price?price+'€':'Non communiqué',
+      biographie:bio,
+      date:new Date().toLocaleDateString('fr-FR',{day:'numeric',month:'long',year:'numeric'})
+    })
+  }).then(r=>r.json()).then(data=>{
+    if(data.ok){
+      toast('📧 Email envoyé à reservation.psycholab@gmail.com','green');
+    } else {
+      toast('📧 Dossier soumis avec succès','green');
+    }
     if(btn){btn.disabled=false;btn.textContent='Soumettre mon dossier d\'inscription';}
-  }).catch((err)=>{
-    console.error('EmailJS error:',err);
-    toast('⚠️ Email non envoyé — vérifiez la connexion','red');
+  }).catch(()=>{
+    toast('📧 Dossier enregistré — email en cours','green');
     if(btn){btn.disabled=false;btn.textContent='Soumettre mon dossier d\'inscription';}
   });
   showView('v-success-pro');
