@@ -1956,13 +1956,21 @@ const DAYS_FULL=['Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi','Dimanch
 //  INIT
 // ════════════════════════════════════════════════
 function init(){
-  // ── Effacer toutes les données de test ──
-  localStorage.removeItem('psycholab_db');
-  localStorage.removeItem('psycholab_session');
-  // ── Initialiser une base vide et propre ──
-  saveDB({users:[],pros:[],rdvs:[],notifs:[]});
-  // ── Créer les tables Supabase si nécessaire ──
-  setupSupabaseTables();
+  // ── Initialiser la base si elle n'existe pas encore ──
+  const existing=localStorage.getItem('psycholab_db');
+  if(!existing){
+    saveDB({users:[],pros:[],rdvs:[],notifs:[],fiches:[],messages:[],factures:[],paiements:[]});
+  } else {
+    // Compléter les collections manquantes sans effacer les données existantes
+    const db=getDB();
+    let changed=false;
+    if(!db.notifs){db.notifs=[];changed=true;}
+    if(!db.fiches){db.fiches=[];changed=true;}
+    if(!db.messages){db.messages=[];changed=true;}
+    if(!db.factures){db.factures=[];changed=true;}
+    if(!db.paiements){db.paiements=[];changed=true;}
+    if(changed)saveDB(db);
+  }
   const session=getSession();
   if(session) applySession(session);
   renderHome();
