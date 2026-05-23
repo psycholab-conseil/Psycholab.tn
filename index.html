@@ -529,6 +529,15 @@ body[data-lang="ar"]{font-family:'Segoe UI',Tahoma,'Arabic Typesetting',sans-ser
     <div class="dr-sep"></div>
     <button class="dr-danger" onclick="doLogout();closeDrawer()">Déconnexion</button>
   </div>
+  <!-- Admin drawer -->
+  <div id="dr-admin" style="display:none">
+    <div class="user-chip" style="background:#FFF0EE;border-left:3px solid #C0392B">⚙️ Administration<span style="color:#C0392B">Psycholab Admin</span></div>
+    <p class="dr-lbl" style="margin-top:.8rem">Navigation</p>
+    <button class="dr-btn" onclick="goAdmin();closeDrawer()">⚙️ Panel Admin</button>
+    <button class="dr-btn" onclick="goHome();closeDrawer()">🔍 Voir la plateforme</button>
+    <div class="dr-sep"></div>
+    <button class="dr-danger" onclick="doLogout();closeDrawer()">Déconnexion</button>
+  </div>
 </div>
 
 <!-- ══ VIEW: HOME ══ -->
@@ -1137,6 +1146,38 @@ body[data-lang="ar"]{font-family:'Segoe UI',Tahoma,'Arabic Typesetting',sans-ser
   </div>
 </div>
 
+<!-- ══ VIEW: ADMIN ══ -->
+<div class="view" id="v-admin">
+  <div style="max-width:900px;margin:0 auto;padding:1.2rem">
+    <div style="background:linear-gradient(135deg,#C0392B,#E74C3C);border-radius:16px;padding:1.2rem;color:#fff;margin-bottom:1rem;display:flex;align-items:center;gap:.9rem">
+      <div style="width:48px;height:48px;border-radius:50%;background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-size:1.3rem">⚙️</div>
+      <div>
+        <div style="font-family:'Playfair Display',serif;font-size:1rem;font-weight:700">Panel Administrateur</div>
+        <div style="font-size:.72rem;opacity:.85">reservation.psycholab@gmail.com</div>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:.7rem;margin-bottom:1rem">
+      <div style="background:#fff;border:1.5px solid var(--border);border-radius:14px;padding:1rem">
+        <div style="font-family:'Playfair Display',serif;font-size:1.5rem;font-weight:700;color:var(--ch)" id="adm-stat-pending">0</div>
+        <div style="font-size:.72rem;color:var(--soft)">Dossiers en attente</div>
+      </div>
+      <div style="background:#fff;border:1.5px solid var(--border);border-radius:14px;padding:1rem">
+        <div style="font-family:'Playfair Display',serif;font-size:1.5rem;font-weight:700;color:var(--green)" id="adm-stat-active">0</div>
+        <div style="font-size:.72rem;color:var(--soft)">Comptes actifs</div>
+      </div>
+    </div>
+
+    <!-- Dossiers en attente -->
+    <h3 style="font-family:'Playfair Display',serif;font-size:1rem;font-weight:700;color:var(--ch);margin-bottom:.8rem">⏳ Dossiers en attente de validation</h3>
+    <div id="adm-pending-list"></div>
+
+    <!-- Comptes actifs -->
+    <h3 style="font-family:'Playfair Display',serif;font-size:1rem;font-weight:700;color:var(--ch);margin:.9rem 0 .8rem">✅ Professionnels actifs</h3>
+    <div id="adm-active-list"></div>
+  </div>
+</div>
+
 <!-- EMAIL MODAL -->
 <div class="email-modal-bg" id="email-modal-bg" onclick="if(event.target===this)closeEmailModal()">
   <div class="email-modal-box">
@@ -1192,7 +1233,9 @@ function init(){
 function applySession(session){
   document.getElementById('dr-loggedout').style.display='none';
   document.getElementById('nav-notif-btn').style.display='block';
-  if(session.type==='patient'){
+  if(session.type==='admin'){
+    document.getElementById('dr-admin').style.display='block';
+  } else if(session.type==='patient'){
     document.getElementById('dr-patient').style.display='block';
     document.getElementById('dr-patient-name').textContent=session.name||session.email;
   } else {
@@ -1294,6 +1337,15 @@ function doLogin(){
   const errEl=document.getElementById('login-error');
   errEl.style.display='none';
   if(!email||!pwd){errEl.textContent='Veuillez remplir tous les champs.';errEl.style.display='block';return}
+  // ── Vérification compte Admin ──
+  if(email===ADMIN_EMAIL&&pwd===ADMIN_PWD){
+    saveSession({id:'admin',type:'admin',email:ADMIN_EMAIL});
+    document.getElementById('dr-loggedout').style.display='none';
+    document.getElementById('dr-admin').style.display='block';
+    document.getElementById('nav-notif-btn').style.display='block';
+    toast('✅ Bienvenue Administrateur Psycholab','green');
+    goAdmin();return;
+  }
   const db=getDB();
   // check patient
   let user=db.users.find(u=>u.email===email&&u.pwd===hashPwd(pwd));
@@ -1444,10 +1496,143 @@ function doLogout(){
   document.getElementById('dr-loggedout').style.display='block';
   document.getElementById('dr-patient').style.display='none';
   document.getElementById('dr-pro').style.display='none';
+  document.getElementById('dr-admin').style.display='none';
   document.getElementById('nav-notif-btn').style.display='none';
   document.getElementById('nav-notif-dot').style.display='none';
   toast('👋 Déconnecté','');
   goHome();
+}
+
+// ════════════════════════════════════════════════
+//  ADMIN
+// ════════════════════════════════════════════════
+const ADMIN_EMAIL='reservation.psycholab@gmail.com';
+const ADMIN_PWD='Psycholab2026!';
+
+function goAdmin(){
+  showView('v-admin');
+  renderAdminPanel();
+}
+
+function renderAdminPanel(){
+  const db=getDB();
+  const pending=db.pros.filter(p=>!p.active);
+  const active=db.pros.filter(p=>p.active);
+  document.getElementById('adm-stat-pending').textContent=pending.length;
+  document.getElementById('adm-stat-active').textContent=active.length;
+
+  // Pending list
+  const pendEl=document.getElementById('adm-pending-list');
+  if(!pending.length){
+    pendEl.innerHTML=`<div class="empty-state"><div class="empty-ico">✅</div><h3 class="empty-title">Aucun dossier en attente</h3><p class="empty-sub">Tous les dossiers ont été traités.</p></div>`;
+  } else {
+    pendEl.innerHTML=pending.map(p=>`
+      <div style="background:#fff;border:1.5px solid var(--border);border-radius:14px;padding:1rem;margin-bottom:.75rem;border-left:4px solid var(--orange)">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:.7rem;gap:.5rem">
+          <div>
+            <div style="font-family:'Playfair Display',serif;font-size:.95rem;font-weight:700;color:var(--ch)">Dr. ${escHtml(p.fn)} ${escHtml(p.ln)}</div>
+            <div style="font-size:.72rem;color:var(--teal);font-weight:700;text-transform:uppercase;letter-spacing:.04em;margin-top:.1rem">${escHtml(p.spec)}</div>
+          </div>
+          <span style="background:var(--orange-l);color:var(--orange);font-size:.65rem;font-weight:700;padding:.22rem .6rem;border-radius:20px;flex-shrink:0">⏳ En attente</span>
+        </div>
+        <div style="font-size:.78rem;color:var(--mid);line-height:1.8;background:var(--sand);border-radius:10px;padding:.75rem;margin-bottom:.75rem">
+          📧 <strong>${escHtml(p.email)}</strong><br/>
+          📞 ${escHtml(p.tel||'—')}<br/>
+          🏥 N° RPPS : <strong>${escHtml(p.rpps)}</strong><br/>
+          🎓 ${escHtml(p.diplome)}<br/>
+          ⏱️ ${escHtml(p.exp)} ans d'expérience<br/>
+          💰 ${p.price?p.price+'€/séance':'Tarif non communiqué'}<br/>
+          📝 ${escHtml((p.bio||'').substring(0,120))}${(p.bio||'').length>120?'…':''}<br/>
+          📅 Inscrit le : ${formatDate(p.createdAt)}
+        </div>
+        <div style="display:flex;gap:.5rem;flex-wrap:wrap">
+          <button onclick="validatePro('${p.id}')" style="flex:1;background:var(--green);color:#fff;border:none;border-radius:10px;padding:.72rem;font-size:.84rem;font-weight:700;cursor:pointer;transition:all .2s">✅ Valider le compte</button>
+          <button onclick="rejectPro('${p.id}')" style="flex:1;background:var(--red-l);color:var(--red);border:1.5px solid var(--red);border-radius:10px;padding:.7rem;font-size:.84rem;font-weight:600;cursor:pointer;transition:all .2s">❌ Refuser</button>
+        </div>
+      </div>`).join('');
+  }
+
+  // Active list
+  const actEl=document.getElementById('adm-active-list');
+  if(!active.length){
+    actEl.innerHTML=`<div style="text-align:center;padding:1.5rem;color:var(--soft);font-size:.82rem">Aucun professionnel actif pour le moment.</div>`;
+  } else {
+    actEl.innerHTML=active.map(p=>`
+      <div style="background:#fff;border:1.5px solid var(--border);border-radius:14px;padding:1rem;margin-bottom:.6rem;border-left:4px solid var(--green);display:flex;align-items:center;justify-content:space-between;gap:.7rem">
+        <div>
+          <div style="font-size:.88rem;font-weight:600;color:var(--ch)">Dr. ${escHtml(p.fn)} ${escHtml(p.ln)}</div>
+          <div style="font-size:.72rem;color:var(--teal);font-weight:600">${escHtml(p.spec)}</div>
+          <div style="font-size:.7rem;color:var(--soft);margin-top:.1rem">${escHtml(p.email)}</div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:.35rem;align-items:flex-end">
+          <span style="background:var(--green-l);color:var(--green);font-size:.65rem;font-weight:700;padding:.22rem .6rem;border-radius:20px">✅ Actif</span>
+          <button onclick="deactivatePro('${p.id}')" style="background:var(--red-l);color:var(--red);border:1.5px solid var(--red);border-radius:8px;padding:.28rem .65rem;font-size:.68rem;font-weight:600;cursor:pointer">Désactiver</button>
+        </div>
+      </div>`).join('');
+  }
+}
+
+function validatePro(proId){
+  const db=getDB();
+  const pro=db.pros.find(p=>p.id===proId);
+  if(!pro)return;
+  pro.active=true;
+  pro.validatedAt=new Date().toISOString();
+  saveDB(db);
+  // Envoyer email de validation via Formspree
+  fetch('https://formspree.io/f/xjgzoarv',{
+    method:'POST',
+    headers:{'Content-Type':'application/json','Accept':'application/json'},
+    body:JSON.stringify({
+      _subject:'✅ Compte Psycholab Pro validé — Dr. '+pro.fn+' '+pro.ln,
+      type:'VALIDATION_COMPTE',
+      destinataire:'Dr. '+pro.fn+' '+pro.ln,
+      email_pro:pro.email,
+      specialite:pro.spec,
+      message:'Votre compte professionnel Psycholab a été validé. Vous pouvez maintenant vous connecter et recevoir des rendez-vous.',
+      date_validation:new Date().toLocaleDateString('fr-FR',{day:'numeric',month:'long',year:'numeric'})
+    })
+  }).then(()=>{
+    toast('✅ Compte validé — Email envoyé à Dr. '+pro.ln,'green');
+  }).catch(()=>{
+    toast('✅ Compte validé','green');
+  });
+  renderHome();
+  renderAdminPanel();
+}
+
+function rejectPro(proId){
+  const db=getDB();
+  const idx=db.pros.findIndex(p=>p.id===proId);
+  if(idx===-1)return;
+  const pro=db.pros[idx];
+  fetch('https://formspree.io/f/xjgzoarv',{
+    method:'POST',
+    headers:{'Content-Type':'application/json','Accept':'application/json'},
+    body:JSON.stringify({
+      _subject:'❌ Dossier Psycholab non retenu — Dr. '+pro.fn+' '+pro.ln,
+      type:'REFUS_DOSSIER',
+      destinataire:'Dr. '+pro.fn+' '+pro.ln,
+      email_pro:pro.email,
+      specialite:pro.spec,
+      message:'Après vérification, votre dossier n\'a pas pu être validé. Veuillez nous contacter pour plus d\'informations.'
+    })
+  }).catch(()=>{});
+  db.pros.splice(idx,1);
+  saveDB(db);
+  toast('❌ Dossier refusé et supprimé','red');
+  renderAdminPanel();
+}
+
+function deactivatePro(proId){
+  const db=getDB();
+  const pro=db.pros.find(p=>p.id===proId);
+  if(!pro)return;
+  pro.active=false;
+  saveDB(db);
+  toast('⚠️ Compte désactivé','');
+  renderAdminPanel();
+  renderHome();
 }
 
 // ════════════════════════════════════════════════
