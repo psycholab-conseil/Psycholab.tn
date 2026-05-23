@@ -1385,7 +1385,7 @@ function doSignupPro(){
   // ── Envoi email réel à reservation.psycholab@gmail.com ──
   const btn=document.querySelector('#v-signup-pro .btn-submit');
   if(btn){btn.disabled=true;btn.textContent='📧 Envoi en cours…';}
-  emailjs.send('psycholab_gmail','contact_form',{
+  emailjs.send('psycholab_gmail','5jgzsb2',{
     nom:fn+' '+ln,
     spec:spec,
     email:email,
