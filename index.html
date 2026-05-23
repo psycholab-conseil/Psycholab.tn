@@ -13,6 +13,83 @@ emailjs.init({
   limitRate: {throttle: 2000}
 });
 </script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+const SUPABASE_URL='https://oybfxetivkwnynpvojki.supabase.co';
+const SUPABASE_KEY='sb_publishable_3lGMf5FZavPM9aSnZEqlFA_6uzmH_CL';
+const supa=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+
+// ── Fonctions Supabase ──
+async function sbSavePro(pro){
+  try{
+    const{error}=await supa.from('pros').upsert([{
+      id:pro.id,fn:pro.fn,ln:pro.ln,email:pro.email,tel:pro.tel,
+      spec:pro.spec,rpps:pro.rpps,diplome:pro.diplome,exp:pro.exp,
+      bio:pro.bio,tags:pro.tags,price:pro.price,tz:pro.tz,
+      cons_vid:pro.consVid,cons_pres:pro.consPres,
+      lang_fr:pro.langFr,lang_en:pro.langEn,lang_ar:pro.langAr,
+      pwd:pro.pwd,active:pro.active,notif:pro.notif,
+      created_at:pro.createdAt
+    }]);
+    if(error)console.error('Supabase pro save error:',error);
+  }catch(e){console.error('Supabase error:',e);}
+}
+
+async function sbSaveUser(user){
+  try{
+    const{error}=await supa.from('users').upsert([{
+      id:user.id,fn:user.fn,ln:user.ln,email:user.email,
+      tel:user.tel,tz:user.tz,pwd:user.pwd,notif:user.notif,
+      created_at:user.createdAt
+    }]);
+    if(error)console.error('Supabase user save error:',error);
+  }catch(e){console.error('Supabase error:',e);}
+}
+
+async function sbSaveRdv(rdv){
+  try{
+    const{error}=await supa.from('rdvs').upsert([{
+      id:rdv.id,pro_id:rdv.proId,pro_fn:rdv.proFn,pro_ln:rdv.proLn,
+      spec:rdv.spec,pat_id:rdv.patId,pat_fn:rdv.patFn,pat_ln:rdv.patLn,
+      pat_email:rdv.patEmail,date:rdv.date,slot:rdv.slot,
+      type:rdv.type,motif:rdv.motif,status:rdv.status,
+      created_at:rdv.createdAt
+    }]);
+    if(error)console.error('Supabase rdv save error:',error);
+  }catch(e){console.error('Supabase error:',e);}
+}
+
+async function sbUpdateProStatus(proId,active){
+  try{
+    const{error}=await supa.from('pros').update({active}).eq('id',proId);
+    if(error)console.error('Supabase update error:',error);
+  }catch(e){console.error('Supabase error:',e);}
+}
+
+async function sbLoadPros(){
+  try{
+    const{data,error}=await supa.from('pros').select('*');
+    if(error){console.error('Supabase load error:',error);return null;}
+    return data;
+  }catch(e){return null;}
+}
+
+async function sbLoadUsers(){
+  try{
+    const{data,error}=await supa.from('users').select('*');
+    if(error){return null;}
+    return data;
+  }catch(e){return null;}
+}
+
+async function sbLoadRdvs(){
+  try{
+    const{data,error}=await supa.from('rdvs').select('*');
+    if(error){return null;}
+    return data;
+  }catch(e){return null;}
+}
+</script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -455,7 +532,12 @@ input,select,textarea{font-family:'DM Sans',sans-serif}
 .ai-send-btn:hover{background:var(--purple-d,#4A2E7A)}
 .ai-send-btn:disabled{opacity:.5;cursor:not-allowed}
 
-/* ─── RTL SUPPORT ─── */
+/* ─── ADMIN TABS ─── */
+.adm-tab{background:#fff;border:1.5px solid var(--border);border-radius:20px;padding:.42rem .9rem;font-size:.75rem;font-weight:500;color:var(--mid);white-space:nowrap;flex-shrink:0;cursor:pointer;transition:all var(--anim)}
+.adm-tab.on{background:#C0392B;border-color:#C0392B;color:#fff}
+.adm-tab:hover:not(.on){background:#FDF0EE;border-color:#C0392B;color:#C0392B}
+.adm-pane{display:none}
+.adm-pane.on{display:block}
 [dir="rtl"] .nav,[dir="rtl"] .pro-top,[dir="rtl"] .pat-hdr{flex-direction:row-reverse}
 [dir="rtl"] .drawer{right:auto;left:0;transform:translateX(-100%)}
 [dir="rtl"] .drawer.on{transform:translateX(0)}
@@ -486,7 +568,7 @@ body[data-lang="ar"]{font-family:'Segoe UI',Tahoma,'Arabic Typesetting',sans-ser
 <div class="lang-bar">
   <button class="lang-btn on" onclick="setLang('fr')" id="lb-fr">FR</button>
   <button class="lang-btn" onclick="setLang('en')" id="lb-en">EN</button>
-  <button class="lang-btn" onclick="setLang('ar')" id="lb-ar">ع AR</button>
+  <button class="lang-btn" onclick="setLang('ar')" id="lb-ar" style="font-family:'Segoe UI',Tahoma,Arial,sans-serif;font-size:.75rem">عربي</button>
 </div>
 
 <!-- NAV -->
@@ -545,12 +627,12 @@ body[data-lang="ar"]{font-family:'Segoe UI',Tahoma,'Arabic Typesetting',sans-ser
   <div class="hero">
     <div class="hero-badge">✦ Plateforme certifiée · Sécurisée · RGPD</div>
     <h1>Votre santé mentale,<br/><em>prise en charge</em><br/>par des experts</h1>
-    <p>Psychiatres, psychologues, psychomotriciens, ergothérapeutes et orthophonistes — consultations sécurisées en ligne ou en présentiel.</p>
+    <p>Psychiatres, psychologues, psychomotriciens, ergothérapeutes et orthophonistes — consultations sécurisées en ligne ou en présentiel. <strong style="color:var(--gold-l)">Dédié aux Tunisiens expatriés et aux francophones du monde entier.</strong></p>
     <div class="trust-grid">
       <div class="trust-item">🔒 Chiffrement E2E</div>
       <div class="trust-item">🩺 Pros certifiés</div>
-      <div class="trust-item">📧 Notifications mail</div>
-      <div class="trust-item">🌍 International</div>
+      <div class="trust-item">🇹🇳 Spécialistes tunisiens</div>
+      <div class="trust-item">🌍 Expatriés bienvenus</div>
     </div>
     <div class="hero-btns">
       <button class="hero-btn-p" onclick="scrollToSearch()">🔍 Trouver un spécialiste</button>
@@ -566,10 +648,17 @@ body[data-lang="ar"]{font-family:'Segoe UI',Tahoma,'Arabic Typesetting',sans-ser
         <select class="fsel" id="fs" onchange="doFilter()">
           <option value="">Toutes spécialités</option>
           <option>Psychiatre</option>
+          <option>Pédopsychiatre</option>
           <option>Psychologue clinicien</option>
+          <option>Neuropsychologue</option>
+          <option>Psychothérapeute TCC</option>
+          <option>Thérapeute EMDR</option>
           <option>Psychomotricien</option>
           <option>Ergothérapeute</option>
           <option>Orthophoniste</option>
+          <option>Sophrologue</option>
+          <option>Art-thérapeute</option>
+          <option>Coach en développement personnel</option>
         </select>
         <select class="fsel" id="ft" onchange="doFilter()">
           <option value="">Tout type</option>
@@ -630,6 +719,70 @@ body[data-lang="ar"]{font-family:'Segoe UI',Tahoma,'Arabic Typesetting',sans-ser
     <div class="faq-item"><button class="faq-q" onclick="this.parentElement.classList.toggle('open')">L'IA intégrée, c'est quoi ?<span class="faq-arr">▾</span></button><div class="faq-a">L'assistant IA (Claude) dans le tableau de bord aide les professionnels à rédiger des comptes-rendus, à répondre aux patients, et à générer des prévisualisations d'emails personnalisés. Il ne donne aucun avis médical.</div></div>
   </div>
 
+  <!-- SECTION EXPATRIÉS TUNISIENS -->
+  <div style="background:linear-gradient(135deg,#C0392B 0%,#8B0000 50%,#C0392B 100%);padding:2.5rem 1.5rem;position:relative;overflow:hidden">
+    <div style="position:absolute;inset:0;background:url('data:image/svg+xml,%3Csvg width=%2260%22 height=%2260%22 viewBox=%220 0 60 60%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cg fill=%22none%22 fill-rule=%22evenodd%22%3E%3Cg fill=%22%23ffffff%22 fill-opacity=%220.04%22%3E%3Cpath d=%22M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z%22/%3E%3C/g%3E%3C/g%3E%3C/svg%3E')"></div>
+    <div style="max-width:700px;margin:0 auto;position:relative;z-index:1;text-align:center">
+      <div style="display:inline-flex;align-items:center;gap:.5rem;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);color:rgba(255,255,255,.9);font-size:.65rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;padding:.3rem .85rem;border-radius:20px;margin-bottom:1rem">
+        🇹🇳 Communauté tunisienne à l'étranger
+      </div>
+      <h2 style="font-family:'Playfair Display',serif;font-size:clamp(1.3rem,5vw,2rem);font-weight:700;color:#fff;margin-bottom:.7rem;line-height:1.25">
+        Vous êtes Tunisien(ne) expatrié(e) ?<br/><em style="color:#FFD700;font-style:italic">Nos spécialistes tunisiens vous accompagnent</em>
+      </h2>
+      <p style="color:rgba(255,255,255,.85);font-size:.87rem;line-height:1.7;margin-bottom:1.3rem">
+        Psycholab est la plateforme dédiée aux <strong style="color:#FFD700">Tunisiens vivant en France, en Europe, en Amérique du Nord et dans le monde entier</strong> qui souhaitent consulter des spécialistes de santé mentale tunisiens, arabophones ou francophones, dans un cadre culturellement adapté.
+      </p>
+
+      <!-- Drapeaux pays -->
+      <div style="display:flex;flex-wrap:wrap;justify-content:center;gap:.5rem;margin-bottom:1.3rem">
+        <span style="background:rgba(255,255,255,.15);color:#fff;padding:.3rem .7rem;border-radius:20px;font-size:.78rem;font-weight:500">🇫🇷 France</span>
+        <span style="background:rgba(255,255,255,.15);color:#fff;padding:.3rem .7rem;border-radius:20px;font-size:.78rem;font-weight:500">🇩🇪 Allemagne</span>
+        <span style="background:rgba(255,255,255,.15);color:#fff;padding:.3rem .7rem;border-radius:20px;font-size:.78rem;font-weight:500">🇮🇹 Italie</span>
+        <span style="background:rgba(255,255,255,.15);color:#fff;padding:.3rem .7rem;border-radius:20px;font-size:.78rem;font-weight:500">🇧🇪 Belgique</span>
+        <span style="background:rgba(255,255,255,.15);color:#fff;padding:.3rem .7rem;border-radius:20px;font-size:.78rem;font-weight:500">🇨🇦 Canada</span>
+        <span style="background:rgba(255,255,255,.15);color:#fff;padding:.3rem .7rem;border-radius:20px;font-size:.78rem;font-weight:500">🇺🇸 États-Unis</span>
+        <span style="background:rgba(255,255,255,.15);color:#fff;padding:.3rem .7rem;border-radius:20px;font-size:.78rem;font-weight:500">🇶🇦 Qatar</span>
+        <span style="background:rgba(255,255,255,.15);color:#fff;padding:.3rem .7rem;border-radius:20px;font-size:.78rem;font-weight:500">🇦🇪 Émirats</span>
+        <span style="background:rgba(255,255,255,.15);color:#fff;padding:.3rem .7rem;border-radius:20px;font-size:.78rem;font-weight:500">🌍 Et partout dans le monde</span>
+      </div>
+
+      <!-- Points forts -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:.6rem;margin-bottom:1.3rem;text-align:left">
+        <div style="background:rgba(255,255,255,.12);border-radius:12px;padding:.85rem;border:1px solid rgba(255,255,255,.2)">
+          <div style="font-size:1.1rem;margin-bottom:.3rem">🧠</div>
+          <div style="font-size:.8rem;font-weight:700;color:#FFD700;margin-bottom:.2rem">Spécialistes tunisiens</div>
+          <div style="font-size:.74rem;color:rgba(255,255,255,.8);line-height:1.5">Psychiatres, psychologues et thérapeutes formés en Tunisie et en Europe</div>
+        </div>
+        <div style="background:rgba(255,255,255,.12);border-radius:12px;padding:.85rem;border:1px solid rgba(255,255,255,.2)">
+          <div style="font-size:1.1rem;margin-bottom:.3rem">🗣️</div>
+          <div style="font-size:.8rem;font-weight:700;color:#FFD700;margin-bottom:.2rem">Arabe · Français · Darija</div>
+          <div style="font-size:.74rem;color:rgba(255,255,255,.8);line-height:1.5">Consultez dans votre langue, dans votre dialecte, en toute confiance</div>
+        </div>
+        <div style="background:rgba(255,255,255,.12);border-radius:12px;padding:.85rem;border:1px solid rgba(255,255,255,.2)">
+          <div style="font-size:1.1rem;margin-bottom:.3rem">🌍</div>
+          <div style="font-size:.8rem;font-weight:700;color:#FFD700;margin-bottom:.2rem">Fuseaux horaires adaptés</div>
+          <div style="font-size:.74rem;color:rgba(255,255,255,.8);line-height:1.5">Rendez-vous planifiés selon votre pays de résidence</div>
+        </div>
+        <div style="background:rgba(255,255,255,.12);border-radius:12px;padding:.85rem;border:1px solid rgba(255,255,255,.2)">
+          <div style="font-size:1.1rem;margin-bottom:.3rem">💙</div>
+          <div style="font-size:.8rem;font-weight:700;color:#FFD700;margin-bottom:.2rem">Contexte culturel partagé</div>
+          <div style="font-size:.74rem;color:rgba(255,255,255,.8);line-height:1.5">Des thérapeutes qui comprennent vos valeurs, votre culture et votre parcours</div>
+        </div>
+      </div>
+
+      <!-- Citation -->
+      <div style="background:rgba(255,255,255,.08);border-radius:12px;padding:1rem;margin-bottom:1.3rem;border-left:3px solid #FFD700;text-align:left">
+        <p style="font-style:italic;color:rgba(255,255,255,.9);font-size:.83rem;line-height:1.65;margin-bottom:.5rem">"Vivre à l'étranger peut être source de stress, d'isolement ou de difficultés d'adaptation. Parler à un spécialiste tunisien qui comprend votre vécu peut faire toute la différence."</p>
+        <div style="font-size:.72rem;color:#FFD700;font-weight:600">— L'équipe Psycholab</div>
+      </div>
+
+      <div style="display:flex;gap:.7rem;justify-content:center;flex-wrap:wrap">
+        <button onclick="showSignup('patient')" style="background:#FFD700;color:#8B0000;border:none;font-size:.88rem;font-weight:700;padding:.75rem 1.4rem;border-radius:var(--r-sm);cursor:pointer;transition:all .2s">🇹🇳 Je suis expatrié — Créer mon compte</button>
+        <button onclick="showSignup('pro')" style="background:rgba(255,255,255,.15);color:#fff;border:1.5px solid rgba(255,255,255,.4);font-size:.86rem;font-weight:500;padding:.72rem 1.2rem;border-radius:var(--r-sm);cursor:pointer">🩺 Je suis spécialiste tunisien</button>
+      </div>
+    </div>
+  </div>
+
   <div class="cta-banner">
     <h2>Prêt à commencer ?</h2>
     <p>Rejoignez Psycholab — gratuit, rapide, sécurisé.</p>
@@ -672,34 +825,21 @@ body[data-lang="ar"]{font-family:'Segoe UI',Tahoma,'Arabic Typesetting',sans-ser
     <div class="auth-card">
       <div class="auth-ico">👤</div>
       <h2 class="auth-title">Créer un compte patient</h2>
-      <p class="auth-sub">Gratuit · Sécurisé · Notifications email incluses</p>
+      <p class="auth-sub">Gratuit · Sécurisé · 2 minutes</p>
       <p class="required-note">* Champs obligatoires</p>
-      <div class="form-section-title">👤 Informations personnelles</div>
       <div class="fgroup-row">
         <div class="fgroup"><label>Prénom *</label><input id="spat-fn" placeholder="Prénom"/></div>
         <div class="fgroup"><label>Nom *</label><input id="spat-ln" placeholder="Nom"/></div>
       </div>
       <div class="fgroup"><label>Email *</label><input type="email" id="spat-email" placeholder="votre@email.com"/></div>
       <div class="fgroup"><label>Téléphone</label><input type="tel" id="spat-tel" placeholder="+33 6 12 34 56 78"/></div>
-      <div class="fgroup"><label>Fuseau horaire</label>
-        <select id="spat-tz">
-          <option value="Europe/Paris">🇫🇷 Europe/Paris (UTC+1/+2)</option>
-          <option value="Africa/Tunis">🇹🇳 Afrique/Tunis (UTC+1)</option>
-          <option value="Africa/Casablanca">🇲🇦 Afrique/Casablanca (UTC+0/+1)</option>
-          <option value="Africa/Algiers">🇩🇿 Afrique/Alger (UTC+1)</option>
-          <option value="America/Montreal">🇨🇦 Amérique/Montréal (UTC-5/-4)</option>
-          <option value="Europe/London">🇬🇧 Europe/Londres (UTC+0/+1)</option>
-          <option value="Europe/Brussels">🇧🇪 Europe/Bruxelles (UTC+1/+2)</option>
-          <option value="America/New_York">🇺🇸 Amérique/New York (UTC-5/-4)</option>
-        </select>
-      </div>
       <div class="form-section-title">🔒 Sécurité</div>
       <div class="fgroup"><label>Mot de passe * (min. 8 caractères)</label><input type="password" id="spat-pwd" placeholder="••••••••"/></div>
       <div class="fgroup"><label>Confirmer le mot de passe *</label><input type="password" id="spat-pwd2" placeholder="••••••••"/></div>
       <div id="spat-error" class="error-box"></div>
-      <div class="cb-row"><input type="checkbox" id="spat-cgu"/><p class="cb-txt">J'accepte les <strong>Conditions Générales d'Utilisation</strong> et la <strong>Politique de confidentialité</strong> de Psycholab.</p></div>
-      <div class="cb-row"><input type="checkbox" id="spat-notif" checked/><p class="cb-txt">J'accepte de recevoir des <strong>notifications email</strong> : confirmation de RDV, rappels 24h et 2h avant, et communications importantes.</p></div>
-      <button class="btn-submit" onclick="doSignupPatient()">Créer mon compte patient</button>
+      <div class="cb-row"><input type="checkbox" id="spat-cgu"/><p class="cb-txt">J'accepte les <strong>Conditions Générales d'Utilisation</strong> et la <strong>Politique de confidentialité</strong>.</p></div>
+      <div class="cb-row"><input type="checkbox" id="spat-notif" checked/><p class="cb-txt">✅ J'accepte de recevoir des <strong>notifications email</strong> pour mes rendez-vous (confirmation, rappels 24h et 2h avant).</p></div>
+      <button class="btn-submit" onclick="doSignupPatient()">Créer mon compte</button>
       <p class="auth-switch">Déjà un compte ? <a onclick="showLogin()">Se connecter</a></p>
     </div>
   </div>
@@ -711,71 +851,84 @@ body[data-lang="ar"]{font-family:'Segoe UI',Tahoma,'Arabic Typesetting',sans-ser
     <div class="auth-card">
       <div class="auth-ico">🩺</div>
       <h2 class="auth-title">Inscription professionnelle</h2>
-      <p class="auth-sub">Psychiatres, psychologues, psychomotriciens, ergothérapeutes, orthophonistes</p>
-      <div class="info-box">ℹ️ Votre dossier sera vérifié sous 24-48h. Vous recevrez un email de confirmation à chaque étape.</div>
+      <p class="auth-sub">Spécialistes en santé mentale</p>
+      <div class="info-box">ℹ️ Votre dossier sera examiné sous 24-48h. Vous recevrez un email de confirmation.</div>
       <p class="required-note">* Champs obligatoires</p>
 
-      <div class="form-section-title">👤 Identité professionnelle</div>
+      <div class="form-section-title">👤 Informations personnelles</div>
       <div class="fgroup-row">
         <div class="fgroup"><label>Prénom *</label><input id="spro-fn" placeholder="Prénom"/></div>
-        <div class="fgroup"><label>Nom *</label><input id="spro-ln" placeholder="Nom de famille"/></div>
+        <div class="fgroup"><label>Nom *</label><input id="spro-ln" placeholder="Nom"/></div>
       </div>
-      <div class="fgroup"><label>Email professionnel *</label><input type="email" id="spro-email" placeholder="dr.nom@cabinet.com"/></div>
-      <div class="fgroup"><label>Téléphone professionnel *</label><input type="tel" id="spro-tel" placeholder="+33 1 23 45 67 89"/></div>
+      <div class="fgroup"><label>Email *</label><input type="email" id="spro-email" placeholder="votre@email.com"/></div>
+      <div class="fgroup"><label>Téléphone *</label><input type="tel" id="spro-tel" placeholder="+33 6 12 34 56 78"/></div>
 
-      <div class="form-section-title">🎓 Qualifications</div>
-      <div class="fgroup"><label>Spécialité *</label>
+      <div class="form-section-title">🎓 Spécialité</div>
+      <div class="fgroup"><label>Votre spécialité *</label>
         <select id="spro-spec">
-          <option value="">— Sélectionner —</option>
-          <option>Psychiatre</option>
-          <option>Psychologue clinicien</option>
-          <option>Psychomotricien</option>
-          <option>Ergothérapeute</option>
-          <option>Orthophoniste</option>
-        </select>
-      </div>
-      <div class="fgroup"><label>Numéro RPPS / Agrément professionnel *</label><input id="spro-rpps" placeholder="Ex: 10003456789"/></div>
-      <div class="fgroup"><label>Diplôme / Titre *</label><input id="spro-diplome" placeholder="Ex: Doctorat en médecine, Master en psychologie clinique…"/></div>
-      <div class="fgroup"><label>Années d'expérience *</label>
-        <select id="spro-exp">
-          <option value="">— Sélectionner —</option>
-          <option value="1">Moins de 2 ans</option>
-          <option value="3">2 à 5 ans</option>
-          <option value="7">5 à 10 ans</option>
-          <option value="15">Plus de 10 ans</option>
+          <option value="">— Sélectionner votre spécialité —</option>
+          <optgroup label="🧠 Médecine psychiatrique">
+            <option>Psychiatre</option>
+            <option>Pédopsychiatre</option>
+            <option>Neuropsychiatre</option>
+            <option>Psychiatre de liaison</option>
+            <option>Psychiatre gériatrique</option>
+          </optgroup>
+          <optgroup label="🛋️ Psychologie">
+            <option>Psychologue clinicien</option>
+            <option>Psychologue du travail</option>
+            <option>Neuropsychologue</option>
+            <option>Psychologue de l'enfant</option>
+            <option>Psychologue scolaire</option>
+            <option>Psychologue social</option>
+            <option>Psychologue de la santé</option>
+            <option>Psychologue criminologue</option>
+          </optgroup>
+          <optgroup label="💬 Psychothérapie">
+            <option>Psychothérapeute TCC</option>
+            <option>Psychanalyste</option>
+            <option>Thérapeute EMDR</option>
+            <option>Thérapeute familiale systémique</option>
+            <option>Thérapeute de couple</option>
+            <option>Thérapeute ACT</option>
+            <option>Hypnothérapeute clinique</option>
+            <option>Art-thérapeute</option>
+            <option>Sophrologue</option>
+          </optgroup>
+          <optgroup label="🤸 Thérapies spécialisées">
+            <option>Psychomotricien</option>
+            <option>Ergothérapeute</option>
+            <option>Orthophoniste</option>
+            <option>Musicothérapeute</option>
+            <option>Psychodramatiste</option>
+          </optgroup>
+          <optgroup label="🌱 Coaching & Bien-être">
+            <option>Coach en développement personnel</option>
+            <option>Consultant en gestion du stress</option>
+            <option>Spécialiste en addictologie</option>
+            <option>Thérapeute en burn-out</option>
+          </optgroup>
+          <optgroup label="👶 Enfance & Adolescence">
+            <option>Psychologue de l'enfant et adolescent</option>
+            <option>Thérapeute autisme et TSA</option>
+            <option>Spécialiste TDAH</option>
+            <option>Thérapeute troubles alimentaires</option>
+          </optgroup>
         </select>
       </div>
 
-      <div class="form-section-title">📋 Informations de consultation</div>
+      <div class="form-section-title">📋 Consultation</div>
       <div class="fgroup-row">
-        <div class="fgroup"><label>Consultation vidéo ?</label>
-          <select id="spro-vid">
-            <option value="1">✅ Oui</option>
-            <option value="0">❌ Non</option>
-          </select>
+        <div class="fgroup"><label>Vidéo ?</label>
+          <select id="spro-vid"><option value="1">✅ Oui</option><option value="0">❌ Non</option></select>
         </div>
         <div class="fgroup"><label>Présentiel ?</label>
-          <select id="spro-pres">
-            <option value="1">✅ Oui</option>
-            <option value="0">❌ Non</option>
-          </select>
+          <select id="spro-pres"><option value="1">✅ Oui</option><option value="0">❌ Non</option></select>
         </div>
       </div>
-      <div class="fgroup"><label>Tarif par séance (€, laisser vide si non communiqué)</label><input type="number" id="spro-price" placeholder="Ex: 70"/></div>
-      <div class="fgroup"><label>Adresse du cabinet (si présentiel)</label><input id="spro-addr" placeholder="Adresse complète"/></div>
-      <div class="fgroup"><label>Fuseau horaire *</label>
-        <select id="spro-tz">
-          <option value="Europe/Paris">🇫🇷 Europe/Paris (UTC+1/+2)</option>
-          <option value="Africa/Tunis">🇹🇳 Afrique/Tunis (UTC+1)</option>
-          <option value="Africa/Casablanca">🇲🇦 Afrique/Casablanca</option>
-          <option value="Africa/Algiers">🇩🇿 Afrique/Alger (UTC+1)</option>
-          <option value="America/Montreal">🇨🇦 Amérique/Montréal</option>
-          <option value="Europe/London">🇬🇧 Europe/Londres</option>
-          <option value="Europe/Brussels">🇧🇪 Europe/Bruxelles</option>
-        </select>
-      </div>
+      <div class="fgroup"><label>Tarif / séance (€)</label><input type="number" id="spro-price" placeholder="Ex: 60"/></div>
 
-      <div class="form-section-title">🌐 Langues de consultation</div>
+      <div class="form-section-title">🌐 Langues</div>
       <div style="display:flex;gap:.6rem;flex-wrap:wrap;margin-bottom:.9rem">
         <label style="display:flex;align-items:center;gap:.35rem;font-size:.82rem;background:var(--sand);border:1.5px solid var(--border);border-radius:var(--r-sm);padding:.5rem .8rem;cursor:pointer"><input type="checkbox" id="spro-langfr" checked style="accent-color:var(--teal)"/> 🇫🇷 Français</label>
         <label style="display:flex;align-items:center;gap:.35rem;font-size:.82rem;background:var(--sand);border:1.5px solid var(--border);border-radius:var(--r-sm);padding:.5rem .8rem;cursor:pointer"><input type="checkbox" id="spro-langen" style="accent-color:var(--teal)"/> 🇬🇧 English</label>
@@ -783,18 +936,18 @@ body[data-lang="ar"]{font-family:'Segoe UI',Tahoma,'Arabic Typesetting',sans-ser
       </div>
 
       <div class="form-section-title">📝 Présentation</div>
-      <div class="fgroup"><label>Biographie / Présentation *</label><textarea id="spro-bio" placeholder="Décrivez votre approche thérapeutique, vos spécialisations, votre méthode de travail…" style="min-height:100px"></textarea></div>
-      <div class="fgroup"><label>Domaines d'intervention</label><input id="spro-tags" placeholder="Ex: Anxiété, Burn-out, TCC, Thérapie de couple"/></div>
+      <div class="fgroup"><label>Biographie *</label><textarea id="spro-bio" placeholder="Décrivez votre approche, vos spécialisations…" style="min-height:90px"></textarea></div>
+      <div class="fgroup"><label>Domaines d'intervention</label><input id="spro-tags" placeholder="Ex: Anxiété, Dépression, TCC, Couple…"/></div>
 
       <div class="form-section-title">🔒 Sécurité</div>
       <div class="fgroup"><label>Mot de passe * (min. 8 caractères)</label><input type="password" id="spro-pwd" placeholder="••••••••"/></div>
-      <div class="fgroup"><label>Confirmer le mot de passe *</label><input type="password" id="spro-pwd2" placeholder="••••••••"/></div>
+      <div class="fgroup"><label>Confirmer *</label><input type="password" id="spro-pwd2" placeholder="••••••••"/></div>
 
       <div id="spro-error" class="error-box"></div>
-      <div class="cb-row"><input type="checkbox" id="spro-cgu"/><p class="cb-txt">J'accepte les <strong>Conditions Générales d'Utilisation</strong> et m'engage à respecter le code de déontologie de ma profession.</p></div>
+      <div class="cb-row"><input type="checkbox" id="spro-cgu"/><p class="cb-txt">J'accepte les <strong>Conditions Générales</strong> et m'engage à respecter le code de déontologie de ma profession.</p></div>
       <div class="cb-row"><input type="checkbox" id="spro-rgpd"/><p class="cb-txt">J'accepte que mes informations professionnelles soient affichées sur la plateforme conformément au <strong>RGPD</strong>.</p></div>
-      <div class="cb-row"><input type="checkbox" id="spro-notif" checked/><p class="cb-txt">J'accepte de recevoir des <strong>notifications email</strong> : nouvelles demandes de RDV, confirmations, rappels et mises à jour de compte.</p></div>
-      <button class="btn-submit" onclick="doSignupPro()">Soumettre mon dossier d'inscription</button>
+      <div class="cb-row"><input type="checkbox" id="spro-notif" checked/><p class="cb-txt">✅ J'accepte de recevoir des <strong>notifications email</strong> pour mes rendez-vous.</p></div>
+      <button class="btn-submit" onclick="doSignupPro()">Soumettre mon dossier</button>
       <p class="auth-switch">Déjà un compte ? <a onclick="showLogin()">Se connecter</a></p>
     </div>
   </div>
@@ -869,6 +1022,7 @@ body[data-lang="ar"]{font-family:'Segoe UI',Tahoma,'Arabic Typesetting',sans-ser
     </div>
     <div class="pat-tabs">
       <button class="pat-tab on" onclick="showPatDash('rdvs',this)">📋 Mes RDV</button>
+      <button class="pat-tab" onclick="showPatDash('messages',this)">💬 Messages</button>
       <button class="pat-tab" onclick="showPatDash('historique',this)">📂 Historique</button>
       <button class="pat-tab" onclick="showPatDash('notifs',this)">🔔 Notifications</button>
       <button class="pat-tab" onclick="showPatDash('profil',this)">👤 Mon profil</button>
@@ -876,6 +1030,22 @@ body[data-lang="ar"]{font-family:'Segoe UI',Tahoma,'Arabic Typesetting',sans-ser
     <div class="pat-dash on" id="pat-rdvs">
       <div class="sec-head"><h2 class="sec-ttl">Mes rendez-vous</h2><span class="count-badge" id="pat-rdv-count">0</span></div>
       <div id="pat-rdv-list"></div>
+    </div>
+    <div class="pat-dash" id="pat-messages">
+      <h2 class="sec-ttl" style="margin-bottom:1rem">💬 Mes messages</h2>
+      <div class="info-box">💬 Vos spécialistes vous envoient des messages directement depuis Psycholab.</div>
+      <div id="pat-messages-list"></div>
+      <!-- Répondre -->
+      <div style="background:#fff;border:1.5px solid var(--border);border-radius:var(--r-md);padding:1rem;margin-top:1rem">
+        <h4 style="font-size:.84rem;font-weight:600;color:var(--ch);margin-bottom:.7rem">✉️ Envoyer un message à mon spécialiste</h4>
+        <div class="fgroup"><label>Spécialiste</label>
+          <select id="pat-msg-pro" style="border:1.5px solid var(--border);border-radius:var(--r-sm);padding:.62rem .9rem;font-size:.86rem;background:var(--sand);outline:none;width:100%">
+            <option value="">— Sélectionner —</option>
+          </select>
+        </div>
+        <div class="fgroup"><label>Message</label><textarea id="pat-msg-body" placeholder="Votre message…" style="border:1.5px solid var(--border);border-radius:var(--r-sm);padding:.62rem .9rem;font-size:.86rem;background:var(--sand);outline:none;width:100%;min-height:80px;resize:vertical;line-height:1.55"></textarea></div>
+        <button onclick="patSendMessage()" style="width:100%;background:var(--teal);color:#fff;border:none;border-radius:var(--r-sm);padding:.72rem;font-size:.86rem;font-weight:600;cursor:pointer">📨 Envoyer</button>
+      </div>
     </div>
     <div class="pat-dash" id="pat-historique">
       <h2 class="sec-ttl" style="margin-bottom:1rem">Historique des consultations</h2>
@@ -906,17 +1076,264 @@ body[data-lang="ar"]{font-family:'Segoe UI',Tahoma,'Arabic Typesetting',sans-ser
     <div class="ptabs">
       <button class="ptab on" onclick="showDash('overview',this)">📊 Vue d'ensemble</button>
       <button class="ptab" onclick="showDash('rdvs',this)">📋 Mes RDV <span id="pb" style="background:var(--red);color:#fff;border-radius:10px;padding:.05rem .35rem;font-size:.62rem;margin-left:.2rem;display:none">0</span></button>
+      <button class="ptab" onclick="showDash('fiches',this)">🗂️ Fiches patients</button>
+      <button class="ptab" onclick="showDash('messages',this)">💬 Messagerie <span id="msg-badge" style="background:var(--red);color:#fff;border-radius:10px;padding:.05rem .35rem;font-size:.62rem;margin-left:.2rem;display:none">0</span></button>
+      <button class="ptab" onclick="showDash('factures',this)">🧾 Factures</button>
       <button class="ptab" onclick="showDash('avail',this)">⏰ Disponibilités</button>
       <button class="ptab" onclick="showDash('notifs',this)">🔔 Notifications</button>
-      <button class="ptab" onclick="showDash('video',this)">📹 Salle vidéo</button>
+      <button class="ptab" onclick="showDash('video',this)">📹 Vidéo / Meet</button>
       <button class="ptab" onclick="showDash('revenus',this)">💰 Revenus</button>
       <button class="ptab" onclick="showDash('remind',this)">📧 Rappels email</button>
       <button class="ptab" onclick="showDash('ai',this)">🤖 Assistant IA</button>
       <button class="ptab" onclick="showDash('profile',this)">👤 Mon profil</button>
     </div>
 
-    <!-- Overview -->
-    <div class="dash on" id="dash-overview">
+    <!-- MESSAGERIE INTERNE -->
+    <div class="dash" id="dash-messages">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem">
+        <h3 style="font-family:'Playfair Display',serif;font-size:1rem;font-weight:700;color:var(--ch)">💬 Messagerie sécurisée</h3>
+        <button onclick="showNewMessageForm()" style="background:var(--teal);color:#fff;border:none;border-radius:var(--r-sm);padding:.45rem .9rem;font-size:.78rem;font-weight:600;cursor:pointer">✉️ Nouveau message</button>
+      </div>
+      <div class="info-box">🔒 Messagerie interne sécurisée — vos patients vous écrivent directement depuis leur espace Psycholab. Aucune application externe nécessaire.</div>
+      <!-- Nouveau message -->
+      <div id="new-msg-form" style="display:none;background:#fff;border:1.5px solid var(--border);border-radius:var(--r-md);padding:1rem;margin-bottom:1rem">
+        <h4 style="font-size:.86rem;font-weight:600;color:var(--ch);margin-bottom:.8rem">✉️ Envoyer un message à un patient</h4>
+        <div class="fgroup"><label>Patient *</label>
+          <select id="msg-patient-select" style="border:1.5px solid var(--border);border-radius:var(--r-sm);padding:.62rem .9rem;font-size:.86rem;background:var(--sand);outline:none;width:100%">
+            <option value="">— Sélectionner un patient —</option>
+          </select>
+        </div>
+        <div class="fgroup"><label>Objet *</label><input id="msg-subject" placeholder="Ex: Rappel de votre rendez-vous, Résultats de bilan…" style="border:1.5px solid var(--border);border-radius:var(--r-sm);padding:.62rem .9rem;font-size:.86rem;background:var(--sand);outline:none;width:100%"/></div>
+        <div class="fgroup"><label>Message *</label><textarea id="msg-body" placeholder="Rédigez votre message sécurisé ici…" style="border:1.5px solid var(--border);border-radius:var(--r-sm);padding:.62rem .9rem;font-size:.86rem;background:var(--sand);outline:none;width:100%;min-height:100px;resize:vertical;line-height:1.55"></textarea></div>
+        <div style="display:flex;gap:.5rem">
+          <button onclick="sendSecureMessage()" style="flex:1;background:var(--teal);color:#fff;border:none;border-radius:var(--r-sm);padding:.72rem;font-size:.86rem;font-weight:600;cursor:pointer">📨 Envoyer</button>
+          <button onclick="document.getElementById('new-msg-form').style.display='none'" style="background:var(--sand);color:var(--mid);border:1.5px solid var(--border);border-radius:var(--r-sm);padding:.7rem 1rem;font-size:.86rem;font-weight:500;cursor:pointer">Annuler</button>
+        </div>
+      </div>
+      <!-- Liste messages -->
+      <div id="messages-list"></div>
+    </div>
+
+    <!-- FACTURES -->
+    <div class="dash" id="dash-factures">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem">
+        <h3 style="font-family:'Playfair Display',serif;font-size:1rem;font-weight:700;color:var(--ch)">🧾 Gestion des factures</h3>
+        <button onclick="showNewFactureForm()" style="background:var(--teal);color:#fff;border:none;border-radius:var(--r-sm);padding:.45rem .9rem;font-size:.78rem;font-weight:600;cursor:pointer">+ Nouvelle facture</button>
+      </div>
+      <div class="info-box">🧾 Factures conformes aux normes internationales — valables pour les remboursements d'assurance de vos patients.</div>
+      <!-- Formulaire nouvelle facture -->
+      <div id="facture-form" style="display:none;background:#fff;border:1.5px solid var(--border);border-radius:var(--r-md);padding:1.2rem;margin-bottom:1rem">
+        <h4 style="font-size:.88rem;font-weight:600;color:var(--ch);margin-bottom:.9rem">🧾 Créer une facture</h4>
+        <div class="fgroup"><label>Patient *</label>
+          <select id="fact-patient" style="border:1.5px solid var(--border);border-radius:var(--r-sm);padding:.62rem .9rem;font-size:.86rem;background:var(--sand);outline:none;width:100%">
+            <option value="">— Sélectionner —</option>
+          </select>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:.6rem">
+          <div class="fgroup"><label>Date de séance *</label><input type="date" id="fact-date" style="border:1.5px solid var(--border);border-radius:var(--r-sm);padding:.62rem .9rem;font-size:.86rem;background:var(--sand);outline:none;width:100%"/></div>
+          <div class="fgroup"><label>Durée (minutes)</label>
+            <select id="fact-duree" style="border:1.5px solid var(--border);border-radius:var(--r-sm);padding:.62rem .9rem;font-size:.86rem;background:var(--sand);outline:none;width:100%">
+              <option value="30">30 min</option>
+              <option value="45">45 min</option>
+              <option value="50" selected>50 min</option>
+              <option value="60">60 min</option>
+              <option value="90">90 min</option>
+            </select>
+          </div>
+        </div>
+        <div class="fgroup"><label>Type de séance *</label>
+          <select id="fact-type" style="border:1.5px solid var(--border);border-radius:var(--r-sm);padding:.62rem .9rem;font-size:.86rem;background:var(--sand);outline:none;width:100%">
+            <option>Consultation psychologique</option>
+            <option>Séance de psychothérapie</option>
+            <option>Consultation psychiatrique</option>
+            <option>Séance d'évaluation neuropsychologique</option>
+            <option>Séance TCC</option>
+            <option>Séance EMDR</option>
+            <option>Séance de psychomotricité</option>
+            <option>Séance d'ergothérapie</option>
+            <option>Séance d'orthophonie</option>
+            <option>Consultation de suivi</option>
+            <option>Bilan psychologique</option>
+          </select>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:.6rem">
+          <div class="fgroup"><label>Tarif (€) *</label><input type="number" id="fact-tarif" placeholder="Ex: 70" style="border:1.5px solid var(--border);border-radius:var(--r-sm);padding:.62rem .9rem;font-size:.86rem;background:var(--sand);outline:none;width:100%"/></div>
+          <div class="fgroup"><label>TVA (%)</label>
+            <select id="fact-tva" style="border:1.5px solid var(--border);border-radius:var(--r-sm);padding:.62rem .9rem;font-size:.86rem;background:var(--sand);outline:none;width:100%">
+              <option value="0">0% (Exonéré)</option>
+              <option value="20">20%</option>
+            </select>
+          </div>
+        </div>
+        <div class="fgroup"><label>Mode de paiement</label>
+          <select id="fact-paiement" style="border:1.5px solid var(--border);border-radius:var(--r-sm);padding:.62rem .9rem;font-size:.86rem;background:var(--sand);outline:none;width:100%">
+            <option>Virement bancaire</option>
+            <option>Chèque</option>
+            <option>Espèces</option>
+            <option>Carte bancaire</option>
+            <option>PayPal</option>
+          </select>
+        </div>
+        <div class="fgroup"><label>Notes / Remboursement assurance</label><input id="fact-notes" placeholder="Ex: Remboursable sur présentation auprès de votre assurance" style="border:1.5px solid var(--border);border-radius:var(--r-sm);padding:.62rem .9rem;font-size:.86rem;background:var(--sand);outline:none;width:100%"/></div>
+        <div style="display:flex;gap:.5rem;margin-top:.5rem">
+          <button onclick="generateFacture()" style="flex:1;background:var(--teal);color:#fff;border:none;border-radius:var(--r-sm);padding:.72rem;font-size:.86rem;font-weight:600;cursor:pointer">🧾 Générer la facture</button>
+          <button onclick="document.getElementById('facture-form').style.display='none'" style="background:var(--sand);color:var(--mid);border:1.5px solid var(--border);border-radius:var(--r-sm);padding:.7rem 1rem;font-size:.86rem;font-weight:500;cursor:pointer">Annuler</button>
+        </div>
+      </div>
+      <!-- Liste factures -->
+      <div id="factures-list"></div>
+    </div>
+
+    <!-- Fiches Patients -->
+    <div class="dash" id="dash-fiches">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem">
+        <h3 style="font-family:'Playfair Display',serif;font-size:1rem;font-weight:700;color:var(--ch)">🗂️ Fiches patients</h3>
+        <button onclick="showNewFicheForm()" style="background:var(--teal);color:#fff;border:none;border-radius:var(--r-sm);padding:.45rem .9rem;font-size:.78rem;font-weight:600;cursor:pointer">+ Nouvelle fiche</button>
+      </div>
+      <div id="fiches-list"></div>
+      <!-- Formulaire nouvelle fiche -->
+      <div id="fiche-form" style="display:none">
+        <div style="background:#fff;border:1.5px solid var(--border);border-radius:var(--r-md);padding:1.2rem;margin-bottom:1rem">
+          <h4 style="font-family:'Playfair Display',serif;font-size:.95rem;font-weight:700;color:var(--ch);margin-bottom:1rem;display:flex;align-items:center;gap:.5rem">📋 Nouvelle fiche patient</h4>
+
+          <div style="font-size:.72rem;font-weight:700;color:var(--teal-d);text-transform:uppercase;letter-spacing:.07em;margin-bottom:.7rem;padding-bottom:.5rem;border-bottom:1px solid var(--border)">👤 Identité du patient</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:.6rem;margin-bottom:.7rem">
+            <div class="fgroup"><label>Prénom *</label><input id="fiche-fn" placeholder="Prénom"/></div>
+            <div class="fgroup"><label>Nom *</label><input id="fiche-ln" placeholder="Nom"/></div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:.6rem;margin-bottom:.7rem">
+            <div class="fgroup"><label>Date de naissance</label><input type="date" id="fiche-dob"/></div>
+            <div class="fgroup"><label>Sexe</label>
+              <select id="fiche-genre">
+                <option value="">—</option>
+                <option>Homme</option>
+                <option>Femme</option>
+                <option>Autre</option>
+              </select>
+            </div>
+          </div>
+          <div class="fgroup"><label>Email</label><input type="email" id="fiche-email" placeholder="patient@email.com"/></div>
+          <div class="fgroup"><label>Téléphone</label><input type="tel" id="fiche-tel" placeholder="+33 6 …"/></div>
+          <div class="fgroup"><label>Adresse</label><input id="fiche-adresse" placeholder="Adresse complète"/></div>
+          <div class="fgroup"><label>Profession</label><input id="fiche-profession" placeholder="Profession du patient"/></div>
+          <div class="fgroup"><label>Situation familiale</label>
+            <select id="fiche-famille">
+              <option value="">—</option>
+              <option>Célibataire</option>
+              <option>En couple</option>
+              <option>Marié(e)</option>
+              <option>Divorcé(e)</option>
+              <option>Veuf/Veuve</option>
+            </select>
+          </div>
+
+          <div style="font-size:.72rem;font-weight:700;color:var(--teal-d);text-transform:uppercase;letter-spacing:.07em;margin:.9rem 0 .7rem;padding-top:.8rem;border-top:1px solid var(--border)">🏥 Motif de consultation</div>
+          <div class="fgroup"><label>Motif principal *</label>
+            <select id="fiche-motif">
+              <option value="">— Sélectionner —</option>
+              <optgroup label="Troubles anxieux">
+                <option>Trouble anxieux généralisé (TAG)</option>
+                <option>Trouble panique</option>
+                <option>Phobie sociale</option>
+                <option>Phobie spécifique</option>
+                <option>TOC (Trouble obsessionnel-compulsif)</option>
+                <option>PTSD / État de stress post-traumatique</option>
+              </optgroup>
+              <optgroup label="Troubles de l'humeur">
+                <option>Dépression majeure</option>
+                <option>Dépression légère à modérée</option>
+                <option>Trouble bipolaire</option>
+                <option>Dysthymie</option>
+                <option>Burn-out / Épuisement professionnel</option>
+              </optgroup>
+              <optgroup label="Troubles du comportement">
+                <option>Troubles alimentaires (TCA)</option>
+                <option>Addiction / Dépendance</option>
+                <option>TDAH</option>
+                <option>Troubles du sommeil</option>
+                <option>Troubles de la personnalité</option>
+              </optgroup>
+              <optgroup label="Relations & vie">
+                <option>Difficultés relationnelles</option>
+                <option>Problèmes conjugaux / familiaux</option>
+                <option>Deuil / Perte</option>
+                <option>Crise existentielle</option>
+                <option>Gestion du stress</option>
+                <option>Confiance en soi / Estime de soi</option>
+              </optgroup>
+              <optgroup label="Développement">
+                <option>TSA (Trouble du spectre autistique)</option>
+                <option>Retard de développement</option>
+                <option>Difficultés scolaires</option>
+                <option>Troubles du langage</option>
+              </optgroup>
+              <option value="Autre">Autre (préciser dans notes)</option>
+            </select>
+          </div>
+          <div class="fgroup"><label>Description du motif</label><textarea id="fiche-motif-desc" placeholder="Décrivez en détail le motif de consultation…" style="min-height:70px"></textarea></div>
+          <div class="fgroup"><label>Depuis quand ?</label>
+            <select id="fiche-depuis">
+              <option value="">—</option>
+              <option>Moins d'1 mois</option>
+              <option>1 à 6 mois</option>
+              <option>6 mois à 1 an</option>
+              <option>1 à 3 ans</option>
+              <option>Plus de 3 ans</option>
+            </select>
+          </div>
+
+          <div style="font-size:.72rem;font-weight:700;color:var(--teal-d);text-transform:uppercase;letter-spacing:.07em;margin:.9rem 0 .7rem;padding-top:.8rem;border-top:1px solid var(--border)">💊 Antécédents médicaux</div>
+          <div class="fgroup"><label>Antécédents psychiatriques</label><textarea id="fiche-antec-psy" placeholder="Hospitalisations, suivis précédents, diagnostics…" style="min-height:60px"></textarea></div>
+          <div class="fgroup"><label>Antécédents médicaux généraux</label><textarea id="fiche-antec-med" placeholder="Maladies chroniques, opérations…" style="min-height:60px"></textarea></div>
+          <div class="fgroup"><label>Traitements en cours</label><textarea id="fiche-traitements" placeholder="Médicaments, posologie, prescripteur…" style="min-height:60px"></textarea></div>
+          <div class="fgroup"><label>Allergies</label><input id="fiche-allergies" placeholder="Allergies médicamenteuses ou autres"/></div>
+          <div class="fgroup"><label>Antécédents familiaux psychiatriques</label><textarea id="fiche-antec-fam" placeholder="Troubles psychiatriques dans la famille…" style="min-height:50px"></textarea></div>
+
+          <div style="font-size:.72rem;font-weight:700;color:var(--teal-d);text-transform:uppercase;letter-spacing:.07em;margin:.9rem 0 .7rem;padding-top:.8rem;border-top:1px solid var(--border)">📊 Évaluation initiale</div>
+          <div class="fgroup"><label>Niveau d'urgence</label>
+            <select id="fiche-urgence">
+              <option value="">—</option>
+              <option value="faible">🟢 Faible — Suivi régulier</option>
+              <option value="moyen">🟡 Moyen — Attention requise</option>
+              <option value="eleve">🔴 Élevé — Prise en charge rapide</option>
+              <option value="crise">🆘 Crise — Intervention immédiate</option>
+            </select>
+          </div>
+          <div class="fgroup"><label>Risque suicidaire</label>
+            <select id="fiche-risque">
+              <option value="aucun">Aucun</option>
+              <option value="faible">Faible</option>
+              <option value="moyen">Moyen — à surveiller</option>
+              <option value="eleve">Élevé — protocole de sécurité</option>
+            </select>
+          </div>
+          <div class="fgroup"><label>Objectifs thérapeutiques</label><textarea id="fiche-objectifs" placeholder="Objectifs définis avec le patient…" style="min-height:60px"></textarea></div>
+          <div class="fgroup"><label>Approche thérapeutique choisie</label>
+            <select id="fiche-approche">
+              <option value="">—</option>
+              <option>TCC (Thérapie Cognitivo-Comportementale)</option>
+              <option>EMDR</option>
+              <option>Thérapie systémique</option>
+              <option>Thérapie psychodynamique</option>
+              <option>ACT (Acceptance and Commitment Therapy)</option>
+              <option>Hypnothérapie</option>
+              <option>Art-thérapie</option>
+              <option>Approche intégrative</option>
+              <option>Autre</option>
+            </select>
+          </div>
+
+          <div style="font-size:.72rem;font-weight:700;color:var(--teal-d);text-transform:uppercase;letter-spacing:.07em;margin:.9rem 0 .7rem;padding-top:.8rem;border-top:1px solid var(--border)">📝 Notes cliniques</div>
+          <div class="fgroup"><label>Notes de la première séance</label><textarea id="fiche-notes" placeholder="Observations cliniques, comportement, état général, remarques importantes…" style="min-height:100px"></textarea></div>
+          <div class="fgroup"><label>Personne de contact d'urgence</label><input id="fiche-urgence-contact" placeholder="Nom et téléphone d'un proche"/></div>
+
+          <div style="display:flex;gap:.6rem;margin-top:1rem">
+            <button onclick="saveFiche()" class="btn-submit" style="flex:1">💾 Sauvegarder la fiche</button>
+            <button onclick="document.getElementById('fiche-form').style.display='none'" style="background:var(--sand);color:var(--mid);border:1.5px solid var(--border);border-radius:var(--r-sm);padding:.7rem 1rem;font-size:.86rem;font-weight:500;cursor:pointer">Annuler</button>
+          </div>
+        </div>
+      </div>
+    </div>
       <h2 style="font-family:'Playfair Display',serif;font-size:1.15rem;font-weight:700;color:var(--ch);margin-bottom:.15rem" id="pro-welcome">Bonjour 👋</h2>
       <p style="color:var(--soft);font-size:.8rem;margin-bottom:1rem" id="pro-date"></p>
       <div class="stats">
@@ -972,33 +1389,47 @@ body[data-lang="ar"]{font-family:'Segoe UI',Tahoma,'Arabic Typesetting',sans-ser
     <!-- Video Room -->
     <div class="dash" id="dash-video">
       <h3 style="font-family:'Playfair Display',serif;font-size:1rem;font-weight:600;color:var(--ch);margin-bottom:.8rem">📹 Salle de consultation vidéo</h3>
-      <div class="video-room">
-        <div class="video-main">
-          <div style="text-align:center"><div class="vid-av">🧑‍⚕️</div><p style="color:rgba(255,255,255,.55);font-size:.73rem;margin-top:.4rem">En attente du patient...</p></div>
-          <div class="vid-nametag" id="vid-pro-tag">Dr. —</div>
-          <div class="vid-self">😊</div>
-          <div class="vid-status" id="vid-status-lbl">En attente</div>
+
+      <!-- Google Meet Section -->
+      <div style="background:linear-gradient(135deg,#1B6B61,#2A8A7E);border-radius:var(--r-md);padding:1.3rem;margin-bottom:1rem;color:#fff">
+        <div style="display:flex;align-items:center;gap:.8rem;margin-bottom:.9rem">
+          <div style="width:44px;height:44px;border-radius:50%;background:rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center;font-size:1.3rem;flex-shrink:0">📹</div>
+          <div>
+            <div style="font-family:'Playfair Display',serif;font-size:.95rem;font-weight:700">Consultation via Google Meet</div>
+            <div style="font-size:.73rem;opacity:.8;margin-top:.1rem">Lien sécurisé · Qualité HD · Gratuit</div>
+          </div>
         </div>
-        <div class="vid-controls">
-          <button class="vc-btn act" id="btn-mic" onclick="toggleMic()">🎤</button>
-          <button class="vc-btn act" id="btn-cam" onclick="toggleCam()">📷</button>
-          <button class="vc-btn act" onclick="toast('Partage écran — disponible en production','blue')">🖥️</button>
-          <button class="vc-btn dng" onclick="endCall()">📵</button>
-          <div class="vid-timer" id="vid-timer">⏱️ 00:00</div>
+        <p style="font-size:.78rem;opacity:.85;line-height:1.6;margin-bottom:1rem">
+          Créez un lien Google Meet unique pour votre consultation. Le lien sera partagé automatiquement avec votre patient par email et dans son espace.
+        </p>
+        <button onclick="createMeetLink()" id="btn-create-meet" style="width:100%;background:#fff;color:#1B6B61;border:none;border-radius:var(--r-sm);padding:.8rem;font-size:.88rem;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:.5rem;transition:all .2s">
+          ➕ Créer un lien Google Meet
+        </button>
+        <div id="meet-link-display" style="display:none;margin-top:.9rem">
+          <div style="background:rgba(255,255,255,.15);border-radius:var(--r-sm);padding:.9rem">
+            <div style="font-size:.72rem;opacity:.8;margin-bottom:.4rem;text-transform:uppercase;letter-spacing:.06em">🔗 Votre lien Meet</div>
+            <div id="meet-link-text" style="font-size:.82rem;font-weight:600;word-break:break-all;margin-bottom:.7rem"></div>
+            <div style="display:flex;gap:.5rem;flex-wrap:wrap">
+              <button onclick="copyMeetLink()" style="background:rgba(255,255,255,.2);color:#fff;border:1px solid rgba(255,255,255,.3);border-radius:8px;padding:.42rem .85rem;font-size:.76rem;font-weight:600;cursor:pointer">📋 Copier</button>
+              <button onclick="openMeetLink()" style="background:#fff;color:#1B6B61;border:none;border-radius:8px;padding:.42rem .85rem;font-size:.76rem;font-weight:600;cursor:pointer">📹 Rejoindre</button>
+              <button onclick="shareMeetWithPatient()" style="background:rgba(255,255,255,.2);color:#fff;border:1px solid rgba(255,255,255,.3);border-radius:8px;padding:.42rem .85rem;font-size:.76rem;font-weight:600;cursor:pointer">📧 Envoyer au patient</button>
+            </div>
+          </div>
         </div>
       </div>
-      <div class="video-chat">
-        <div class="chat-hdr">💬 Messagerie sécurisée (chiffrée E2E)</div>
-        <div class="chat-msgs" id="chat-msgs">
-          <div class="chat-msg them">Bonjour Docteur, je suis connecté.</div>
-          <div class="chat-msg me">Bonjour, je vous rejoins dans un instant.</div>
-        </div>
-        <div class="chat-in-row">
-          <input class="chat-in" id="chat-in" type="text" placeholder="Message sécurisé…" onkeydown="if(event.key==='Enter')sendMsg()"/>
-          <button class="chat-send-btn" onclick="sendMsg()">➤</button>
+
+      <!-- RDV du jour avec Meet -->
+      <div style="background:#fff;border:1.5px solid var(--border);border-radius:var(--r-md);padding:1rem;margin-bottom:.9rem">
+        <h4 style="font-size:.86rem;font-weight:600;color:var(--ch);margin-bottom:.8rem">📋 RDV vidéo du jour</h4>
+        <div id="today-rdvs-video">
+          <div style="text-align:center;padding:1rem;color:var(--soft);font-size:.8rem">
+            <div style="font-size:1.5rem;margin-bottom:.4rem">📭</div>
+            Aucune consultation vidéo aujourd'hui
+          </div>
         </div>
       </div>
-      <div class="info-box" style="margin-top:.9rem">ℹ️ En production : <strong>WebRTC + Jitsi Meet / Daily.co</strong> avec chiffrement de bout en bout.</div>
+
+      <div class="info-box">ℹ️ <strong>Comment ça marche :</strong> Créez un lien Meet → partagez-le au patient → rejoignez au moment du RDV. Aucune application à installer pour le patient.</div>
     </div>
 
     <!-- Revenue -->
@@ -1138,7 +1569,8 @@ body[data-lang="ar"]{font-family:'Segoe UI',Tahoma,'Arabic Typesetting',sans-ser
         <p style="font-size:.82rem;color:var(--mid);line-height:1.6;margin-bottom:1rem">Un email de confirmation a été envoyé. Vous recevrez des rappels <strong>24h</strong> et <strong>2h</strong> avant votre rendez-vous.</p>
         <div style="background:var(--sand);border:1.5px solid var(--border);border-radius:var(--r-md);padding:.9rem;text-align:left;margin-bottom:1rem;font-size:.8rem;line-height:1.8;color:var(--ch)" id="rdv-summary"></div>
         <div style="display:flex;gap:.5rem;flex-direction:column">
-          <button class="btn-submit" onclick="closeBSheet();goPatient()">👤 Voir mes rendez-vous</button>
+          <button class="btn-submit" onclick="goPayment()">💳 Payer ma consultation</button>
+          <button onclick="closeBSheet();goPatient()" style="background:var(--sand);color:var(--mid);border:1.5px solid var(--border);border-radius:var(--r-sm);padding:.7rem;font-size:.86rem;font-weight:500;cursor:pointer">👤 Voir mes rendez-vous</button>
           <button style="background:none;border:none;color:var(--teal);font-size:.82rem;font-weight:600;padding:.5rem;cursor:pointer" onclick="closeBSheet()">Fermer</button>
         </div>
       </div>
@@ -1148,33 +1580,159 @@ body[data-lang="ar"]{font-family:'Segoe UI',Tahoma,'Arabic Typesetting',sans-ser
 
 <!-- ══ VIEW: ADMIN ══ -->
 <div class="view" id="v-admin">
-  <div style="max-width:900px;margin:0 auto;padding:1.2rem">
-    <div style="background:linear-gradient(135deg,#C0392B,#E74C3C);border-radius:16px;padding:1.2rem;color:#fff;margin-bottom:1rem;display:flex;align-items:center;gap:.9rem">
+  <div style="max-width:960px;margin:0 auto;padding:1.2rem">
+
+    <!-- Admin Header -->
+    <div style="background:linear-gradient(135deg,#8B0000,#C0392B);border-radius:16px;padding:1.2rem;color:#fff;margin-bottom:1rem;display:flex;align-items:center;gap:.9rem">
       <div style="width:48px;height:48px;border-radius:50%;background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-size:1.3rem">⚙️</div>
-      <div>
-        <div style="font-family:'Playfair Display',serif;font-size:1rem;font-weight:700">Panel Administrateur</div>
-        <div style="font-size:.72rem;opacity:.85">reservation.psycholab@gmail.com</div>
+      <div style="flex:1">
+        <div style="font-family:'Playfair Display',serif;font-size:1rem;font-weight:700">Panel Administrateur — Psycholab</div>
+        <div style="font-size:.72rem;opacity:.85">reservation.psycholab@gmail.com · Accès restreint</div>
+      </div>
+      <button onclick="doLogout()" style="background:rgba(255,255,255,.15);color:#fff;border:1px solid rgba(255,255,255,.3);border-radius:8px;padding:.4rem .8rem;font-size:.72rem;font-weight:600;cursor:pointer">Déconnexion</button>
+    </div>
+
+    <!-- Stats Admin -->
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:.6rem;margin-bottom:1rem">
+      <div style="background:#fff;border:1.5px solid var(--border);border-radius:12px;padding:.85rem;text-align:center">
+        <div style="font-family:'Playfair Display',serif;font-size:1.4rem;font-weight:700;color:var(--orange)" id="adm-stat-pending">0</div>
+        <div style="font-size:.65rem;color:var(--soft)">Dossiers Pro</div>
+      </div>
+      <div style="background:#fff;border:1.5px solid var(--border);border-radius:12px;padding:.85rem;text-align:center">
+        <div style="font-family:'Playfair Display',serif;font-size:1.4rem;font-weight:700;color:var(--green)" id="adm-stat-active">0</div>
+        <div style="font-size:.65rem;color:var(--soft)">Pros actifs</div>
+      </div>
+      <div style="background:#fff;border:1.5px solid var(--border);border-radius:12px;padding:.85rem;text-align:center">
+        <div style="font-family:'Playfair Display',serif;font-size:1.4rem;font-weight:700;color:var(--red)" id="adm-stat-pay-pending">0</div>
+        <div style="font-size:.65rem;color:var(--soft)">Paiements à vérifier</div>
+      </div>
+      <div style="background:#fff;border:1.5px solid var(--border);border-radius:12px;padding:.85rem;text-align:center">
+        <div style="font-family:'Playfair Display',serif;font-size:1.4rem;font-weight:700;color:var(--blue)" id="adm-stat-patients">0</div>
+        <div style="font-size:.65rem;color:var(--soft)">Patients inscrits</div>
       </div>
     </div>
 
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:.7rem;margin-bottom:1rem">
-      <div style="background:#fff;border:1.5px solid var(--border);border-radius:14px;padding:1rem">
-        <div style="font-family:'Playfair Display',serif;font-size:1.5rem;font-weight:700;color:var(--ch)" id="adm-stat-pending">0</div>
-        <div style="font-size:.72rem;color:var(--soft)">Dossiers en attente</div>
-      </div>
-      <div style="background:#fff;border:1.5px solid var(--border);border-radius:14px;padding:1rem">
-        <div style="font-family:'Playfair Display',serif;font-size:1.5rem;font-weight:700;color:var(--green)" id="adm-stat-active">0</div>
-        <div style="font-size:.72rem;color:var(--soft)">Comptes actifs</div>
-      </div>
+    <!-- Admin Tabs -->
+    <div style="display:flex;gap:.4rem;overflow-x:auto;padding-bottom:.4rem;margin-bottom:1rem;-webkit-overflow-scrolling:touch">
+      <button class="adm-tab on" onclick="showAdmTab('pros',this)">⏳ Dossiers Pro</button>
+      <button class="adm-tab" onclick="showAdmTab('paiements',this)">💳 Paiements <span id="adm-pay-badge" style="background:var(--red);color:#fff;border-radius:10px;padding:.05rem .35rem;font-size:.6rem;margin-left:.2rem;display:none">0</span></button>
+      <button class="adm-tab" onclick="showAdmTab('rdvs-admin',this)">📋 Tous les RDV</button>
+      <button class="adm-tab" onclick="showAdmTab('patients-admin',this)">👤 Patients</button>
+      <button class="adm-tab" onclick="showAdmTab('pros-actifs',this)">✅ Pros actifs</button>
     </div>
 
-    <!-- Dossiers en attente -->
-    <h3 style="font-family:'Playfair Display',serif;font-size:1rem;font-weight:700;color:var(--ch);margin-bottom:.8rem">⏳ Dossiers en attente de validation</h3>
-    <div id="adm-pending-list"></div>
+    <!-- Tab: Dossiers Pro -->
+    <div class="adm-pane on" id="adm-pros">
+      <h3 style="font-family:'Playfair Display',serif;font-size:.95rem;font-weight:700;color:var(--ch);margin-bottom:.8rem">⏳ Dossiers professionnels en attente</h3>
+      <div id="adm-pending-list"></div>
+    </div>
 
-    <!-- Comptes actifs -->
-    <h3 style="font-family:'Playfair Display',serif;font-size:1rem;font-weight:700;color:var(--ch);margin:.9rem 0 .8rem">✅ Professionnels actifs</h3>
-    <div id="adm-active-list"></div>
+    <!-- Tab: Paiements -->
+    <div class="adm-pane" id="adm-paiements">
+      <h3 style="font-family:'Playfair Display',serif;font-size:.95rem;font-weight:700;color:var(--ch);margin-bottom:.4rem">💳 Justificatifs de paiement</h3>
+      <p style="font-size:.78rem;color:var(--mid);margin-bottom:.9rem">Vérifiez les justificatifs envoyés par les patients (Western Union, mandat, virement) et validez les rendez-vous.</p>
+      <div id="adm-paiements-list"></div>
+    </div>
+
+    <!-- Tab: Tous les RDV -->
+    <div class="adm-pane" id="adm-rdvs-admin">
+      <h3 style="font-family:'Playfair Display',serif;font-size:.95rem;font-weight:700;color:var(--ch);margin-bottom:.8rem">📋 Tous les rendez-vous</h3>
+      <div id="adm-rdvs-list"></div>
+    </div>
+
+    <!-- Tab: Patients -->
+    <div class="adm-pane" id="adm-patients-admin">
+      <h3 style="font-family:'Playfair Display',serif;font-size:.95rem;font-weight:700;color:var(--ch);margin-bottom:.8rem">👤 Patients inscrits</h3>
+      <div id="adm-patients-list"></div>
+    </div>
+
+    <!-- Tab: Pros actifs -->
+    <div class="adm-pane" id="adm-pros-actifs">
+      <h3 style="font-family:'Playfair Display',serif;font-size:.95rem;font-weight:700;color:var(--ch);margin-bottom:.8rem">✅ Professionnels actifs</h3>
+      <div id="adm-active-list"></div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ══ VIEW: PAIEMENT PATIENT ══ -->
+<div class="view" id="v-payment">
+  <div class="auth-wrap">
+    <div class="auth-card">
+      <div class="auth-ico">💳</div>
+      <h2 class="auth-title">Paiement de la consultation</h2>
+      <p class="auth-sub">Envoyez votre justificatif de paiement pour valider votre rendez-vous</p>
+
+      <div style="background:linear-gradient(135deg,var(--teal-d),var(--teal));border-radius:var(--r-md);padding:1rem;color:#fff;margin-bottom:1rem">
+        <div style="font-size:.7rem;opacity:.8;text-transform:uppercase;letter-spacing:.06em;margin-bottom:.4rem">💰 Montant à régler</div>
+        <div style="font-family:'Playfair Display',serif;font-size:1.6rem;font-weight:700" id="pay-amount">—</div>
+        <div style="font-size:.75rem;opacity:.8;margin-top:.2rem" id="pay-rdv-info">—</div>
+      </div>
+
+      <div class="form-section-title">💳 Mode de paiement</div>
+      <div style="display:flex;flex-direction:column;gap:.5rem;margin-bottom:.9rem">
+        <label style="display:flex;align-items:center;gap:.7rem;background:var(--sand);border:2px solid var(--border);border-radius:var(--r-sm);padding:.8rem;cursor:pointer" id="pay-opt-wu">
+          <input type="radio" name="pay-mode" value="western_union" onclick="selectPayMode('western_union')" style="accent-color:var(--teal)"/>
+          <div>
+            <div style="font-weight:600;font-size:.86rem;color:var(--ch)">💛 Western Union</div>
+            <div style="font-size:.72rem;color:var(--soft)">Envoi d'argent international</div>
+          </div>
+        </label>
+        <label style="display:flex;align-items:center;gap:.7rem;background:var(--sand);border:2px solid var(--border);border-radius:var(--r-sm);padding:.8rem;cursor:pointer" id="pay-opt-vir">
+          <input type="radio" name="pay-mode" value="virement" onclick="selectPayMode('virement')" style="accent-color:var(--teal)"/>
+          <div>
+            <div style="font-weight:600;font-size:.86rem;color:var(--ch)">🏦 Virement bancaire</div>
+            <div style="font-size:.72rem;color:var(--soft)">IBAN / SWIFT international</div>
+          </div>
+        </label>
+        <label style="display:flex;align-items:center;gap:.7rem;background:var(--sand);border:2px solid var(--border);border-radius:var(--r-sm);padding:.8rem;cursor:pointer" id="pay-opt-moneygram">
+          <input type="radio" name="pay-mode" value="moneygram" onclick="selectPayMode('moneygram')" style="accent-color:var(--teal)"/>
+          <div>
+            <div style="font-weight:600;font-size:.86rem;color:var(--ch)">🔵 MoneyGram</div>
+            <div style="font-size:.72rem;color:var(--soft)">Transfert d'argent international</div>
+          </div>
+        </label>
+        <label style="display:flex;align-items:center;gap:.7rem;background:var(--sand);border:2px solid var(--border);border-radius:var(--r-sm);padding:.8rem;cursor:pointer" id="pay-opt-paypal">
+          <input type="radio" name="pay-mode" value="paypal" onclick="selectPayMode('paypal')" style="accent-color:var(--teal)"/>
+          <div>
+            <div style="font-weight:600;font-size:.86rem;color:var(--ch)">🔷 PayPal</div>
+            <div style="font-size:.72rem;color:var(--soft)">Paiement en ligne sécurisé</div>
+          </div>
+        </label>
+        <label style="display:flex;align-items:center;gap:.7rem;background:var(--sand);border:2px solid var(--border);border-radius:var(--r-sm);padding:.8rem;cursor:pointer" id="pay-opt-cheque">
+          <input type="radio" name="pay-mode" value="cheque" onclick="selectPayMode('cheque')" style="accent-color:var(--teal)"/>
+          <div>
+            <div style="font-weight:600;font-size:.86rem;color:var(--ch)">📄 Chèque / Mandat postal</div>
+            <div style="font-size:.72rem;color:var(--soft)">Envoi postal du justificatif</div>
+          </div>
+        </label>
+      </div>
+
+      <!-- Instructions paiement -->
+      <div id="pay-instructions" style="display:none;background:var(--teal-xl);border-radius:var(--r-md);padding:1rem;margin-bottom:.9rem;border-left:3px solid var(--teal)">
+        <div style="font-size:.72rem;font-weight:700;color:var(--teal-d);text-transform:uppercase;letter-spacing:.06em;margin-bottom:.5rem">📋 Instructions de paiement</div>
+        <div id="pay-instructions-text" style="font-size:.82rem;color:var(--teal-d);line-height:1.65"></div>
+      </div>
+
+      <div class="form-section-title">📎 Justificatif de paiement</div>
+      <div class="fgroup"><label>Numéro de transaction / Référence *</label><input id="pay-ref" placeholder="Ex: WU123456789, SWIFT ref., N° chèque…"/></div>
+      <div class="fgroup"><label>Montant envoyé (€) *</label><input type="number" id="pay-montant" placeholder="Ex: 70"/></div>
+      <div class="fgroup"><label>Date du paiement *</label><input type="date" id="pay-date"/></div>
+      <div class="fgroup"><label>Photo/scan du justificatif</label>
+        <div style="border:2px dashed var(--border);border-radius:var(--r-sm);padding:1.2rem;text-align:center;background:var(--sand);cursor:pointer" onclick="document.getElementById('pay-file').click()">
+          <div style="font-size:1.5rem;margin-bottom:.4rem">📸</div>
+          <div style="font-size:.8rem;color:var(--mid);margin-bottom:.3rem">Cliquez pour ajouter une photo</div>
+          <div style="font-size:.7rem;color:var(--soft)">JPG, PNG, PDF · Max 5MB</div>
+          <input type="file" id="pay-file" accept="image/*,.pdf" style="display:none" onchange="handlePayFile(this)"/>
+        </div>
+        <div id="pay-file-preview" style="display:none;margin-top:.5rem;background:var(--green-l);border-radius:var(--r-sm);padding:.6rem .9rem;font-size:.78rem;color:var(--green);font-weight:600">✅ Fichier sélectionné : <span id="pay-file-name"></span></div>
+      </div>
+      <div class="fgroup"><label>Notes / Informations complémentaires</label><textarea id="pay-notes" placeholder="Informations supplémentaires sur le paiement…" style="min-height:60px"></textarea></div>
+
+      <div id="pay-error" class="error-box"></div>
+      <button class="btn-submit" onclick="submitPayment()">📨 Envoyer le justificatif</button>
+      <p style="text-align:center;font-size:.72rem;color:var(--soft);margin-top:.5rem;line-height:1.5">Votre justificatif sera vérifié par l'équipe Psycholab.<br/>Votre RDV sera confirmé sous 24h après validation.</p>
+    </div>
   </div>
 </div>
 
@@ -1221,6 +1779,8 @@ function init(){
   localStorage.removeItem('psycholab_session');
   // ── Initialiser une base vide et propre ──
   saveDB({users:[],pros:[],rdvs:[],notifs:[]});
+  // ── Créer les tables Supabase si nécessaire ──
+  setupSupabaseTables();
   const session=getSession();
   if(session) applySession(session);
   renderHome();
@@ -1392,6 +1952,7 @@ function doSignupPatient(){
   const user={id,fn,ln,email,tel,tz,pwd:hashPwd(pwd),notif:document.getElementById('spat-notif').checked,createdAt:new Date().toISOString()};
   db.users.push(user);
   saveDB(db);
+  sbSaveUser(user); // ── Sauvegarde en ligne Supabase ──
   saveSession({id,type:'patient',email,name:fn+' '+ln,fn,ln,tel,tz});
   applySession(getSession());
   // Show success + email preview
@@ -1411,9 +1972,6 @@ function doSignupPro(){
   const email=document.getElementById('spro-email').value.trim();
   const tel=document.getElementById('spro-tel').value.trim();
   const spec=document.getElementById('spro-spec').value;
-  const rpps=document.getElementById('spro-rpps').value.trim();
-  const diplome=document.getElementById('spro-diplome').value.trim();
-  const exp=document.getElementById('spro-exp').value;
   const pwd=document.getElementById('spro-pwd').value;
   const pwd2=document.getElementById('spro-pwd2').value;
   const cgu=document.getElementById('spro-cgu').checked;
@@ -1421,7 +1979,6 @@ function doSignupPro(){
   const bio=document.getElementById('spro-bio').value.trim();
   const tags=document.getElementById('spro-tags').value.trim();
   const price=document.getElementById('spro-price').value;
-  const tz=document.getElementById('spro-tz').value;
   const consVid=document.getElementById('spro-vid').value==='1';
   const consPres=document.getElementById('spro-pres').value==='1';
   const langFr=document.getElementById('spro-langfr').checked;
@@ -1429,7 +1986,7 @@ function doSignupPro(){
   const langAr=document.getElementById('spro-langar').checked;
   const errEl=document.getElementById('spro-error');
   errEl.style.display='none';
-  if(!fn||!ln||!email||!tel||!spec||!rpps||!diplome||!exp||!bio||!pwd){errEl.textContent='Veuillez remplir tous les champs obligatoires.';errEl.style.display='block';return}
+  if(!fn||!ln||!email||!tel||!spec||!bio||!pwd){errEl.textContent='Veuillez remplir tous les champs obligatoires.';errEl.style.display='block';return}
   if(pwd.length<8){errEl.textContent='Le mot de passe doit contenir au moins 8 caractères.';errEl.style.display='block';return}
   if(pwd!==pwd2){errEl.textContent='Les mots de passe ne correspondent pas.';errEl.style.display='block';return}
   if(!cgu||!rgpd){errEl.textContent='Veuillez accepter les conditions requises.';errEl.style.display='block';return}
@@ -1437,9 +1994,10 @@ function doSignupPro(){
   const db=getDB();
   if(db.pros.find(p=>p.email===email)||db.users.find(u=>u.email===email)){errEl.textContent='Cette adresse email est déjà utilisée.';errEl.style.display='block';return}
   const id='pro_'+Date.now();
-  const pro={id,fn,ln,email,tel,spec,rpps,diplome,exp,bio,tags,price:price?parseInt(price):null,tz,consVid,consPres,langFr,langEn,langAr,pwd:hashPwd(pwd),active:false,avail:{},notif:document.getElementById('spro-notif').checked,createdAt:new Date().toISOString()};
+  const pro={id,fn,ln,email,tel,spec,rpps:'',diplome:'',exp:'',bio,tags,price:price?parseInt(price):null,tz:'Europe/Paris',consVid,consPres,langFr,langEn,langAr,pwd:hashPwd(pwd),active:false,avail:{},notif:document.getElementById('spro-notif').checked,createdAt:new Date().toISOString()};
   db.pros.push(pro);
   saveDB(db);
+  sbSavePro(pro); // ── Sauvegarde en ligne Supabase ──
   document.getElementById('conf-pro-email').textContent=email;
   document.getElementById('conf-pro-body').innerHTML=generateProWelcomeEmail(fn,ln,spec,rpps);
   // ── Envoi email réel via Formspree ──
@@ -1454,11 +2012,12 @@ function doSignupPro(){
       specialite:spec,
       email:email,
       telephone:tel,
-      rpps:rpps,
-      diplome:diplome,
-      experience:exp+' ans',
       tarif:price?price+'€':'Non communiqué',
       biographie:bio,
+      domaines:tags||'—',
+      langues:(langFr?'FR ':' ')+(langEn?'EN ':' ')+(langAr?'AR':''),
+      video:consVid?'Oui':'Non',
+      presentiel:consPres?'Oui':'Non',
       date:new Date().toLocaleDateString('fr-FR',{day:'numeric',month:'long',year:'numeric'})
     })
   }).then(r=>r.json()).then(data=>{
@@ -1512,6 +2071,7 @@ const ADMIN_PWD='Psycholab2026!';
 function goAdmin(){
   showView('v-admin');
   renderAdminPanel();
+  renderAdmPaiements();
 }
 
 function renderAdminPanel(){
@@ -1579,6 +2139,7 @@ function validatePro(proId){
   pro.active=true;
   pro.validatedAt=new Date().toISOString();
   saveDB(db);
+  sbUpdateProStatus(proId,true); // ── Mise à jour Supabase ──
   // Envoyer email de validation via Formspree
   fetch('https://formspree.io/f/xjgzoarv',{
     method:'POST',
@@ -1704,6 +2265,9 @@ function showDash(id,btn){
   const s=getSession();
   if(id==='notifs'&&s)renderNotifs(s.id,'pro-notifs-list');
   if(id==='profile'&&s)renderProProfile(s);
+  if(id==='fiches'&&s)renderFichesList();
+  if(id==='messages'&&s){renderMessagesList();}
+  if(id==='factures'&&s)renderFacturesList();
   if(id==='ai'){initAiPanel();}
 }
 
@@ -1755,7 +2319,10 @@ function renderRDVList(pro,db,filter='all'){
       </div>
       <div class="rdv-actions">
         ${r.status==='pending'?`<button class="btn-ok" onclick="actRDV('${r.id}','confirmed','${pro.id}')">✓ Accepter</button><button class="btn-no" onclick="actRDV('${r.id}','cancelled','${pro.id}')">✕ Refuser</button>`:''}
-        ${r.status==='confirmed'?`<button class="btn-join" onclick="showDash('video',document.querySelectorAll('.ptab')[4])">📹 Rejoindre</button><button class="btn-no" onclick="actRDV('${r.id}','cancelled','${pro.id}')">Annuler</button>`:''}
+        ${r.status==='confirmed'?`
+          <button class="btn-join" onclick="showDash('video',document.querySelectorAll('.ptab')[4])">📹 Rejoindre</button>
+          <button onclick="addProToGoogleCalendar(${JSON.stringify(r).replace(/"/g,'&quot;')})" style="background:#EBF4F5;color:#1B6B61;border:1.5px solid #1B6B61;font-size:.75rem;font-weight:600;padding:.35rem .8rem;border-radius:7px;cursor:pointer">📅 Google Cal</button>
+          <button class="btn-no" onclick="actRDV('${r.id}','cancelled','${pro.id}')">Annuler</button>`:''}
       </div>
     </div>`;
   }).join('')+'</div>';
@@ -1777,17 +2344,46 @@ function actRDV(rdvId,status,proId){
   rdv.status=status;
   saveDB(db);
   const s=getSession();const pro=db.pros.find(p=>p.id===proId);
-  if(pro){
-    renderRDVList(pro,db);
-    updateProDashboard(s);
-  }
+  if(pro){renderRDVList(pro,db);updateProDashboard(s);}
   if(status==='confirmed'){
-    toast('✅ RDV confirmé — Email envoyé au patient','green');
-    if(rdv.patId) addNotif(rdv.patId,'patient','✅ RDV confirmé','Votre rendez-vous avec Dr. '+rdv.proLn+' le '+formatDate(rdv.date)+' à '+rdv.slot+' a été confirmé.');
+    toast('✅ RDV confirmé — Email + Google Calendar envoyés','green');
+    // Notification interne patient
+    if(rdv.patId) addNotif(rdv.patId,'patient','✅ RDV confirmé !','Votre rendez-vous avec Dr. '+rdv.proFn+' '+rdv.proLn+' le '+formatDate(rdv.date)+' à '+rdv.slot+' est confirmé.');
+    // Email confirmation au patient via Formspree
+    sendEmailNotification({
+      _subject:'✅ RDV confirmé — Dr. '+rdv.proFn+' '+rdv.proLn+' le '+new Date(rdv.date).toLocaleDateString('fr-FR'),
+      type:'CONFIRMATION_RDV',
+      destinataire:rdv.patFn+' '+rdv.patLn,
+      email_patient:rdv.patEmail,
+      praticien:'Dr. '+rdv.proFn+' '+rdv.proLn+' ('+rdv.spec+')',
+      date_rdv:new Date(rdv.date).toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long',year:'numeric'}),
+      heure_rdv:rdv.slot,
+      type_consultation:rdv.type==='video'?'Vidéo sécurisée':'Présentiel',
+      motif:rdv.motif||'—',
+      message:'Votre rendez-vous est confirmé ! Vous recevrez des rappels automatiques 24h et 2h avant votre consultation. Ajoutez ce RDV à votre Google Calendar avec le bouton dans votre espace patient.'
+    });
+    // Démarrer les rappels automatiques
+    sendReminderEmails(rdv);
+    // Afficher bouton Google Calendar dans le dashboard pro
+    renderRDVListWithCalendar(pro,db);
   } else {
     toast('❌ RDV refusé/annulé — Patient notifié','red');
-    if(rdv.patId) addNotif(rdv.patId,'patient','❌ RDV annulé','Votre rendez-vous du '+formatDate(rdv.date)+' à '+rdv.slot+' a été annulé. Vous pouvez prendre un nouveau rendez-vous.');
+    if(rdv.patId) addNotif(rdv.patId,'patient','❌ RDV annulé','Votre rendez-vous du '+formatDate(rdv.date)+' à '+rdv.slot+' a été annulé.');
+    sendEmailNotification({
+      _subject:'❌ RDV annulé — '+new Date(rdv.date).toLocaleDateString('fr-FR')+' à '+rdv.slot,
+      type:'ANNULATION_RDV',
+      destinataire:rdv.patFn+' '+rdv.patLn,
+      praticien:'Dr. '+rdv.proFn+' '+rdv.proLn,
+      date_rdv:new Date(rdv.date).toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long'}),
+      heure_rdv:rdv.slot,
+      message:'Votre rendez-vous a été annulé. Vous pouvez prendre un nouveau rendez-vous directement sur Psycholab.'
+    });
   }
+}
+
+function renderRDVListWithCalendar(pro,db){
+  // Re-render avec boutons Google Calendar pour les RDV confirmés
+  renderRDVList(pro,db);
 }
 
 // ════════════════════════════════════════════════
@@ -1896,6 +2492,7 @@ function showPatDash(id,btn){
   if(btn)btn.classList.add('on');
   const s=getSession();
   if(id==='notifs'&&s)renderNotifs(s.id,'pat-notifs-list');
+  if(id==='messages'&&s)renderPatMessages();
 }
 
 function updatePatientDash(session){
@@ -1922,6 +2519,20 @@ function updatePatientDash(session){
         </div>
       </div>
       <span class="status-badge ${r.status}">${r.status==='pending'?'⏳ En attente de confirmation':'✅ Confirmé'}</span>
+      ${r.status==='pending'?`
+        <div style="margin-top:.7rem">
+          <button onclick="goPaymentFromPatient('${r.id}')" style="width:100%;background:linear-gradient(135deg,var(--teal-d),var(--teal));color:#fff;border:none;border-radius:var(--r-sm);padding:.65rem;font-size:.82rem;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:.4rem">
+            💳 Payer ma consultation
+          </button>
+          <div style="text-align:center;font-size:.68rem;color:var(--soft);margin-top:.3rem">Le RDV sera confirmé après validation du paiement</div>
+        </div>`:''}
+      ${r.status==='confirmed'?`
+        <div style="margin-top:.7rem;display:flex;gap:.5rem;flex-wrap:wrap">
+          <button onclick="addToGoogleCalendar(${JSON.stringify(r).replace(/"/g,'&quot;')})" style="background:#4285F4;color:#fff;border:none;border-radius:8px;padding:.45rem .9rem;font-size:.78rem;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:.35rem">
+            📅 Ajouter à Google Calendar
+          </button>
+          ${r.type==='video'?`<div style="background:var(--teal-xl);border-radius:8px;padding:.45rem .9rem;font-size:.76rem;color:var(--teal-d);font-weight:500">📹 Le lien Google Meet vous sera envoyé par email avant la consultation</div>`:''}
+        </div>`:''}
     </div>`;
   }).join('')+'</div>';
   // Render history
@@ -2046,18 +2657,164 @@ function confirmRDV(){
   const motif=document.getElementById('bs-motif').value.trim();
   const db=getDB();
   const rdv={
-    id:'rdv_'+Date.now(),proId:selSpec.id,proFn:selSpec.fn,proLn:selSpec.ln,spec:selSpec.spec,
+    id:'rdv_'+Date.now(),proId:selSpec.id,proFn:selSpec.fn,proLn:selSpec.ln,
+    proEmail:selSpec.email,spec:selSpec.spec,
     patId,patFn,patLn,patEmail,date:selDate.toISOString(),slot:selSlot,type:selType,motif,
     status:'pending',createdAt:new Date().toISOString()
   };
   db.rdvs.push(rdv);saveDB(db);
-  // Notifications
+  sbSaveRdv(rdv);
+  // Notifications internes
   if(patId) addNotif(patId,'patient','📋 Rendez-vous demandé','Votre demande de RDV avec Dr. '+selSpec.fn+' '+selSpec.ln+' le '+formatDate(selDate.toISOString())+' à '+selSlot+' est en attente de confirmation.');
-  addNotif(selSpec.id,'pro','📋 Nouvelle demande de RDV',''+patFn+' '+patLn+' souhaite un RDV le '+formatDate(selDate.toISOString())+' à '+selSlot+'.');
-  // Update summary
-  document.getElementById('rdv-summary').innerHTML=`<strong>👨‍⚕️ Praticien :</strong> Dr. ${selSpec.fn} ${selSpec.ln} (${selSpec.spec})<br/><strong>📅 Date :</strong> ${selDate.toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long'})}<br/><strong>⏰ Heure :</strong> ${selSlot}<br/><strong>📧 Confirmation à :</strong> ${patEmail}<br/><strong>🎯 Type :</strong> ${selType==='video'?'📹 Vidéo sécurisée':'🏥 Présentiel'}`;
+  addNotif(selSpec.id,'pro','📋 Nouvelle demande de RDV',patFn+' '+patLn+' souhaite un RDV le '+formatDate(selDate.toISOString())+' à '+selSlot+'.');
+  // Email au pro via Formspree
+  sendEmailNotification({
+    _subject:'📋 Nouvelle demande de RDV — '+patFn+' '+patLn,
+    type:'NOUVELLE_DEMANDE_RDV',
+    destinataire:'Dr. '+selSpec.fn+' '+selSpec.ln,
+    patient:patFn+' '+patLn,
+    email_patient:patEmail,
+    date_rdv:selDate.toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long',year:'numeric'}),
+    heure_rdv:selSlot,
+    type_consultation:selType==='video'?'Vidéo sécurisée':'Présentiel',
+    motif:motif||'Non précisé',
+    message:'Un patient vient de demander un rendez-vous. Connectez-vous à votre tableau de bord Psycholab pour accepter ou refuser.'
+  });
+  // Update summary avec lien Google Calendar pour le patient
+  const gcalLinkPat=buildGoogleCalendarLink({
+    title:'RDV avec Dr. '+selSpec.fn+' '+selSpec.ln+' — '+selSpec.spec,
+    date:selDate,slot:selSlot,
+    description:'Consultation '+selType+' avec Dr. '+selSpec.fn+' '+selSpec.ln+' ('+selSpec.spec+')\nMotif: '+(motif||'—')+'\n\nRappel: Vous recevrez un email 24h et 2h avant votre rendez-vous.',
+    duration:60
+  });
+  document.getElementById('rdv-summary').innerHTML=`
+    <strong>👨‍⚕️ Praticien :</strong> Dr. ${selSpec.fn} ${selSpec.ln} (${selSpec.spec})<br/>
+    <strong>📅 Date :</strong> ${selDate.toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long'})}<br/>
+    <strong>⏰ Heure :</strong> ${selSlot}<br/>
+    <strong>📧 Confirmation à :</strong> ${patEmail}<br/>
+    <strong>🎯 Type :</strong> ${selType==='video'?'📹 Vidéo sécurisée':'🏥 Présentiel'}<br/><br/>
+    <a href="${gcalLinkPat}" target="_blank" style="display:inline-flex;align-items:center;gap:.4rem;background:#4285F4;color:#fff;padding:.6rem 1rem;border-radius:8px;text-decoration:none;font-size:.82rem;font-weight:600">
+      📅 Ajouter à Google Calendar
+    </a>`;
   goStep(3);
   toast('✅ RDV envoyé — En attente de confirmation','green');
+}
+
+// ════════════════════════════════════════════════
+//  GOOGLE CALENDAR INTEGRATION
+// ════════════════════════════════════════════════
+function buildGoogleCalendarLink({title,date,slot,description,duration=60}){
+  const [h,m]=slot.split(':').map(Number);
+  const start=new Date(date);
+  start.setHours(h,m,0,0);
+  const end=new Date(start.getTime()+duration*60000);
+  const fmt=d=>d.toISOString().replace(/[-:]/g,'').split('.')[0]+'Z';
+  const params=new URLSearchParams({
+    action:'TEMPLATE',
+    text:title,
+    dates:fmt(start)+'/'+fmt(end),
+    details:description,
+    sf:'true',
+    output:'xml'
+  });
+  return 'https://calendar.google.com/calendar/render?'+params.toString();
+}
+
+function addToGoogleCalendar(rdv){
+  const link=buildGoogleCalendarLink({
+    title:'RDV Psycholab — Dr. '+rdv.proFn+' '+rdv.proLn,
+    date:new Date(rdv.date),
+    slot:rdv.slot,
+    description:'✅ Rendez-vous confirmé\n\nPraticien : Dr. '+rdv.proFn+' '+rdv.proLn+' ('+rdv.spec+')\nType : '+(rdv.type==='video'?'Vidéo sécurisée':'Présentiel')+'\nMotif : '+(rdv.motif||'—')+'\n\n⏰ Des rappels email seront envoyés 24h et 2h avant votre rendez-vous.',
+    duration:60
+  });
+  window.open(link,'_blank');
+  toast('📅 Google Calendar ouvert !','green');
+}
+
+function addProToGoogleCalendar(rdv){
+  const link=buildGoogleCalendarLink({
+    title:'Consultation — '+rdv.patFn+' '+rdv.patLn,
+    date:new Date(rdv.date),
+    slot:rdv.slot,
+    description:'✅ Consultation confirmée\n\nPatient : '+rdv.patFn+' '+rdv.patLn+'\nEmail : '+rdv.patEmail+'\nType : '+(rdv.type==='video'?'Vidéo sécurisée':'Présentiel')+'\nMotif : '+(rdv.motif||'—'),
+    duration:60
+  });
+  window.open(link,'_blank');
+  toast('📅 Google Calendar ouvert !','green');
+}
+
+// ════════════════════════════════════════════════
+//  EMAIL NOTIFICATIONS VIA FORMSPREE
+// ════════════════════════════════════════════════
+function sendEmailNotification(data){
+  fetch('https://formspree.io/f/xjgzoarv',{
+    method:'POST',
+    headers:{'Content-Type':'application/json','Accept':'application/json'},
+    body:JSON.stringify(data)
+  }).catch(e=>console.log('Email notification:',e));
+}
+
+function sendReminderEmails(rdv){
+  const rdvDate=new Date(rdv.date);
+  const [h,m]=rdv.slot.split(':').map(Number);
+  rdvDate.setHours(h,m,0,0);
+  const now=new Date();
+  const msTo24h=rdvDate.getTime()-now.getTime()-24*60*60*1000;
+  const msTo2h=rdvDate.getTime()-now.getTime()-2*60*60*1000;
+  const dateStr=rdvDate.toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+  // Rappel 24h avant
+  if(msTo24h>0){
+    setTimeout(()=>{
+      sendEmailNotification({
+        _subject:'⏰ Rappel 24h — RDV avec Dr. '+rdv.proFn+' '+rdv.proLn+' demain à '+rdv.slot,
+        type:'RAPPEL_24H',
+        destinataire:rdv.patFn+' '+rdv.patLn,
+        praticien:'Dr. '+rdv.proFn+' '+rdv.proLn+' ('+rdv.spec+')',
+        date_rdv:dateStr,
+        heure_rdv:rdv.slot,
+        type_consultation:rdv.type==='video'?'Vidéo sécurisée':'Présentiel',
+        message:'Rappel : Votre rendez-vous est demain à '+rdv.slot+'. Pensez à vous connecter 5 minutes avant si c\'est une consultation vidéo.'
+      });
+      // Rappel aussi au pro
+      sendEmailNotification({
+        _subject:'⏰ Rappel 24h — Consultation '+rdv.patFn+' '+rdv.patLn+' demain à '+rdv.slot,
+        type:'RAPPEL_24H_PRO',
+        destinataire:'Dr. '+rdv.proFn+' '+rdv.proLn,
+        patient:rdv.patFn+' '+rdv.patLn,
+        date_rdv:dateStr,
+        heure_rdv:rdv.slot,
+        message:'Rappel : Vous avez une consultation demain à '+rdv.slot+'.'
+      });
+    },msTo24h);
+  }
+  // Rappel 2h avant — avec demande d'envoyer le lien Meet
+  if(msTo2h>0){
+    setTimeout(()=>{
+      sendEmailNotification({
+        _subject:'⏰ Rappel 2h — Votre RDV commence bientôt ('+rdv.slot+')',
+        type:'RAPPEL_2H',
+        destinataire:rdv.patFn+' '+rdv.patLn,
+        praticien:'Dr. '+rdv.proFn+' '+rdv.proLn,
+        heure_rdv:rdv.slot,
+        type_consultation:rdv.type==='video'?'Vidéo via Google Meet':'Présentiel',
+        message:rdv.type==='video'
+          ?'Votre consultation commence dans 2 heures. Le lien Google Meet vous sera envoyé par votre praticien. Assurez-vous d\'être dans un endroit calme et privé, avec une bonne connexion internet.'
+          :'Votre consultation commence dans 2 heures. Pensez à vous rendre au cabinet à l\'heure prévue.'
+      });
+      // Notification au pro pour qu'il envoie le lien Meet
+      if(rdv.type==='video'){
+        sendEmailNotification({
+          _subject:'⏰ Rappel 2h — Envoyez le lien Google Meet à '+rdv.patFn+' '+rdv.patLn,
+          type:'RAPPEL_2H_PRO_MEET',
+          destinataire:'Dr. '+rdv.proFn+' '+rdv.proLn,
+          patient:rdv.patFn+' '+rdv.patLn,
+          heure_rdv:rdv.slot,
+          message:'Votre consultation commence dans 2 heures. N\'oubliez pas d\'envoyer votre lien Google Meet au patient depuis votre tableau de bord Psycholab → Salle vidéo.'
+        });
+      }
+    },msTo2h);
+  }
 }
 
 // ════════════════════════════════════════════════
@@ -2170,15 +2927,938 @@ async function generateProWelcomeEmail(fn,ln,spec,rpps){
 // ════════════════════════════════════════════════
 //  VIDEO CONTROLS
 // ════════════════════════════════════════════════
-let micOn=true,camOn=true,callTimer=null,callSecs=0;
-function toggleMic(){micOn=!micOn;const btn=document.getElementById('btn-mic');btn.textContent=micOn?'🎤':'🔇';btn.classList.toggle('act',micOn);btn.style.background=micOn?'rgba(255,255,255,.15)':'var(--orange)';toast(micOn?'🎤 Micro activé':'🔇 Micro désactivé')}
-function toggleCam(){camOn=!camOn;const btn=document.getElementById('btn-cam');btn.textContent=camOn?'📷':'📵';btn.classList.toggle('act',camOn);btn.style.background=camOn?'rgba(255,255,255,.15)':'var(--orange)';toast(camOn?'📷 Caméra activée':'📵 Caméra désactivée')}
-function endCall(){if(callTimer)clearInterval(callTimer);document.getElementById('vid-timer').textContent='⏱️ 00:00';document.getElementById('vid-status-lbl').textContent='Terminé';toast('📵 Appel terminé')}
-function sendMsg(){const inp=document.getElementById('chat-in');const txt=inp.value.trim();if(!txt)return;const msgs=document.getElementById('chat-msgs');msgs.innerHTML+=`<div class="chat-msg me">${escHtml(txt)}</div>`;inp.value='';msgs.scrollTop=msgs.scrollHeight}
+// ════════════════════════════════════════════════
+//  SYSTÈME DE PAIEMENT
+// ════════════════════════════════════════════════
+const PAY_INSTRUCTIONS={
+  western_union:`<strong>Bénéficiaire :</strong> Psycholab Services<br/><strong>Pays :</strong> France<br/><br/>Rendez-vous dans un bureau Western Union, envoyez le montant indiqué et renseignez le numéro MTCN (10 chiffres) ci-dessous.<br/><br/>⚠️ Gardez bien votre reçu et prenez-en une photo.`,
+  virement:`<strong>Banque :</strong> Psycholab Finance<br/><strong>IBAN :</strong> FR76 XXXX XXXX XXXX XXXX XXXX XXX<br/><strong>BIC/SWIFT :</strong> BNPAFRPP<br/><strong>Référence :</strong> Votre nom + date du RDV<br/><br/>Effectuez le virement depuis votre banque et conservez le justificatif.`,
+  moneygram:`<strong>Bénéficiaire :</strong> Psycholab Services<br/><strong>Pays :</strong> France<br/><br/>Rendez-vous dans un bureau MoneyGram, envoyez le montant et notez le numéro de référence de la transaction.<br/><br/>⚠️ Prenez une photo de votre reçu.`,
+  paypal:`<strong>Compte PayPal :</strong> payment@psycholab.com<br/><br/>Envoyez le paiement via PayPal en indiquant votre nom et la date du RDV dans le message.<br/><br/>Faites une capture d'écran de la confirmation de paiement.`,
+  cheque:`<strong>Ordre :</strong> Psycholab<br/><strong>Adresse :</strong> [Adresse Psycholab]<br/><br/>Envoyez votre chèque ou mandat postal et photographiez-le avant l'envoi comme justificatif.`
+};
+
+function goPaymentFromPatient(rdvId){
+  const db=getDB();
+  const rdv=db.rdvs.find(r=>r.id===rdvId);
+  if(!rdv)return;
+  const pro=db.pros.find(p=>p.id===rdv.proId);
+  currentPayRdv=rdv;
+  selSpec=pro;
+  document.getElementById('pay-amount').textContent=(pro&&pro.price?pro.price+'€':'Montant à définir');
+  document.getElementById('pay-rdv-info').textContent='RDV avec Dr. '+rdv.proFn+' '+rdv.proLn+' · '+new Date(rdv.date).toLocaleDateString('fr-FR')+' à '+rdv.slot;
+  document.getElementById('pay-date').value=new Date().toISOString().split('T')[0];
+  document.getElementById('pay-instructions').style.display='none';
+  document.getElementById('pay-error').style.display='none';
+  showView('v-payment');
+}
+
+function goPayment(){
+  if(!selSpec||!currentPayRdv)return;
+  document.getElementById('pay-amount').textContent=(selSpec.price?selSpec.price+'€':'Montant à définir');
+  document.getElementById('pay-rdv-info').textContent='RDV avec Dr. '+selSpec.fn+' '+selSpec.ln+' · '+new Date(currentPayRdv.date).toLocaleDateString('fr-FR')+' à '+currentPayRdv.slot;
+  document.getElementById('pay-date').value=new Date().toISOString().split('T')[0];
+  document.getElementById('pay-instructions').style.display='none';
+  document.getElementById('pay-error').style.display='none';
+  showView('v-payment');
+}
+let payFileData=null;
+
+function selectPayMode(mode){
+  const instr=document.getElementById('pay-instructions');
+  const text=document.getElementById('pay-instructions-text');
+  instr.style.display='block';
+  text.innerHTML=PAY_INSTRUCTIONS[mode]||'';
+  // Highlight selected
+  ['wu','vir','moneygram','paypal','cheque'].forEach(k=>{
+    const el=document.getElementById('pay-opt-'+k);
+    if(el)el.style.borderColor='var(--border)';
+  });
+  const map={western_union:'wu',virement:'vir',moneygram:'moneygram',paypal:'paypal',cheque:'cheque'};
+  const el=document.getElementById('pay-opt-'+map[mode]);
+  if(el)el.style.borderColor='var(--teal)';
+}
+
+function handlePayFile(input){
+  const file=input.files[0];
+  if(!file)return;
+  if(file.size>5*1024*1024){toast('Fichier trop volumineux (max 5MB)','red');return}
+  const reader=new FileReader();
+  reader.onload=e=>{
+    payFileData={name:file.name,type:file.type,data:e.target.result.split(',')[1]};
+    document.getElementById('pay-file-name').textContent=file.name;
+    document.getElementById('pay-file-preview').style.display='block';
+  };
+  reader.readAsDataURL(file);
+}
+
+function submitPayment(){
+  const s=getSession();
+  const mode=document.querySelector('input[name="pay-mode"]:checked');
+  const ref=document.getElementById('pay-ref').value.trim();
+  const montant=document.getElementById('pay-montant').value;
+  const date=document.getElementById('pay-date').value;
+  const notes=document.getElementById('pay-notes').value;
+  const errEl=document.getElementById('pay-error');
+  errEl.style.display='none';
+  if(!mode){errEl.textContent='Veuillez sélectionner un mode de paiement.';errEl.style.display='block';return}
+  if(!ref||!montant||!date){errEl.textContent='Veuillez remplir tous les champs obligatoires.';errEl.style.display='block';return}
+  const db=getDB();
+  if(!db.paiements)db.paiements=[];
+  const paiement={
+    id:'pay_'+Date.now(),
+    rdvId:currentPayRdv?currentPayRdv.id:null,
+    patId:s?s.id:null,
+    patName:s?s.fn+' '+s.ln:'Patient',
+    patEmail:s?s.email:'',
+    proId:currentPayRdv?currentPayRdv.proId:null,
+    proName:currentPayRdv?'Dr. '+currentPayRdv.proFn+' '+currentPayRdv.proLn:'',
+    rdvDate:currentPayRdv?currentPayRdv.date:null,
+    rdvSlot:currentPayRdv?currentPayRdv.slot:null,
+    mode:mode.value,
+    ref,montant:parseFloat(montant),date,notes,
+    fichier:payFileData?payFileData.name:null,
+    statut:'en_attente',
+    createdAt:new Date().toISOString()
+  };
+  db.paiements.push(paiement);saveDB(db);
+  // Notifier l'admin via Formspree
+  sendEmailNotification({
+    _subject:'💳 Nouveau justificatif de paiement — '+paiement.patName,
+    type:'JUSTIFICATIF_PAIEMENT',
+    patient:paiement.patName,
+    email_patient:paiement.patEmail,
+    praticien:paiement.proName,
+    rdv_date:currentPayRdv?new Date(currentPayRdv.date).toLocaleDateString('fr-FR'):'—',
+    rdv_heure:currentPayRdv?currentPayRdv.slot:'—',
+    mode_paiement:mode.value,
+    reference:ref,
+    montant:montant+' €',
+    date_paiement:date,
+    notes:notes||'—',
+    fichier:payFileData?payFileData.name:'Aucun fichier joint',
+    message:'Un patient a envoyé un justificatif de paiement. Connectez-vous au panel admin pour valider ou refuser ce paiement.'
+  });
+  // Notification interne
+  if(s)addNotif(s.id,'patient','💳 Justificatif envoyé','Votre justificatif de paiement a été transmis à l\'équipe Psycholab. Votre RDV sera confirmé sous 24h.');
+  payFileData=null;
+  toast('✅ Justificatif envoyé ! Votre RDV sera confirmé sous 24h.','green');
+  setTimeout(()=>goPatient(),2000);
+}
+
+// ════════════════════════════════════════════════
+//  ADMIN FUNCTIONS
+// ════════════════════════════════════════════════
+function showAdmTab(id,btn){
+  document.querySelectorAll('.adm-pane').forEach(p=>p.classList.remove('on'));
+  document.querySelectorAll('.adm-tab').forEach(b=>b.classList.remove('on'));
+  document.getElementById('adm-'+id).classList.add('on');
+  if(btn)btn.classList.add('on');
+  if(id==='paiements')renderAdmPaiements();
+  if(id==='rdvs-admin')renderAdmRdvs();
+  if(id==='patients-admin')renderAdmPatients();
+  if(id==='pros-actifs')renderAdminPanel();
+}
+
+function renderAdminPanel(){
+  const db=getDB();
+  const pending=db.pros.filter(p=>!p.active);
+  const active=db.pros.filter(p=>p.active);
+  const payPending=(db.paiements||[]).filter(p=>p.statut==='en_attente');
+  document.getElementById('adm-stat-pending').textContent=pending.length;
+  document.getElementById('adm-stat-active').textContent=active.length;
+  document.getElementById('adm-stat-pay-pending').textContent=payPending.length;
+  document.getElementById('adm-stat-patients').textContent=(db.users||[]).length;
+  // Badge paiements
+  const badge=document.getElementById('adm-pay-badge');
+  if(badge){badge.style.display=payPending.length>0?'inline':'none';badge.textContent=payPending.length;}
+  // Pending pros
+  const pendEl=document.getElementById('adm-pending-list');
+  if(!pending.length){
+    pendEl.innerHTML=`<div class="empty-state"><div class="empty-ico">✅</div><h3 class="empty-title">Aucun dossier en attente</h3><p class="empty-sub">Tous les dossiers ont été traités.</p></div>`;
+  } else {
+    pendEl.innerHTML=pending.map(p=>`
+      <div style="background:#fff;border:1.5px solid var(--border);border-radius:14px;padding:1rem;margin-bottom:.75rem;border-left:4px solid var(--orange)">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:.7rem;gap:.5rem">
+          <div>
+            <div style="font-family:'Playfair Display',serif;font-size:.95rem;font-weight:700;color:var(--ch)">Dr. ${escHtml(p.fn)} ${escHtml(p.ln)}</div>
+            <div style="font-size:.72rem;color:var(--teal);font-weight:700;text-transform:uppercase;margin-top:.1rem">${escHtml(p.spec)}</div>
+          </div>
+          <span style="background:var(--orange-l);color:var(--orange);font-size:.65rem;font-weight:700;padding:.22rem .6rem;border-radius:20px;flex-shrink:0">⏳ En attente</span>
+        </div>
+        <div style="font-size:.78rem;color:var(--mid);line-height:1.8;background:var(--sand);border-radius:10px;padding:.75rem;margin-bottom:.75rem">
+          📧 <strong>${escHtml(p.email)}</strong> · 📞 ${escHtml(p.tel||'—')}<br/>
+          📅 Inscrit le : ${formatDate(p.createdAt)}<br/>
+          💰 Tarif : ${p.price?p.price+'€/séance':'Non communiqué'}<br/>
+          📝 Bio : ${escHtml((p.bio||'').substring(0,100))}…
+        </div>
+        <div style="display:flex;gap:.5rem;flex-wrap:wrap">
+          <button onclick="validatePro('${p.id}')" style="flex:1;background:var(--green);color:#fff;border:none;border-radius:10px;padding:.72rem;font-size:.84rem;font-weight:700;cursor:pointer">✅ Valider</button>
+          <button onclick="rejectPro('${p.id}')" style="flex:1;background:var(--red-l);color:var(--red);border:1.5px solid var(--red);border-radius:10px;padding:.7rem;font-size:.84rem;font-weight:600;cursor:pointer">❌ Refuser</button>
+        </div>
+      </div>`).join('');
+  }
+  // Active pros
+  const actEl=document.getElementById('adm-active-list');
+  if(!actEl)return;
+  if(!active.length){actEl.innerHTML=`<div style="text-align:center;padding:1.5rem;color:var(--soft);font-size:.82rem">Aucun professionnel actif.</div>`;return}
+  actEl.innerHTML=active.map(p=>`
+    <div style="background:#fff;border:1.5px solid var(--border);border-radius:14px;padding:1rem;margin-bottom:.6rem;border-left:4px solid var(--green);display:flex;align-items:center;justify-content:space-between;gap:.7rem">
+      <div>
+        <div style="font-size:.88rem;font-weight:600;color:var(--ch)">Dr. ${escHtml(p.fn)} ${escHtml(p.ln)}</div>
+        <div style="font-size:.72rem;color:var(--teal);font-weight:600">${escHtml(p.spec)}</div>
+        <div style="font-size:.7rem;color:var(--soft)">${escHtml(p.email)}</div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:.35rem;align-items:flex-end">
+        <span style="background:var(--green-l);color:var(--green);font-size:.65rem;font-weight:700;padding:.22rem .6rem;border-radius:20px">✅ Actif</span>
+        <button onclick="deactivatePro('${p.id}')" style="background:var(--red-l);color:var(--red);border:1.5px solid var(--red);border-radius:8px;padding:.28rem .65rem;font-size:.68rem;font-weight:600;cursor:pointer">Désactiver</button>
+      </div>
+    </div>`).join('');
+}
+
+function renderAdmPaiements(){
+  const db=getDB();
+  const paiements=(db.paiements||[]).sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt));
+  const el=document.getElementById('adm-paiements-list');
+  if(!paiements.length){
+    el.innerHTML=`<div class="empty-state"><div class="empty-ico">💳</div><h3 class="empty-title">Aucun justificatif reçu</h3><p class="empty-sub">Les justificatifs de paiement des patients apparaîtront ici.</p></div>`;
+    return;
+  }
+  const modeLabels={western_union:'💛 Western Union',virement:'🏦 Virement',moneygram:'🔵 MoneyGram',paypal:'🔷 PayPal',cheque:'📄 Chèque/Mandat'};
+  const statutColors={en_attente:'var(--orange)',valide:'var(--green)',refuse:'var(--red)'};
+  const statutLabels={en_attente:'⏳ En attente',valide:'✅ Validé',refuse:'❌ Refusé'};
+  el.innerHTML=paiements.map(p=>`
+    <div style="background:#fff;border:1.5px solid var(--border);border-radius:var(--r-md);padding:1rem;margin-bottom:.85rem;border-left:4px solid ${statutColors[p.statut]||'var(--orange)'}">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:.7rem;gap:.5rem">
+        <div>
+          <div style="font-size:.9rem;font-weight:700;color:var(--ch)">${escHtml(p.patName)}</div>
+          <div style="font-size:.72rem;color:var(--mid);margin-top:.1rem">→ ${escHtml(p.proName)}</div>
+        </div>
+        <span style="background:${statutColors[p.statut]||'var(--orange-l)'};color:#fff;font-size:.65rem;font-weight:700;padding:.25rem .65rem;border-radius:20px;flex-shrink:0">${statutLabels[p.statut]}</span>
+      </div>
+      <div style="background:var(--sand);border-radius:var(--r-sm);padding:.8rem;margin-bottom:.8rem;font-size:.78rem;color:var(--ch);line-height:1.85">
+        📅 <strong>RDV :</strong> ${p.rdvDate?new Date(p.rdvDate).toLocaleDateString('fr-FR'):'—'} à ${p.rdvSlot||'—'}<br/>
+        💳 <strong>Mode :</strong> ${modeLabels[p.mode]||p.mode}<br/>
+        🔢 <strong>Référence :</strong> ${escHtml(p.ref)}<br/>
+        💰 <strong>Montant :</strong> <span style="font-weight:700;color:var(--teal-d)">${p.montant} €</span><br/>
+        📆 <strong>Date paiement :</strong> ${new Date(p.date).toLocaleDateString('fr-FR')}<br/>
+        📎 <strong>Fichier :</strong> ${p.fichier?'<span style="color:var(--green);font-weight:600">'+escHtml(p.fichier)+'</span>':'Aucun fichier'}<br/>
+        ${p.notes?`📝 <strong>Notes :</strong> ${escHtml(p.notes)}`:''}
+        <br/>📧 <strong>Email patient :</strong> ${escHtml(p.patEmail||'—')}
+        <br/>⏱️ <strong>Soumis le :</strong> ${formatDate(p.createdAt)}
+      </div>
+      ${p.statut==='en_attente'?`
+        <div style="display:flex;gap:.5rem;flex-wrap:wrap">
+          <button onclick="validerPaiement('${p.id}')" style="flex:1;background:var(--green);color:#fff;border:none;border-radius:var(--r-sm);padding:.72rem;font-size:.84rem;font-weight:700;cursor:pointer">✅ Valider le paiement</button>
+          <button onclick="refuserPaiement('${p.id}')" style="flex:1;background:var(--red-l);color:var(--red);border:1.5px solid var(--red);border-radius:var(--r-sm);padding:.7rem;font-size:.84rem;font-weight:600;cursor:pointer">❌ Refuser</button>
+        </div>`:`<div style="font-size:.75rem;color:${statutColors[p.statut]};font-weight:600">Traitement effectué le ${formatDate(p.updatedAt||p.createdAt)}</div>`}
+    </div>`).join('');
+}
+
+function validerPaiement(payId){
+  const db=getDB();
+  const pay=(db.paiements||[]).find(p=>p.id===payId);
+  if(!pay)return;
+  pay.statut='valide';pay.updatedAt=new Date().toISOString();
+  // Valider aussi le RDV
+  if(pay.rdvId){
+    const rdv=db.rdvs.find(r=>r.id===pay.rdvId);
+    if(rdv){rdv.status='confirmed';rdv.paiementValide=true;}
+  }
+  saveDB(db);
+  // Notification patient
+  if(pay.patId)addNotif(pay.patId,'patient','✅ Paiement validé !','Votre paiement de '+pay.montant+'€ a été validé. Votre rendez-vous du '+new Date(pay.rdvDate).toLocaleDateString('fr-FR')+' à '+pay.rdvSlot+' est confirmé.');
+  // Email confirmation
+  sendEmailNotification({
+    _subject:'✅ Paiement validé — Votre RDV Psycholab est confirmé !',
+    type:'PAIEMENT_VALIDE',
+    destinataire:pay.patName,
+    email_patient:pay.patEmail,
+    praticien:pay.proName,
+    rdv_date:new Date(pay.rdvDate).toLocaleDateString('fr-FR'),
+    rdv_heure:pay.rdvSlot,
+    montant:pay.montant+'€',
+    message:'Votre paiement a été vérifié et validé par l\'équipe Psycholab. Votre rendez-vous est maintenant confirmé. Vous recevrez un rappel 24h avant.'
+  });
+  toast('✅ Paiement validé — Patient notifié','green');
+  renderAdmPaiements();
+  renderAdminPanel();
+}
+
+function refuserPaiement(payId){
+  const raison=prompt('Raison du refus (sera envoyée au patient) :','Justificatif non conforme ou montant incorrect.');
+  const db=getDB();
+  const pay=(db.paiements||[]).find(p=>p.id===payId);
+  if(!pay)return;
+  pay.statut='refuse';pay.updatedAt=new Date().toISOString();pay.raisonRefus=raison||'—';
+  saveDB(db);
+  if(pay.patId)addNotif(pay.patId,'patient','❌ Paiement refusé','Votre justificatif n\'a pas pu être validé : '+(raison||'—')+'. Veuillez soumettre un nouveau justificatif.');
+  sendEmailNotification({
+    _subject:'❌ Justificatif de paiement non conforme — Action requise',
+    type:'PAIEMENT_REFUSE',
+    destinataire:pay.patName,
+    email_patient:pay.patEmail,
+    raison:raison||'Justificatif non conforme',
+    message:'Votre justificatif de paiement n\'a pas pu être validé pour la raison suivante : '+(raison||'—')+'. Veuillez vous connecter à votre espace Psycholab pour soumettre un nouveau justificatif.'
+  });
+  toast('❌ Paiement refusé — Patient notifié','red');
+  renderAdmPaiements();
+  renderAdminPanel();
+}
+
+function renderAdmRdvs(){
+  const db=getDB();
+  const rdvs=(db.rdvs||[]).sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt));
+  const el=document.getElementById('adm-rdvs-list');
+  if(!rdvs.length){el.innerHTML=`<div class="empty-state"><div class="empty-ico">📋</div><h3 class="empty-title">Aucun rendez-vous</h3></div>`;return}
+  el.innerHTML=rdvs.map(r=>{
+    const d=new Date(r.date);
+    return `<div style="background:#fff;border:1.5px solid var(--border);border-radius:var(--r-md);padding:.9rem;margin-bottom:.6rem;border-left:3px solid ${r.status==='confirmed'?'var(--green)':r.status==='cancelled'?'var(--red)':'var(--orange)'}">
+      <div style="font-size:.85rem;font-weight:600;color:var(--ch)">${escHtml(r.patFn)} ${escHtml(r.patLn)} → ${escHtml(r.proFn)} ${escHtml(r.proLn)}</div>
+      <div style="font-size:.75rem;color:var(--mid);margin-top:.2rem">${d.toLocaleDateString('fr-FR')} à ${r.slot} · ${r.spec} · ${r.type==='video'?'📹 Vidéo':'🏥 Présentiel'}</div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-top:.4rem">
+        <span style="font-size:.65rem;font-weight:700;padding:.2rem .55rem;border-radius:20px;background:${r.status==='confirmed'?'var(--green-l)':r.status==='cancelled'?'var(--red-l)':'var(--orange-l)'};color:${r.status==='confirmed'?'var(--green)':r.status==='cancelled'?'var(--red)':'var(--orange)'}">${r.status==='confirmed'?'✅ Confirmé':r.status==='cancelled'?'❌ Annulé':'⏳ En attente'}</span>
+        ${r.paiementValide?'<span style="font-size:.65rem;background:var(--green-l);color:var(--green);padding:.2rem .55rem;border-radius:20px;font-weight:600">💳 Payé</span>':''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderAdmPatients(){
+  const db=getDB();
+  const users=db.users||[];
+  const el=document.getElementById('adm-patients-list');
+  if(!users.length){el.innerHTML=`<div class="empty-state"><div class="empty-ico">👤</div><h3 class="empty-title">Aucun patient</h3></div>`;return}
+  el.innerHTML=users.map(u=>{
+    const rdvCount=(db.rdvs||[]).filter(r=>r.patId===u.id).length;
+    return `<div style="background:#fff;border:1.5px solid var(--border);border-radius:var(--r-md);padding:.9rem;margin-bottom:.6rem;display:flex;align-items:center;justify-content:space-between;gap:.7rem">
+      <div>
+        <div style="font-size:.88rem;font-weight:600;color:var(--ch)">${escHtml(u.fn)} ${escHtml(u.ln)}</div>
+        <div style="font-size:.73rem;color:var(--mid)">${escHtml(u.email)}</div>
+        <div style="font-size:.7rem;color:var(--soft);margin-top:.1rem">Inscrit le ${formatDate(u.createdAt)} · ${rdvCount} RDV</div>
+      </div>
+      <span style="background:var(--blue-l);color:var(--blue);font-size:.65rem;font-weight:700;padding:.22rem .6rem;border-radius:20px;flex-shrink:0">👤 Patient</span>
+    </div>`;
+  }).join('');
+}
+function showNewMessageForm(){
+  const s=getSession();if(!s)return;
+  const db=getDB();
+  const form=document.getElementById('new-msg-form');
+  form.style.display=form.style.display==='none'?'block':'none';
+  // Charger les patients du pro
+  const rdvs=db.rdvs.filter(r=>r.proId===s.id);
+  const patIds=[...new Set(rdvs.map(r=>r.patId).filter(Boolean))];
+  const sel=document.getElementById('msg-patient-select');
+  sel.innerHTML='<option value="">— Sélectionner un patient —</option>';
+  patIds.forEach(pid=>{
+    const u=db.users.find(u=>u.id===pid);
+    if(u)sel.innerHTML+=`<option value="${pid}">${u.fn} ${u.ln} (${u.email})</option>`;
+  });
+}
+
+function sendSecureMessage(){
+  const s=getSession();if(!s)return;
+  const patId=document.getElementById('msg-patient-select').value;
+  const subject=document.getElementById('msg-subject').value.trim();
+  const body=document.getElementById('msg-body').value.trim();
+  if(!patId||!subject||!body){toast('Remplissez tous les champs','red');return}
+  const db=getDB();
+  const pro=db.pros.find(p=>p.id===s.id);
+  const pat=db.users.find(u=>u.id===patId);
+  if(!db.messages)db.messages=[];
+  const msg={
+    id:'msg_'+Date.now(),
+    from:'pro',fromId:s.id,fromName:'Dr. '+pro.fn+' '+pro.ln,
+    to:'patient',toId:patId,toName:pat?pat.fn+' '+pat.ln:'Patient',
+    subject,body,read:false,
+    createdAt:new Date().toISOString()
+  };
+  db.messages.push(msg);saveDB(db);
+  // Notif interne patient
+  addNotif(patId,'patient','💬 Message de Dr. '+pro.ln,subject);
+  // Email de notification
+  sendEmailNotification({
+    _subject:'💬 Nouveau message de Dr. '+pro.fn+' '+pro.ln+' sur Psycholab',
+    type:'NOUVEAU_MESSAGE',
+    destinataire:pat?pat.fn+' '+pat.ln:'Patient',
+    expediteur:'Dr. '+pro.fn+' '+pro.ln+' ('+pro.spec+')',
+    objet:subject,
+    message:body+'\n\nConnectez-vous à votre espace Psycholab pour répondre directement à votre spécialiste.'
+  });
+  document.getElementById('msg-subject').value='';
+  document.getElementById('msg-body').value='';
+  document.getElementById('new-msg-form').style.display='none';
+  toast('✅ Message envoyé !','green');
+  renderMessagesList();
+}
+
+function renderMessagesList(){
+  const s=getSession();if(!s)return;
+  const db=getDB();
+  const msgs=(db.messages||[]).filter(m=>m.fromId===s.id||m.toId===s.id)
+    .sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt));
+  const el=document.getElementById('messages-list');
+  if(!msgs.length){
+    el.innerHTML=`<div class="empty-state"><div class="empty-ico">💬</div><h3 class="empty-title">Aucun message</h3><p class="empty-sub">Envoyez un message à vos patients directement depuis Psycholab.</p></div>`;
+    return;
+  }
+  el.innerHTML=msgs.map(m=>`
+    <div style="background:#fff;border:1.5px solid var(--border);border-radius:var(--r-md);padding:1rem;margin-bottom:.65rem;${!m.read&&m.toId===s.id?'border-left:3px solid var(--teal)':''}">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:.5rem;gap:.5rem">
+        <div>
+          <div style="font-size:.85rem;font-weight:600;color:var(--ch)">${m.from==='pro'?'→ '+m.toName:'← '+m.fromName}</div>
+          <div style="font-size:.78rem;font-weight:600;color:var(--teal);margin-top:.1rem">${escHtml(m.subject)}</div>
+        </div>
+        <div style="font-size:.68rem;color:var(--soft);font-family:'DM Mono',monospace;flex-shrink:0">${formatDate(m.createdAt)}</div>
+      </div>
+      <div style="font-size:.8rem;color:var(--mid);line-height:1.6;white-space:pre-wrap">${escHtml(m.body)}</div>
+    </div>`).join('');
+}
+
+function patSendMessage(){
+  const s=getSession();if(!s)return;
+  const db=getDB();
+  const proId=document.getElementById('pat-msg-pro').value;
+  const body=document.getElementById('pat-msg-body').value.trim();
+  if(!proId||!body){toast('Remplissez tous les champs','red');return}
+  const pro=db.pros.find(p=>p.id===proId);
+  const user=db.users.find(u=>u.id===s.id);
+  if(!db.messages)db.messages=[];
+  const msg={
+    id:'msg_'+Date.now(),
+    from:'patient',fromId:s.id,fromName:user?user.fn+' '+user.ln:'Patient',
+    to:'pro',toId:proId,toName:pro?'Dr. '+pro.fn+' '+pro.ln:'Praticien',
+    subject:'Message de '+( user?user.fn+' '+user.ln:'Patient'),
+    body,read:false,createdAt:new Date().toISOString()
+  };
+  db.messages.push(msg);saveDB(db);
+  addNotif(proId,'pro','💬 Message de '+(user?user.fn+' '+user.ln:'Patient'),body.substring(0,80)+'…');
+  sendEmailNotification({
+    _subject:'💬 Nouveau message patient sur Psycholab — '+(user?user.fn+' '+user.ln:''),
+    type:'MESSAGE_PATIENT',
+    destinataire:pro?'Dr. '+pro.fn+' '+pro.ln:'Praticien',
+    patient:user?user.fn+' '+user.ln:'Patient',
+    message:body+'\n\nConnectez-vous à votre tableau de bord Psycholab pour répondre.'
+  });
+  document.getElementById('pat-msg-body').value='';
+  toast('✅ Message envoyé !','green');
+  renderPatMessages();
+}
+
+function renderPatMessages(){
+  const s=getSession();if(!s)return;
+  const db=getDB();
+  const msgs=(db.messages||[]).filter(m=>m.fromId===s.id||m.toId===s.id)
+    .sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt));
+  const el=document.getElementById('pat-messages-list');
+  if(!el)return;
+  if(!msgs.length){el.innerHTML=`<div style="text-align:center;padding:2rem;color:var(--soft);font-size:.82rem"><div style="font-size:1.5rem;margin-bottom:.4rem">💬</div>Aucun message pour le moment.</div>`;return}
+  el.innerHTML=msgs.map(m=>`
+    <div style="background:#fff;border:1.5px solid var(--border);border-radius:var(--r-md);padding:1rem;margin-bottom:.65rem">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:.4rem">
+        <div style="font-size:.82rem;font-weight:600;color:var(--ch)">${m.from==='pro'?'📩 '+m.fromName:'📤 Vous → '+m.toName}</div>
+        <div style="font-size:.68rem;color:var(--soft)">${formatDate(m.createdAt)}</div>
+      </div>
+      <div style="font-size:.78rem;font-weight:600;color:var(--teal);margin-bottom:.3rem">${escHtml(m.subject)}</div>
+      <div style="font-size:.8rem;color:var(--mid);line-height:1.6">${escHtml(m.body)}</div>
+    </div>`).join('');
+  // Charger pros pour le select
+  const proDone=db.pros.filter(p=>p.active);
+  const sel=document.getElementById('pat-msg-pro');
+  if(sel){sel.innerHTML='<option value="">— Sélectionner —</option>';proDone.forEach(p=>sel.innerHTML+=`<option value="${p.id}">Dr. ${p.fn} ${p.ln} (${p.spec})</option>`);}
+}
+
+// ════════════════════════════════════════════════
+//  FACTURATION
+// ════════════════════════════════════════════════
+function showNewFactureForm(){
+  const s=getSession();if(!s)return;
+  const db=getDB();
+  const form=document.getElementById('facture-form');
+  form.style.display=form.style.display==='none'?'block':'none';
+  // Pre-fill tarif
+  const pro=db.pros.find(p=>p.id===s.id);
+  if(pro&&pro.price){document.getElementById('fact-tarif').value=pro.price;}
+  // Set today's date
+  document.getElementById('fact-date').value=new Date().toISOString().split('T')[0];
+  // Load patients
+  const rdvs=db.rdvs.filter(r=>r.proId===s.id&&r.status==='confirmed');
+  const patIds=[...new Set(rdvs.map(r=>r.patId).filter(Boolean))];
+  const sel=document.getElementById('fact-patient');
+  sel.innerHTML='<option value="">— Sélectionner —</option>';
+  // Also add from fiches
+  const fiches=(db.fiches||[]).filter(f=>f.proId===s.id);
+  const allPats=[...patIds.map(pid=>{const u=db.users.find(u=>u.id===pid);return u?{id:pid,name:u.fn+' '+u.ln,email:u.email}:null}).filter(Boolean),
+    ...fiches.map(f=>({id:f.id,name:f.fn+' '+f.ln,email:f.email,isFiche:true}))];
+  allPats.forEach(p=>sel.innerHTML+=`<option value="${p.id}" data-email="${p.email||''}" data-name="${p.name}">${p.name}${p.email?' ('+p.email+')':''}</option>`);
+}
+
+function generateFacture(){
+  const s=getSession();if(!s)return;
+  const db=getDB();
+  const pro=db.pros.find(p=>p.id===s.id);
+  const patSel=document.getElementById('fact-patient');
+  const patId=patSel.value;
+  const patName=patSel.selectedOptions[0]?.dataset.name||'Patient';
+  const patEmail=patSel.selectedOptions[0]?.dataset.email||'';
+  const dateSeance=document.getElementById('fact-date').value;
+  const duree=document.getElementById('fact-duree').value;
+  const type=document.getElementById('fact-type').value;
+  const tarif=parseFloat(document.getElementById('fact-tarif').value)||0;
+  const tva=parseFloat(document.getElementById('fact-tva').value)||0;
+  const paiement=document.getElementById('fact-paiement').value;
+  const notes=document.getElementById('fact-notes').value;
+  if(!patId||!dateSeance||!tarif){toast('Remplissez tous les champs obligatoires','red');return}
+  const tvaAmount=tarif*(tva/100);
+  const total=tarif+tvaAmount;
+  const numFacture='PSY-'+new Date().getFullYear()+'-'+String(Date.now()).slice(-6);
+  const facture={
+    id:'fact_'+Date.now(),proId:s.id,patId,patName,patEmail,
+    num:numFacture,dateSeance,duree,type,tarif,tva,tvaAmount,total,paiement,notes,
+    statut:'payée',createdAt:new Date().toISOString()
+  };
+  if(!db.factures)db.factures=[];
+  db.factures.push(facture);saveDB(db);
+  document.getElementById('facture-form').style.display='none';
+  toast('🧾 Facture générée !','green');
+  renderFacturesList();
+  // Afficher la facture immédiatement
+  viewFacture(facture.id);
+}
+
+function renderFacturesList(){
+  const s=getSession();if(!s)return;
+  const db=getDB();
+  const facts=(db.factures||[]).filter(f=>f.proId===s.id)
+    .sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt));
+  const el=document.getElementById('factures-list');
+  if(!facts.length){
+    el.innerHTML=`<div class="empty-state"><div class="empty-ico">🧾</div><h3 class="empty-title">Aucune facture</h3><p class="empty-sub">Générez des factures après chaque séance. Elles seront valables pour les remboursements d'assurance.</p></div>`;
+    return;
+  }
+  el.innerHTML=facts.map(f=>`
+    <div style="background:#fff;border:1.5px solid var(--border);border-radius:var(--r-md);padding:1rem;margin-bottom:.7rem;display:flex;align-items:center;gap:.8rem;justify-content:space-between">
+      <div style="flex:1">
+        <div style="font-size:.65rem;color:var(--soft);font-family:'DM Mono',monospace;margin-bottom:.2rem">${f.num}</div>
+        <div style="font-size:.88rem;font-weight:600;color:var(--ch)">${escHtml(f.patName)}</div>
+        <div style="font-size:.75rem;color:var(--mid);margin-top:.1rem">${new Date(f.dateSeance).toLocaleDateString('fr-FR')} · ${escHtml(f.type)}</div>
+      </div>
+      <div style="text-align:right;flex-shrink:0">
+        <div style="font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:700;color:var(--teal-d)">${f.total.toFixed(2)} €</div>
+        <div style="font-size:.65rem;color:var(--green);font-weight:600">✅ ${f.statut}</div>
+      </div>
+      <button onclick="viewFacture('${f.id}')" style="background:var(--teal);color:#fff;border:none;border-radius:8px;padding:.45rem .8rem;font-size:.75rem;font-weight:600;cursor:pointer;flex-shrink:0">👁️ Voir</button>
+    </div>`).join('');
+}
+
+function viewFacture(factureId){
+  const db=getDB();
+  const f=(db.factures||[]).find(x=>x.id===factureId);
+  if(!f)return;
+  const pro=db.pros.find(p=>p.id===f.proId);
+  const dateSeance=new Date(f.dateSeance).toLocaleDateString('fr-FR',{day:'numeric',month:'long',year:'numeric'});
+  const dateEmission=new Date(f.createdAt).toLocaleDateString('fr-FR',{day:'numeric',month:'long',year:'numeric'});
+  document.getElementById('em-ttl').textContent='🧾 Facture '+f.num;
+  document.getElementById('em-meta').innerHTML=`Émise le ${dateEmission} · Séance du ${dateSeance}`;
+  document.getElementById('em-body').innerHTML=`
+    <div style="font-family:'DM Sans',sans-serif;max-width:600px;margin:0 auto">
+
+      <!-- En-tête facture -->
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:1.5rem;padding-bottom:1rem;border-bottom:2px solid #1B6B61">
+        <div>
+          <div style="font-family:'Playfair Display',serif;font-size:1.3rem;font-weight:700;color:#1B6B61">Psycho<span style="color:#B8834A">lab</span></div>
+          <div style="font-size:.72rem;color:#8A9E9B;margin-top:.2rem">Plateforme de santé mentale</div>
+        </div>
+        <div style="text-align:right">
+          <div style="font-size:1.1rem;font-weight:700;color:#18211F">FACTURE</div>
+          <div style="font-size:.78rem;color:#8A9E9B;font-family:'DM Mono',monospace">${f.num}</div>
+          <div style="font-size:.75rem;color:#4A5C59;margin-top:.2rem">Émise le : ${dateEmission}</div>
+        </div>
+      </div>
+
+      <!-- Praticien & Patient -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1.5rem">
+        <div style="background:#F8F5F0;border-radius:10px;padding:.9rem">
+          <div style="font-size:.65rem;font-weight:700;color:#1B6B61;text-transform:uppercase;letter-spacing:.07em;margin-bottom:.5rem">🩺 Praticien</div>
+          <div style="font-weight:700;color:#18211F">${pro?'Dr. '+pro.fn+' '+pro.ln:'—'}</div>
+          <div style="font-size:.78rem;color:#4A5C59;margin-top:.2rem">${pro?pro.spec:'—'}</div>
+          <div style="font-size:.75rem;color:#8A9E9B;margin-top:.2rem">${pro?pro.email:'—'}</div>
+          <div style="font-size:.75rem;color:#8A9E9B">${pro&&pro.tel?pro.tel:''}</div>
+        </div>
+        <div style="background:#F8F5F0;border-radius:10px;padding:.9rem">
+          <div style="font-size:.65rem;font-weight:700;color:#1B6B61;text-transform:uppercase;letter-spacing:.07em;margin-bottom:.5rem">👤 Patient</div>
+          <div style="font-weight:700;color:#18211F">${escHtml(f.patName)}</div>
+          ${f.patEmail?`<div style="font-size:.75rem;color:#8A9E9B;margin-top:.2rem">${escHtml(f.patEmail)}</div>`:''}
+        </div>
+      </div>
+
+      <!-- Détails prestation -->
+      <table style="width:100%;border-collapse:collapse;margin-bottom:1rem">
+        <thead>
+          <tr style="background:#1B6B61;color:#fff">
+            <th style="text-align:left;padding:.6rem .8rem;font-size:.75rem;font-weight:600;border-radius:8px 0 0 0">Description</th>
+            <th style="text-align:center;padding:.6rem .5rem;font-size:.75rem;font-weight:600">Durée</th>
+            <th style="text-align:right;padding:.6rem .8rem;font-size:.75rem;font-weight:600;border-radius:0 8px 0 0">Montant HT</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr style="border-bottom:1px solid #DDE9E7">
+            <td style="padding:.75rem .8rem;font-size:.82rem;color:#18211F">
+              <strong>${escHtml(f.type)}</strong><br/>
+              <span style="font-size:.72rem;color:#8A9E9B">Séance du ${dateSeance}</span>
+            </td>
+            <td style="text-align:center;padding:.75rem .5rem;font-size:.82rem;color:#4A5C59">${f.duree} min</td>
+            <td style="text-align:right;padding:.75rem .8rem;font-size:.88rem;font-weight:600;color:#18211F">${f.tarif.toFixed(2)} €</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <!-- Totaux -->
+      <div style="display:flex;justify-content:flex-end;margin-bottom:1.5rem">
+        <div style="min-width:220px">
+          <div style="display:flex;justify-content:space-between;padding:.4rem 0;font-size:.82rem;color:#4A5C59;border-bottom:1px solid #DDE9E7">
+            <span>Sous-total HT</span><span>${f.tarif.toFixed(2)} €</span>
+          </div>
+          ${f.tva>0?`<div style="display:flex;justify-content:space-between;padding:.4rem 0;font-size:.82rem;color:#4A5C59;border-bottom:1px solid #DDE9E7"><span>TVA (${f.tva}%)</span><span>${f.tvaAmount.toFixed(2)} €</span></div>`:'<div style="padding:.3rem 0;font-size:.72rem;color:#8A9E9B;border-bottom:1px solid #DDE9E7">TVA : Exonéré (acte de santé)</div>'}
+          <div style="display:flex;justify-content:space-between;padding:.6rem 0;font-size:1rem;font-weight:700;color:#1B6B61">
+            <span>TOTAL TTC</span><span>${f.total.toFixed(2)} €</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Paiement & Notes -->
+      <div style="background:#E3F4F2;border-radius:10px;padding:.9rem;margin-bottom:1rem">
+        <div style="font-size:.72rem;font-weight:700;color:#104F48;text-transform:uppercase;letter-spacing:.06em;margin-bottom:.4rem">💳 Mode de paiement</div>
+        <div style="font-size:.84rem;font-weight:600;color:#18211F">${escHtml(f.paiement)} · <span style="color:#1E7A4A">✅ Payé</span></div>
+      </div>
+
+      ${f.notes?`<div style="background:#FFF8F0;border-radius:10px;padding:.85rem;margin-bottom:1rem;border-left:3px solid #B8834A"><div style="font-size:.7rem;font-weight:700;color:#B8834A;text-transform:uppercase;letter-spacing:.06em;margin-bottom:.3rem">📋 Notes / Remboursement</div><div style="font-size:.8rem;color:#4A5C59;line-height:1.6">${escHtml(f.notes)}</div></div>`:''}
+
+      <!-- Pied de facture -->
+      <div style="text-align:center;padding-top:1rem;border-top:1px solid #DDE9E7;font-size:.72rem;color:#8A9E9B;line-height:1.7">
+        Cette facture est établie conformément aux normes comptables en vigueur.<br/>
+        Elle peut être présentée à votre assurance pour remboursement.<br/>
+        <strong style="color:#1B6B61">Psycholab</strong> · plateforme-psycholab.com
+      </div>
+    </div>`;
+  document.getElementById('email-modal-bg').classList.add('on');
+  // Envoyer la facture par email au patient
+  if(pro){
+    sendEmailNotification({
+      _subject:'🧾 Facture N° '+f.num+' — Psycholab',
+      type:'FACTURE',
+      destinataire:f.patName,
+      email_patient:f.patEmail,
+      praticien:'Dr. '+pro.fn+' '+pro.ln+' ('+pro.spec+')',
+      num_facture:f.num,
+      date_seance:dateSeance,
+      type_seance:f.type,
+      montant_total:f.total.toFixed(2)+' €',
+      mode_paiement:f.paiement,
+      message:'Veuillez trouver ci-joint votre facture pour la séance du '+dateSeance+'. Cette facture peut être présentée à votre assurance pour remboursement.'
+    });
+  }
+}
+function showNewFicheForm(){
+  const form=document.getElementById('fiche-form');
+  form.style.display=form.style.display==='none'?'block':'none';
+  if(form.style.display==='block') form.scrollIntoView({behavior:'smooth'});
+}
+
+function saveFiche(){
+  const s=getSession();if(!s)return;
+  const fn=document.getElementById('fiche-fn').value.trim();
+  const ln=document.getElementById('fiche-ln').value.trim();
+  if(!fn||!ln){toast('Prénom et nom obligatoires','red');return}
+  const fiche={
+    id:'fiche_'+Date.now(),
+    proId:s.id,
+    fn,ln,
+    dob:document.getElementById('fiche-dob').value,
+    genre:document.getElementById('fiche-genre').value,
+    email:document.getElementById('fiche-email').value,
+    tel:document.getElementById('fiche-tel').value,
+    adresse:document.getElementById('fiche-adresse').value,
+    profession:document.getElementById('fiche-profession').value,
+    famille:document.getElementById('fiche-famille').value,
+    motif:document.getElementById('fiche-motif').value,
+    motifDesc:document.getElementById('fiche-motif-desc').value,
+    depuis:document.getElementById('fiche-depuis').value,
+    antecPsy:document.getElementById('fiche-antec-psy').value,
+    antecMed:document.getElementById('fiche-antec-med').value,
+    traitements:document.getElementById('fiche-traitements').value,
+    allergies:document.getElementById('fiche-allergies').value,
+    antecFam:document.getElementById('fiche-antec-fam').value,
+    urgence:document.getElementById('fiche-urgence').value,
+    risque:document.getElementById('fiche-risque').value,
+    objectifs:document.getElementById('fiche-objectifs').value,
+    approche:document.getElementById('fiche-approche').value,
+    notes:document.getElementById('fiche-notes').value,
+    urgenceContact:document.getElementById('fiche-urgence-contact').value,
+    createdAt:new Date().toISOString(),
+    updatedAt:new Date().toISOString(),
+    sessions:[]
+  };
+  const db=getDB();
+  if(!db.fiches)db.fiches=[];
+  db.fiches.push(fiche);
+  saveDB(db);
+  document.getElementById('fiche-form').style.display='none';
+  toast('✅ Fiche patient sauvegardée !','green');
+  renderFichesList();
+  // Reset form
+  ['fiche-fn','fiche-ln','fiche-email','fiche-tel','fiche-adresse','fiche-profession',
+   'fiche-motif-desc','fiche-antec-psy','fiche-antec-med','fiche-traitements',
+   'fiche-allergies','fiche-antec-fam','fiche-objectifs','fiche-notes','fiche-urgence-contact']
+  .forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  ['fiche-genre','fiche-famille','fiche-motif','fiche-depuis','fiche-urgence','fiche-risque','fiche-approche']
+  .forEach(id=>{const el=document.getElementById(id);if(el)el.selectedIndex=0;});
+}
+
+function renderFichesList(){
+  const s=getSession();if(!s)return;
+  const db=getDB();
+  const fiches=(db.fiches||[]).filter(f=>f.proId===s.id);
+  const el=document.getElementById('fiches-list');
+  if(!fiches.length){
+    el.innerHTML=`<div class="empty-state"><div class="empty-ico">🗂️</div><h3 class="empty-title">Aucune fiche patient</h3><p class="empty-sub">Créez une fiche pour chaque patient afin de garder un suivi clinique complet.</p></div>`;
+    return;
+  }
+  const urgColors={faible:'var(--green)',moyen:'var(--orange)',eleve:'var(--red)',crise:'#8B0000','':`var(--soft)`};
+  const urgLabels={faible:'🟢 Faible',moyen:'🟡 Moyen',eleve:'🔴 Élevé',crise:'🆘 Crise','':`—`};
+  el.innerHTML=fiches.sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt)).map(f=>`
+    <div style="background:#fff;border:1.5px solid var(--border);border-radius:var(--r-md);padding:1rem;margin-bottom:.75rem;border-left:4px solid ${urgColors[f.urgence]||'var(--teal)'}">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:.6rem;gap:.5rem">
+        <div>
+          <div style="font-family:'Playfair Display',serif;font-size:.98rem;font-weight:700;color:var(--ch)">${escHtml(f.fn)} ${escHtml(f.ln)}</div>
+          <div style="font-size:.72rem;color:var(--teal);font-weight:600;text-transform:uppercase;letter-spacing:.04em;margin-top:.1rem">${escHtml(f.motif||'—')}</div>
+        </div>
+        <span style="background:${urgColors[f.urgence]||'var(--sand)'};color:#fff;font-size:.63rem;font-weight:700;padding:.2rem .55rem;border-radius:20px;flex-shrink:0;white-space:nowrap">${urgLabels[f.urgence]}</span>
+      </div>
+      <div style="font-size:.75rem;color:var(--mid);line-height:1.7;margin-bottom:.75rem">
+        ${f.dob?`📅 Né(e) le ${new Date(f.dob).toLocaleDateString('fr-FR')} · `:''}
+        ${f.genre?f.genre+' · ':''}
+        ${f.tel?`📞 ${escHtml(f.tel)} · `:''}
+        ${f.email?`📧 ${escHtml(f.email)}`:''}
+        ${f.depuis?`<br/>⏱️ Depuis : ${escHtml(f.depuis)}`:''}
+        ${f.approche?`<br/>🧠 Approche : ${escHtml(f.approche)}`:''}
+        ${f.risque&&f.risque!=='aucun'?`<br/>⚠️ Risque suicidaire : <strong style="color:var(--red)">${f.risque}</strong>`:''}
+      </div>
+      <div style="display:flex;gap:.4rem;flex-wrap:wrap">
+        <button onclick="viewFiche('${f.id}')" style="background:var(--teal);color:#fff;border:none;border-radius:8px;padding:.42rem .85rem;font-size:.76rem;font-weight:600;cursor:pointer">👁️ Voir la fiche</button>
+        <button onclick="addSessionNote('${f.id}')" style="background:var(--teal-xl);color:var(--teal-d);border:1.5px solid var(--teal);border-radius:8px;padding:.4rem .85rem;font-size:.76rem;font-weight:600;cursor:pointer">📝 Ajouter une séance</button>
+        <button onclick="deleteFiche('${f.id}')" style="background:var(--red-l);color:var(--red);border:1.5px solid var(--red);border-radius:8px;padding:.4rem .85rem;font-size:.76rem;font-weight:600;cursor:pointer">🗑️</button>
+      </div>
+    </div>`).join('');
+}
+
+function viewFiche(ficheId){
+  const db=getDB();
+  const f=(db.fiches||[]).find(x=>x.id===ficheId);
+  if(!f)return;
+  const age=f.dob?Math.floor((new Date()-new Date(f.dob))/(365.25*24*3600*1000))+'ans':'—';
+  const urgColors={faible:'#1E7A4A',moyen:'#C9621A',eleve:'#C0392B',crise:'#8B0000','':`#8A9E9B`};
+  const risqueColors={aucun:'var(--green)',faible:'var(--orange)',moyen:'var(--orange)',eleve:'var(--red)'};
+  document.getElementById('em-ttl').textContent='🗂️ Fiche — '+f.fn+' '+f.ln;
+  document.getElementById('em-meta').innerHTML=`
+    <strong>Créée le :</strong> ${formatDate(f.createdAt)} &nbsp;·&nbsp;
+    <strong>Urgence :</strong> <span style="color:${urgColors[f.urgence]};font-weight:700">${f.urgence||'—'}</span>`;
+  document.getElementById('em-body').innerHTML=`
+    <div style="font-family:'DM Sans',sans-serif;font-size:.84rem;line-height:1.7;color:#18211F">
+
+    <div style="background:linear-gradient(135deg,#1B6B61,#2A8A7E);color:#fff;border-radius:12px;padding:1rem 1.2rem;margin-bottom:1rem">
+      <div style="font-family:'Playfair Display',serif;font-size:1.2rem;font-weight:700;margin-bottom:.3rem">${escHtml(f.fn)} ${escHtml(f.ln)}</div>
+      <div style="font-size:.78rem;opacity:.85">${f.genre||''} · ${age} · ${escHtml(f.motif||'—')}</div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem;margin-bottom:.9rem">
+      <div style="background:#F8F5F0;border-radius:8px;padding:.7rem"><div style="font-size:.65rem;color:#8A9E9B;text-transform:uppercase;letter-spacing:.06em;margin-bottom:.2rem">📞 Téléphone</div><div style="font-weight:600">${escHtml(f.tel||'—')}</div></div>
+      <div style="background:#F8F5F0;border-radius:8px;padding:.7rem"><div style="font-size:.65rem;color:#8A9E9B;text-transform:uppercase;letter-spacing:.06em;margin-bottom:.2rem">📧 Email</div><div style="font-weight:600;word-break:break-all">${escHtml(f.email||'—')}</div></div>
+      <div style="background:#F8F5F0;border-radius:8px;padding:.7rem"><div style="font-size:.65rem;color:#8A9E9B;text-transform:uppercase;letter-spacing:.06em;margin-bottom:.2rem">👤 Situation</div><div style="font-weight:600">${escHtml(f.famille||'—')}</div></div>
+      <div style="background:#F8F5F0;border-radius:8px;padding:.7rem"><div style="font-size:.65rem;color:#8A9E9B;text-transform:uppercase;letter-spacing:.06em;margin-bottom:.2rem">💼 Profession</div><div style="font-weight:600">${escHtml(f.profession||'—')}</div></div>
+    </div>
+
+    ${f.motifDesc?`<div style="background:#E3F4F2;border-radius:8px;padding:.8rem;margin-bottom:.7rem;border-left:3px solid #1B6B61"><div style="font-size:.7rem;font-weight:700;color:#104F48;text-transform:uppercase;letter-spacing:.06em;margin-bottom:.3rem">🏥 Motif de consultation</div><div>${escHtml(f.motifDesc)}</div>${f.depuis?`<div style="font-size:.72rem;color:#4A5C59;margin-top:.3rem">Depuis : ${escHtml(f.depuis)}</div>`:''}</div>`:''}
+
+    ${(f.antecPsy||f.antecMed||f.traitements||f.allergies)?`
+    <div style="background:#FEF5EE;border-radius:8px;padding:.8rem;margin-bottom:.7rem;border-left:3px solid #C9621A">
+      <div style="font-size:.7rem;font-weight:700;color:#C9621A;text-transform:uppercase;letter-spacing:.06em;margin-bottom:.5rem">💊 Antécédents & Traitements</div>
+      ${f.antecPsy?`<div style="margin-bottom:.4rem"><span style="font-weight:600">Psychiatriques :</span> ${escHtml(f.antecPsy)}</div>`:''}
+      ${f.antecMed?`<div style="margin-bottom:.4rem"><span style="font-weight:600">Médicaux :</span> ${escHtml(f.antecMed)}</div>`:''}
+      ${f.traitements?`<div style="margin-bottom:.4rem"><span style="font-weight:600">Traitements :</span> ${escHtml(f.traitements)}</div>`:''}
+      ${f.allergies?`<div><span style="font-weight:600">⚠️ Allergies :</span> <strong style="color:#C0392B">${escHtml(f.allergies)}</strong></div>`:''}
+    </div>`:''}
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem;margin-bottom:.7rem">
+      <div style="background:#F8F5F0;border-radius:8px;padding:.7rem">
+        <div style="font-size:.65rem;color:#8A9E9B;text-transform:uppercase;letter-spacing:.06em;margin-bottom:.2rem">⚡ Urgence</div>
+        <div style="font-weight:700;color:${urgColors[f.urgence]||'#8A9E9B'}">${f.urgence||'—'}</div>
+      </div>
+      <div style="background:#F8F5F0;border-radius:8px;padding:.7rem">
+        <div style="font-size:.65rem;color:#8A9E9B;text-transform:uppercase;letter-spacing:.06em;margin-bottom:.2rem">⚠️ Risque suicidaire</div>
+        <div style="font-weight:700;color:${risqueColors[f.risque]||'var(--green)'}">${f.risque||'Aucun'}</div>
+      </div>
+    </div>
+
+    ${f.approche?`<div style="background:#F8F5F0;border-radius:8px;padding:.75rem;margin-bottom:.7rem"><div style="font-size:.65rem;color:#8A9E9B;text-transform:uppercase;letter-spacing:.06em;margin-bottom:.2rem">🧠 Approche thérapeutique</div><div style="font-weight:600">${escHtml(f.approche)}</div></div>`:''}
+    ${f.objectifs?`<div style="background:#F8F5F0;border-radius:8px;padding:.75rem;margin-bottom:.7rem"><div style="font-size:.65rem;color:#8A9E9B;text-transform:uppercase;letter-spacing:.06em;margin-bottom:.2rem">🎯 Objectifs</div><div>${escHtml(f.objectifs)}</div></div>`:''}
+    ${f.notes?`<div style="background:#EBF8F1;border-radius:8px;padding:.8rem;margin-bottom:.7rem;border-left:3px solid #1E7A4A"><div style="font-size:.7rem;font-weight:700;color:#1E7A4A;text-transform:uppercase;letter-spacing:.06em;margin-bottom:.3rem">📝 Notes cliniques</div><div style="white-space:pre-wrap">${escHtml(f.notes)}</div></div>`:''}
+
+    ${(f.sessions||[]).length?`
+    <div style="border-top:1px solid #DDE9E7;padding-top:.8rem;margin-top:.5rem">
+      <div style="font-size:.7rem;font-weight:700;color:#1B6B61;text-transform:uppercase;letter-spacing:.06em;margin-bottom:.6rem">📅 Historique des séances (${f.sessions.length})</div>
+      ${f.sessions.slice().reverse().map(ses=>`
+        <div style="background:#F8F5F0;border-radius:8px;padding:.7rem;margin-bottom:.5rem">
+          <div style="font-size:.72rem;font-weight:600;color:#104F48;margin-bottom:.2rem">${formatDate(ses.date)} à ${ses.heure}</div>
+          <div style="font-size:.78rem;color:#18211F;white-space:pre-wrap">${escHtml(ses.notes)}</div>
+        </div>`).join('')}
+    </div>`:''}
+
+    ${f.urgenceContact?`<div style="background:#FDF0EE;border-radius:8px;padding:.75rem;margin-top:.5rem;border-left:3px solid #C0392B"><div style="font-size:.65rem;color:#C0392B;text-transform:uppercase;letter-spacing:.06em;margin-bottom:.2rem">🆘 Contact d'urgence</div><div style="font-weight:600">${escHtml(f.urgenceContact)}</div></div>`:''}
+    </div>`;
+  document.getElementById('email-modal-bg').classList.add('on');
+}
+
+function addSessionNote(ficheId){
+  const notes=prompt('Notes de la séance du '+new Date().toLocaleDateString('fr-FR')+' :');
+  if(!notes)return;
+  const heure=prompt('Heure de la séance (ex: 14:30) :','14:00');
+  const db=getDB();
+  const f=(db.fiches||[]).find(x=>x.id===ficheId);
+  if(!f)return;
+  if(!f.sessions)f.sessions=[];
+  f.sessions.push({id:'ses_'+Date.now(),date:new Date().toISOString(),heure:heure||'—',notes});
+  f.updatedAt=new Date().toISOString();
+  saveDB(db);
+  toast('✅ Note de séance ajoutée !','green');
+  renderFichesList();
+}
+
+function deleteFiche(ficheId){
+  if(!confirm('Supprimer cette fiche patient ? Cette action est irréversible.'))return;
+  const db=getDB();
+  db.fiches=(db.fiches||[]).filter(f=>f.id!==ficheId);
+  saveDB(db);
+  toast('🗑️ Fiche supprimée','');
+  renderFichesList();
+}
+let currentMeetLink='';
+
+function createMeetLink(){
+  const s=getSession();if(!s)return;
+  const db=getDB();
+  const pro=db.pros.find(p=>p.id===s.id);
+  // Générer un code Meet unique
+  const code=generateMeetCode();
+  currentMeetLink='https://meet.google.com/'+code;
+  document.getElementById('meet-link-text').textContent=currentMeetLink;
+  document.getElementById('meet-link-display').style.display='block';
+  document.getElementById('btn-create-meet').textContent='🔄 Nouveau lien Meet';
+  toast('✅ Lien Google Meet créé !','green');
+  // Afficher les RDV du jour
+  renderTodayVideoRDVs(pro,db,currentMeetLink);
+}
+
+function generateMeetCode(){
+  const chars='abcdefghijkmnopqrstuvwxyz';
+  const seg=n=>Array.from({length:n},()=>chars[Math.floor(Math.random()*chars.length)]).join('');
+  return seg(3)+'-'+seg(4)+'-'+seg(3);
+}
+
+function copyMeetLink(){
+  navigator.clipboard.writeText(currentMeetLink).then(()=>{
+    toast('📋 Lien copié !','green');
+  }).catch(()=>{
+    // Fallback
+    const el=document.createElement('textarea');
+    el.value=currentMeetLink;
+    document.body.appendChild(el);
+    el.select();
+    document.execCommand('copy');
+    document.body.removeChild(el);
+    toast('📋 Lien copié !','green');
+  });
+}
+
+function openMeetLink(){
+  if(!currentMeetLink){toast('Créez d\'abord un lien Meet','red');return}
+  window.open(currentMeetLink,'_blank');
+}
+
+function shareMeetWithPatient(){
+  if(!currentMeetLink){toast('Créez d\'abord un lien Meet','red');return}
+  const s=getSession();const db=getDB();
+  const pro=db.pros.find(p=>p.id===s.id);
+  const today=new Date().toLocaleDateString('fr-FR');
+  // Envoyer le lien via Formspree
+  sendEmailNotification({
+    _subject:'📹 Lien Google Meet pour votre consultation — '+today,
+    type:'LIEN_MEET',
+    destinataire:'Patient',
+    praticien:pro?'Dr. '+pro.fn+' '+pro.ln:'Votre praticien',
+    lien_meet:currentMeetLink,
+    message:'Voici votre lien Google Meet pour la consultation. Cliquez dessus à l\'heure du rendez-vous : '+currentMeetLink+'\n\nAucune application à installer — fonctionne directement dans votre navigateur.'
+  });
+  toast('📧 Lien Meet envoyé au patient !','green');
+}
+
+function renderTodayVideoRDVs(pro,db,meetLink){
+  const today=new Date().toDateString();
+  const rdvs=db.rdvs.filter(r=>
+    r.proId===pro.id&&
+    r.status==='confirmed'&&
+    r.type==='video'&&
+    new Date(r.date).toDateString()===today
+  );
+  const el=document.getElementById('today-rdvs-video');
+  if(!rdvs.length){
+    el.innerHTML=`<div style="text-align:center;padding:1rem;color:var(--soft);font-size:.8rem"><div style="font-size:1.5rem;margin-bottom:.4rem">📭</div>Aucune consultation vidéo aujourd'hui</div>`;
+    return;
+  }
+  el.innerHTML=rdvs.map(r=>`
+    <div style="background:var(--teal-xl);border-radius:var(--r-sm);padding:.9rem;margin-bottom:.6rem;border-left:3px solid var(--teal)">
+      <div style="font-size:.86rem;font-weight:600;color:var(--ch);margin-bottom:.2rem">👤 ${r.patFn} ${r.patLn}</div>
+      <div style="font-size:.75rem;color:var(--mid);margin-bottom:.6rem">⏰ ${r.slot} · 📧 ${r.patEmail}</div>
+      <div style="display:flex;gap:.4rem;flex-wrap:wrap">
+        <a href="${meetLink}" target="_blank" style="background:#1B6B61;color:#fff;border-radius:8px;padding:.42rem .85rem;font-size:.76rem;font-weight:600;text-decoration:none">📹 Rejoindre Meet</a>
+        <button onclick="sendMeetToPatient('${r.patEmail}','${r.patFn}','${r.slot}')" style="background:#fff;color:#1B6B61;border:1.5px solid #1B6B61;border-radius:8px;padding:.4rem .85rem;font-size:.76rem;font-weight:600;cursor:pointer">📧 Envoyer lien</button>
+      </div>
+    </div>`).join('');
+}
+
+function sendMeetToPatient(email,name,slot){
+  if(!currentMeetLink){toast('Créez d\'abord un lien Meet','red');return}
+  sendEmailNotification({
+    _subject:'📹 Votre lien Google Meet — Consultation à '+slot,
+    type:'LIEN_MEET_PATIENT',
+    destinataire:name,
+    email_patient:email,
+    heure_rdv:slot,
+    lien_meet:currentMeetLink,
+    message:'Voici votre lien Google Meet pour votre consultation à '+slot+' :\n\n'+currentMeetLink+'\n\nCliquez sur ce lien à l\'heure du rendez-vous. Aucune application à installer.'
+  });
+  toast('📧 Lien Meet envoyé à '+name,'green');
+}
+
+function toggleMic(){toast('🎤 Utilisez Google Meet pour le micro','blue')}
+function toggleCam(){toast('📷 Utilisez Google Meet pour la caméra','blue')}
+function endCall(){toast('📵 Fermez la fenêtre Google Meet','blue')}
+function sendMsg(){const inp=document.getElementById('chat-in');if(!inp||!inp.value.trim())return;toast('💬 Utilisez le chat Google Meet','blue');inp.value=''}
 
 // ════════════════════════════════════════════════
 //  UTILS
 // ════════════════════════════════════════════════
+async function setupSupabaseTables(){
+  // Vérifie la connexion Supabase silencieusement
+  try{
+    await supa.from('pros').select('id').limit(1);
+    console.log('✅ Supabase connecté');
+  }catch(e){
+    console.log('Supabase en attente de configuration des tables');
+  }
+}
+
 function hashPwd(s){let h=0;for(let i=0;i<s.length;i++){h=((h<<5)-h+s.charCodeAt(i))|0}return h.toString(36)}
 function isValidEmail(e){return/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e)}
 function escHtml(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
