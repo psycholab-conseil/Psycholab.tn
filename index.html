@@ -201,7 +201,7 @@ const SUPABASE_URL='https://oybfxetivkwnynpvojki.supabase.co';
 const SUPABASE_KEY='sb_publishable_3lGMf5FZavPM9aSnZEqlFA_6uzmH_CL';
 const supa=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 
-// ── Fonctions Supabase ──
+// -- Fonctions Supabase --
 async function sbSavePro(pro){
   try{
     const{error}=await supa.from('pros').upsert([{
@@ -2008,9 +2008,9 @@ body[data-lang="ar"]{font-family:'Segoe UI',Tahoma,'Arabic Typesetting',sans-ser
 <div class="toast" id="toastEl"></div>
 
 <script>
-// ════════════════════════════════════════════════
+// ================================================
 //  STORAGE
-// ════════════════════════════════════════════════
+// ================================================
 function getDB(){
   try{return JSON.parse(localStorage.getItem('psycholab_db')||'{"users":[],"pros":[],"rdvs":[],"notifs":[]}')}
   catch(e){return{users:[],pros:[],rdvs:[],notifs:[]}}
@@ -2020,9 +2020,9 @@ function getSession(){try{return JSON.parse(localStorage.getItem('psycholab_sess
 function saveSession(s){localStorage.setItem('psycholab_session',JSON.stringify(s))}
 function clearSession(){localStorage.removeItem('psycholab_session')}
 
-// ── Fonction pour effacer les données de test (appeler depuis console) ──
+// -- Fonction pour effacer les données de test (appeler depuis console) --
 function resetDatabase(){
-  if(confirm('⚠️ Effacer TOUTES les données (comptes de test, RDV, messages) ?\n\nCette action est irréversible.')){
+  if(confirm('Effacer TOUTES les données de test ? Cette action est irréversible.')){
     localStorage.removeItem('psycholab_db');
     localStorage.removeItem('psycholab_session');
     saveDB({users:[],pros:[],rdvs:[],notifs:[],fiches:[],messages:[],factures:[],paiements:[]});
@@ -2031,9 +2031,9 @@ function resetDatabase(){
   }
 }
 
-// ════════════════════════════════════════════════
+// ================================================
 //  STATE
-// ════════════════════════════════════════════════
+// ================================================
 let selSpec=null,selDate=null,selSlot=null,selType='video';
 let cY,cM,currentLoginTab='patient';
 const now=new Date();cY=now.getFullYear();cM=now.getMonth();
@@ -2041,11 +2041,11 @@ const MONTHS=['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août'
 const DAYS_SHORT=['L','M','M','J','V','S','D'];
 const DAYS_FULL=['Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi','Dimanche'];
 
-// ════════════════════════════════════════════════
+// ================================================
 //  INIT
-// ════════════════════════════════════════════════
+// ================================================
 function init(){
-  // ── Initialiser la base si elle n'existe pas encore ──
+  // -- Initialiser la base si elle n'existe pas encore --
   const existing=localStorage.getItem('psycholab_db');
   if(!existing){
     saveDB({users:[],pros:[],rdvs:[],notifs:[],fiches:[],messages:[],factures:[],paiements:[]});
@@ -2067,7 +2067,7 @@ function init(){
   const dayNames=['Dimanche','Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi'];
   const el=document.getElementById('pro-date');
   if(el)el.textContent=`${dayNames[d.getDay()]} ${d.getDate()} ${MONTHS[d.getMonth()]} ${d.getFullYear()}`;
-  // ── Effacer erreurs champs au clic ──
+  // -- Effacer erreurs champs au clic --
   document.querySelectorAll('input,select,textarea').forEach(el=>{
     el.addEventListener('input',function(){
       this.style.borderColor='';this.style.background='';
@@ -2105,9 +2105,9 @@ function updateNotifDot(){
   if(dot)dot.style.display=unread>0?'block':'none';
 }
 
-// ════════════════════════════════════════════════
+// ================================================
 //  DRAWER / VIEWS
-// ════════════════════════════════════════════════
+// ================================================
 function openDrawer(){document.getElementById('dbg').classList.add('on');document.getElementById('drawer').classList.add('on')}
 function closeDrawer(){document.getElementById('dbg').classList.remove('on');document.getElementById('drawer').classList.remove('on')}
 function showView(id){document.querySelectorAll('.view').forEach(v=>v.classList.remove('on'));document.getElementById(id).classList.add('on');window.scrollTo(0,0)}
@@ -2126,9 +2126,9 @@ function goPatient(){
   showView('v-patient');updatePatientDash(s);
 }
 
-// ════════════════════════════════════════════════
-//  HOME — render specialists
-// ════════════════════════════════════════════════
+// ================================================
+//  HOME -- render specialists
+// ================================================
 function renderHome(){
   const db=getDB();
   const q=(document.getElementById('q')||{value:''}).value.toLowerCase();
@@ -2167,7 +2167,7 @@ function renderHome(){
       </div>
       <div class="card-foot">
         <div class="price">${p.price?p.price+' €':'Sur demande'}<small>/ séance</small></div>
-        <div class="nxt"><span>Fuseau</span><strong>${(p.tz||'').split('/').pop()||'—'}</strong></div>
+        <div class="nxt"><span>Fuseau</span><strong>${(p.tz||'').split('/').pop()||'--'}</strong></div>
       </div>
       <button class="btn-rdv">Prendre rendez-vous</button>
     </div>`;
@@ -2176,9 +2176,9 @@ function renderHome(){
 
 function doFilter(){renderHome()}
 
-// ════════════════════════════════════════════════
+// ================================================
 //  LOGIN
-// ════════════════════════════════════════════════
+// ================================================
 function switchLoginTab(type){
   currentLoginTab=type;
   document.getElementById('ltab-pat').classList.toggle('on',type==='patient');
@@ -2191,7 +2191,7 @@ function doLogin(){
   const errEl=document.getElementById('login-error');
   errEl.style.display='none';
   if(!email||!pwd){errEl.textContent='Veuillez remplir tous les champs.';errEl.style.display='block';return}
-  // ── Vérification compte Admin ──
+  // -- Vérification compte Admin --
   if(email===ADMIN_EMAIL&&pwd===ADMIN_PWD){
     saveSession({id:'admin',type:'admin',email:ADMIN_EMAIL});
     document.getElementById('dr-loggedout').style.display='none';
@@ -2221,9 +2221,9 @@ function doLogin(){
   errEl.textContent='Email ou mot de passe incorrect.';errEl.style.display='block';
 }
 
-// ════════════════════════════════════════════════
+// ================================================
 //  PHOTO DE PROFIL
-// ════════════════════════════════════════════════
+// ================================================
 let patPhotoData=null;
 
 function handlePatPhotoUpload(input){
@@ -2340,9 +2340,9 @@ function clearAllErrors(prefix){
   document.querySelectorAll('input,select,textarea').forEach(el=>{el.style.borderColor='';el.style.background='';});
 }
 
-// ════════════════════════════════════════════════
+// ================================================
 //  SIGNUP PATIENT
-// ════════════════════════════════════════════════
+// ================================================
 function doSignupPatient(){
   clearAllErrors('spat');
   const fn=document.getElementById('spat-fn').value.trim();
@@ -2387,9 +2387,9 @@ function doSignupPatient(){
   showView('v-success-patient');
 }
 
-// ════════════════════════════════════════════════
+// ================================================
 //  SIGNUP PRO
-// ════════════════════════════════════════════════
+// ================================================
 function doSignupPro(){
   clearAllErrors('spro');
   const fn=document.getElementById('spro-fn').value.trim();
@@ -2443,23 +2443,23 @@ function doSignupPro(){
   db.pros.push(pro);
   saveDB(db);
   sbSavePro(pro);
-  // ── Afficher la page de confirmation simple ──
+  // -- Afficher la page de confirmation simple --
   document.getElementById('conf-pro-email-simple').textContent=email;
-  // ── Envoi email réel via Formspree ──
+  // -- Envoi email réel via Formspree --
   const btn=document.querySelector('#v-signup-pro .btn-submit');
   if(btn){btn.disabled=true;btn.textContent='📧 Envoi en cours… Veuillez patienter';}
   fetch('https://formspree.io/f/xjgzoarv',{
     method:'POST',
     headers:{'Content-Type':'application/json','Accept':'application/json'},
     body:JSON.stringify({
-      _subject:'🩺 Nouveau dossier Pro — '+fn+' '+ln+' — '+spec,
+      _subject:'🩺 Nouveau dossier Pro -- '+fn+' '+ln+' -- '+spec,
       nom:fn+' '+ln,
       specialite:spec,
       email:email,
       telephone:tel,
       tarif:price?price+'€':'Non communiqué',
       biographie:bio,
-      domaines:tags||'—',
+      domaines:tags||'--',
       langues:(langFr?'FR ':' ')+(langEn?'EN ':' ')+(langAr?'AR':''),
       video:consVid?'Oui':'Non',
       presentiel:consPres?'Oui':'Non',
@@ -2489,9 +2489,9 @@ function activateProDemo(){
   goPro();
 }
 
-// ════════════════════════════════════════════════
+// ================================================
 //  LOGOUT
-// ════════════════════════════════════════════════
+// ================================================
 function doLogout(){
   clearSession();
   document.getElementById('dr-loggedout').style.display='block';
@@ -2504,9 +2504,9 @@ function doLogout(){
   goHome();
 }
 
-// ════════════════════════════════════════════════
+// ================================================
 //  ADMIN
-// ════════════════════════════════════════════════
+// ================================================
 const ADMIN_EMAIL='reservation.psycholab@gmail.com';
 const ADMIN_PWD='Psycholab2026!';
 
@@ -2539,7 +2539,7 @@ function renderAdminPanel(){
         </div>
         <div style="font-size:.78rem;color:var(--mid);line-height:1.8;background:var(--sand);border-radius:10px;padding:.75rem;margin-bottom:.75rem">
           📧 <strong>${escHtml(p.email)}</strong><br/>
-          📞 ${escHtml(p.tel||'—')}<br/>
+          📞 ${escHtml(p.tel||'--')}<br/>
           🏥 N° RPPS : <strong>${escHtml(p.rpps)}</strong><br/>
           🎓 ${escHtml(p.diplome)}<br/>
           ⏱️ ${escHtml(p.exp)} ans d'expérience<br/>
@@ -2583,13 +2583,13 @@ function validatePro(proId){
   saveDB(db);
   sbUpdateProStatus(proId,true);
 
-  // ── Email envoyé DIRECTEMENT à l'adresse email du spécialiste ──
+  // -- Email envoyé DIRECTEMENT à l'adresse email du spécialiste --
   const dateValidation=new Date().toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
   fetch('https://formspree.io/f/xjgzoarv',{
     method:'POST',
     headers:{'Content-Type':'application/json','Accept':'application/json'},
     body:JSON.stringify({
-      _subject:'✅ Votre compte Psycholab Pro est activé — Bienvenue Dr. '+pro.fn+' '+pro.ln+' !',
+      _subject:'✅ Votre compte Psycholab Pro est activé -- Bienvenue Dr. '+pro.fn+' '+pro.ln+' !',
       _replyto:pro.email,
       type:'ACTIVATION_COMPTE_PRO',
       // Champ destinataire = email du spécialiste
@@ -2614,13 +2614,13 @@ function validatePro(proId){
         '• Gérer votre profil et vos consultations\n\n'+
         '🔗 Connexion : https://psycholab-conseil.github.io/Psycholab.tn/\n\n'+
         'Bienvenue dans la communauté Psycholab !\n\n'+
-        '— L\'équipe Psycholab\n'+
+        '-- L\'équipe Psycholab\n'+
         'reservation.psycholab@gmail.com'
     })
   }).then(()=>{
-    toast('✅ Compte validé — Email envoyé à '+pro.email,'green');
+    toast('✅ Compte validé -- Email envoyé à '+pro.email,'green');
   }).catch(()=>{
-    toast('✅ Compte validé — Vérifiez la connexion email','green');
+    toast('✅ Compte validé -- Vérifiez la connexion email','green');
   });
 
   // Notification interne
@@ -2638,7 +2638,7 @@ function rejectPro(proId){
     method:'POST',
     headers:{'Content-Type':'application/json','Accept':'application/json'},
     body:JSON.stringify({
-      _subject:'❌ Dossier Psycholab non retenu — Dr. '+pro.fn+' '+pro.ln,
+      _subject:'❌ Dossier Psycholab non retenu -- Dr. '+pro.fn+' '+pro.ln,
       type:'REFUS_DOSSIER',
       destinataire:'Dr. '+pro.fn+' '+pro.ln,
       email_pro:pro.email,
@@ -2663,9 +2663,9 @@ function deactivatePro(proId){
   renderHome();
 }
 
-// ════════════════════════════════════════════════
+// ================================================
 //  NOTIFICATIONS
-// ════════════════════════════════════════════════
+// ================================================
 function addNotif(userId,userType,title,body){
   const db=getDB();
   if(!db.notifs)db.notifs=[];
@@ -2721,9 +2721,9 @@ function markAllRead(){
   toast('✅ Tout marqué comme lu');
 }
 
-// ════════════════════════════════════════════════
+// ================================================
 //  PRO DASHBOARD
-// ════════════════════════════════════════════════
+// ================================================
 function showDash(id,btn){
   document.querySelectorAll('.dash').forEach(d=>d.classList.remove('on'));
   document.getElementById('dash-'+id).classList.add('on');
@@ -2746,7 +2746,7 @@ function updateProDashboard(session){
   document.getElementById('pro-display-spec').textContent=pro.spec;
   document.getElementById('pro-welcome').textContent='Bonjour Dr. '+pro.ln+' 👋';
   document.getElementById('vid-pro-tag').textContent='Dr. '+pro.ln;
-  // ── Afficher la photo si disponible ──
+  // -- Afficher la photo si disponible --
   const av=document.getElementById('pro-av-ico');
   if(av){
     if(pro.photo){
@@ -2766,7 +2766,7 @@ function updateProDashboard(session){
   document.getElementById('rev-total').textContent=rev+' €';
   document.getElementById('rev-conf').textContent=confirmed.length;
   document.getElementById('rev-pend').textContent=pending.length;
-  document.getElementById('rev-price').textContent=pro.price?pro.price+'€':'—';
+  document.getElementById('rev-price').textContent=pro.price?pro.price+'€':'--';
   document.getElementById('rev-month').textContent=confirmed.length*(pro.price||0)+'€';
   const pb=document.getElementById('pb');
   if(pending.length>0){pb.style.display='inline';pb.textContent=pending.length}else{pb.style.display='none'}
@@ -2839,7 +2839,7 @@ function actRDVPro(rdvId,status,proId){
     toast('✅ RDV confirmé ! Email envoyé au patient','green');
     if(rdv.patId) addNotif(rdv.patId,'patient','✅ RDV confirmé par Dr. '+rdv.proLn,'Votre rendez-vous du '+formatDate(rdv.date)+' à '+rdv.slot+' a été confirmé. Vous recevrez des rappels 24h et 2h avant.');
     sendEmailNotification({
-      _subject:'✅ Votre RDV est confirmé — Dr. '+rdv.proFn+' '+rdv.proLn+' · '+new Date(rdv.date).toLocaleDateString('fr-FR'),
+      _subject:'✅ Votre RDV est confirmé -- Dr. '+rdv.proFn+' '+rdv.proLn+' · '+new Date(rdv.date).toLocaleDateString('fr-FR'),
       type:'CONFIRMATION_RDV_PAR_SPECIALISTE',
       destinataire:rdv.patFn+' '+rdv.patLn,
       email_patient:rdv.patEmail,
@@ -2851,10 +2851,10 @@ function actRDVPro(rdvId,status,proId){
     });
     sendReminderEmails(rdv);
   } else {
-    toast('❌ RDV refusé — Patient notifié','red');
+    toast('❌ RDV refusé -- Patient notifié','red');
     if(rdv.patId) addNotif(rdv.patId,'patient','❌ RDV refusé','Votre rendez-vous du '+formatDate(rdv.date)+' a été refusé par le spécialiste. Vous pouvez prendre un nouveau rendez-vous.');
     sendEmailNotification({
-      _subject:'❌ RDV non disponible — '+new Date(rdv.date).toLocaleDateString('fr-FR'),
+      _subject:'❌ RDV non disponible -- '+new Date(rdv.date).toLocaleDateString('fr-FR'),
       type:'REFUS_RDV_PAR_SPECIALISTE',
       destinataire:rdv.patFn+' '+rdv.patLn,
       email_patient:rdv.patEmail,
@@ -2882,12 +2882,12 @@ function actRDV(rdvId,status,proId){
   const s=getSession();const pro=db.pros.find(p=>p.id===proId);
   if(pro){renderRDVList(pro,db);updateProDashboard(s);}
   if(status==='confirmed'){
-    toast('✅ RDV confirmé — Email + Google Calendar envoyés','green');
+    toast('✅ RDV confirmé -- Email + Google Calendar envoyés','green');
     // Notification interne patient
     if(rdv.patId) addNotif(rdv.patId,'patient','✅ RDV confirmé !','Votre rendez-vous avec Dr. '+rdv.proFn+' '+rdv.proLn+' le '+formatDate(rdv.date)+' à '+rdv.slot+' est confirmé.');
     // Email confirmation au patient via Formspree
     sendEmailNotification({
-      _subject:'✅ RDV confirmé — Dr. '+rdv.proFn+' '+rdv.proLn+' le '+new Date(rdv.date).toLocaleDateString('fr-FR'),
+      _subject:'✅ RDV confirmé -- Dr. '+rdv.proFn+' '+rdv.proLn+' le '+new Date(rdv.date).toLocaleDateString('fr-FR'),
       type:'CONFIRMATION_RDV',
       destinataire:rdv.patFn+' '+rdv.patLn,
       email_patient:rdv.patEmail,
@@ -2895,7 +2895,7 @@ function actRDV(rdvId,status,proId){
       date_rdv:new Date(rdv.date).toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long',year:'numeric'}),
       heure_rdv:rdv.slot,
       type_consultation:rdv.type==='video'?'Vidéo sécurisée':'Présentiel',
-      motif:rdv.motif||'—',
+      motif:rdv.motif||'--',
       message:'Votre rendez-vous est confirmé ! Vous recevrez des rappels automatiques 24h et 2h avant votre consultation. Ajoutez ce RDV à votre Google Calendar avec le bouton dans votre espace patient.'
     });
     // Démarrer les rappels automatiques
@@ -2903,10 +2903,10 @@ function actRDV(rdvId,status,proId){
     // Afficher bouton Google Calendar dans le dashboard pro
     renderRDVListWithCalendar(pro,db);
   } else {
-    toast('❌ RDV refusé/annulé — Patient notifié','red');
+    toast('❌ RDV refusé/annulé -- Patient notifié','red');
     if(rdv.patId) addNotif(rdv.patId,'patient','❌ RDV annulé','Votre rendez-vous du '+formatDate(rdv.date)+' à '+rdv.slot+' a été annulé.');
     sendEmailNotification({
-      _subject:'❌ RDV annulé — '+new Date(rdv.date).toLocaleDateString('fr-FR')+' à '+rdv.slot,
+      _subject:'❌ RDV annulé -- '+new Date(rdv.date).toLocaleDateString('fr-FR')+' à '+rdv.slot,
       type:'ANNULATION_RDV',
       destinataire:rdv.patFn+' '+rdv.patLn,
       praticien:'Dr. '+rdv.proFn+' '+rdv.proLn,
@@ -2922,9 +2922,9 @@ function renderRDVListWithCalendar(pro,db){
   renderRDVList(pro,db);
 }
 
-// ════════════════════════════════════════════════
+// ================================================
 //  AVAILABILITY
-// ════════════════════════════════════════════════
+// ================================================
 const ALL_SLOTS=['08:00','08:30','09:00','09:30','10:00','10:30','11:00','11:30','14:00','14:30','15:00','15:30','16:00','16:30','17:00','17:30','18:00'];
 
 function renderAvailGrid(pro){
@@ -2979,9 +2979,9 @@ function saveAvail(){
   addNotif(s.id,'pro','⏰ Disponibilités mises à jour','Vos créneaux de disponibilité ont été sauvegardés et sont visibles par les patients.');
 }
 
-// ════════════════════════════════════════════════
+// ================================================
 //  PRO PROFILE
-// ════════════════════════════════════════════════
+// ================================================
 function renderProProfile(session){
   const db=getDB();
   const pro=db.pros.find(p=>p.id===session.id);
@@ -3037,9 +3037,9 @@ function saveProfile(){
   renderHome();
 }
 
-// ════════════════════════════════════════════════
+// ================================================
 //  PATIENT DASHBOARD
-// ════════════════════════════════════════════════
+// ================================================
 function showPatDash(id,btn){
   document.querySelectorAll('.pat-dash').forEach(d=>d.classList.remove('on'));
   document.getElementById('pat-'+id).classList.add('on');
@@ -3056,7 +3056,7 @@ function updatePatientDash(session){
   if(!user)return;
   document.getElementById('pat-display-name').textContent=user.fn+' '+user.ln;
   document.getElementById('pat-display-email').textContent=user.email;
-  // ── Afficher photo dans le header ──
+  // -- Afficher photo dans le header --
   const av=document.getElementById('pat-av-display');
   if(av){
     if(user.photo)av.innerHTML=`<img src="${user.photo}" style="width:46px;height:46px;border-radius:50%;object-fit:cover;" alt="Photo"/>`;
@@ -3074,7 +3074,7 @@ function updatePatientDash(session){
     const isVideo=r.type==='video';
     const statusMap={
       awaiting_payment:{label:'💳 En attente de paiement',color:'var(--orange)',sub:'Procédez au paiement pour valider votre demande'},
-      pending:{label:'⏳ En attente du spécialiste',color:'var(--blue)',sub:isVideo?'Paiement validé — Le spécialiste va confirmer le créneau':'Le spécialiste va confirmer votre demande'},
+      pending:{label:'⏳ En attente du spécialiste',color:'var(--blue)',sub:isVideo?'Paiement validé -- Le spécialiste va confirmer le créneau':'Le spécialiste va confirmer votre demande'},
       confirmed:{label:'✅ Confirmé',color:'var(--green)',sub:isVideo?'Le spécialiste vous enverra le lien Google Meet':'Présentez-vous au cabinet à l\'heure prévue'}
     };
     const st=statusMap[r.status]||statusMap.pending;
@@ -3101,7 +3101,6 @@ function updatePatientDash(session){
           📅 Ajouter à Google Calendar
         </button>`:''}
     </div>`;
-  }).join('')+'</div>';
   }).join('')+'</div>';
   // Render history
   const histEl=document.getElementById('pat-hist-list');
@@ -3133,15 +3132,15 @@ function updatePatientDash(session){
     <div class="form-section-title">👤 Mes informations</div>
     <div class="profile-field"><label>Nom complet</label><div class="val">${escHtml(user.fn)} ${escHtml(user.ln)}</div></div>
     <div class="profile-field"><label>Email</label><div class="val">${escHtml(user.email)}</div></div>
-    <div class="profile-field"><label>Téléphone</label><div class="val">${user.tel||'—'}</div></div>
+    <div class="profile-field"><label>Téléphone</label><div class="val">${user.tel||'--'}</div></div>
     <div class="profile-field"><label>Membre depuis</label><div class="val">${formatDate(user.createdAt)}</div></div>
     <div class="profile-field"><label>Notifications email</label><div class="val">${user.notif?'✅ Activées':'❌ Désactivées'}</div></div>
   </div>`;
 }
 
-// ════════════════════════════════════════════════
+// ================================================
 //  BOOKING SHEET
-// ════════════════════════════════════════════════
+// ================================================
 function openSheet(proId){
   const db=getDB();
   const pro=db.pros.find(p=>p.id===proId);if(!pro)return;
@@ -3247,7 +3246,7 @@ function confirmRDV(){
   addNotif(selSpec.id,'pro','📋 Nouvelle demande de RDV',patFn+' '+patLn+' souhaite un RDV le '+formatDate(selDate.toISOString())+' à '+selSlot+'.');
   // Email au pro via Formspree
   sendEmailNotification({
-    _subject:'📋 Nouvelle demande de RDV — '+patFn+' '+patLn,
+    _subject:'📋 Nouvelle demande de RDV -- '+patFn+' '+patLn,
     type:'NOUVELLE_DEMANDE_RDV',
     destinataire:'Dr. '+selSpec.fn+' '+selSpec.ln,
     patient:patFn+' '+patLn,
@@ -3267,9 +3266,9 @@ function confirmRDV(){
   toast('💳 Demande envoyée ! Procédez au paiement pour valider.','blue');
 }
 
-// ════════════════════════════════════════════════
+// ================================================
 //  GOOGLE CALENDAR INTEGRATION
-// ════════════════════════════════════════════════
+// ================================================
 function buildGoogleCalendarLink({title,date,slot,description,duration=60}){
   const [h,m]=slot.split(':').map(Number);
   const start=new Date(date);
@@ -3289,10 +3288,10 @@ function buildGoogleCalendarLink({title,date,slot,description,duration=60}){
 
 function addToGoogleCalendar(rdv){
   const link=buildGoogleCalendarLink({
-    title:'RDV Psycholab — Dr. '+rdv.proFn+' '+rdv.proLn,
+    title:'RDV Psycholab -- Dr. '+rdv.proFn+' '+rdv.proLn,
     date:new Date(rdv.date),
     slot:rdv.slot,
-    description:'✅ Rendez-vous confirmé\n\nPraticien : Dr. '+rdv.proFn+' '+rdv.proLn+' ('+rdv.spec+')\nType : '+(rdv.type==='video'?'Vidéo sécurisée':'Présentiel')+'\nMotif : '+(rdv.motif||'—')+'\n\n⏰ Des rappels email seront envoyés 24h et 2h avant votre rendez-vous.',
+    description:'✅ Rendez-vous confirmé\n\nPraticien : Dr. '+rdv.proFn+' '+rdv.proLn+' ('+rdv.spec+')\nType : '+(rdv.type==='video'?'Vidéo sécurisée':'Présentiel')+'\nMotif : '+(rdv.motif||'--')+'\n\n⏰ Des rappels email seront envoyés 24h et 2h avant votre rendez-vous.',
     duration:60
   });
   window.open(link,'_blank');
@@ -3301,19 +3300,19 @@ function addToGoogleCalendar(rdv){
 
 function addProToGoogleCalendar(rdv){
   const link=buildGoogleCalendarLink({
-    title:'Consultation — '+rdv.patFn+' '+rdv.patLn,
+    title:'Consultation -- '+rdv.patFn+' '+rdv.patLn,
     date:new Date(rdv.date),
     slot:rdv.slot,
-    description:'✅ Consultation confirmée\n\nPatient : '+rdv.patFn+' '+rdv.patLn+'\nEmail : '+rdv.patEmail+'\nType : '+(rdv.type==='video'?'Vidéo sécurisée':'Présentiel')+'\nMotif : '+(rdv.motif||'—'),
+    description:'✅ Consultation confirmée\n\nPatient : '+rdv.patFn+' '+rdv.patLn+'\nEmail : '+rdv.patEmail+'\nType : '+(rdv.type==='video'?'Vidéo sécurisée':'Présentiel')+'\nMotif : '+(rdv.motif||'--'),
     duration:60
   });
   window.open(link,'_blank');
   toast('📅 Google Calendar ouvert !','green');
 }
 
-// ════════════════════════════════════════════════
+// ================================================
 //  EMAIL NOTIFICATIONS VIA FORMSPREE
-// ════════════════════════════════════════════════
+// ================================================
 function sendEmailNotification(data){
   fetch('https://formspree.io/f/xjgzoarv',{
     method:'POST',
@@ -3334,7 +3333,7 @@ function sendReminderEmails(rdv){
   if(msTo24h>0){
     setTimeout(()=>{
       sendEmailNotification({
-        _subject:'⏰ Rappel 24h — RDV avec Dr. '+rdv.proFn+' '+rdv.proLn+' demain à '+rdv.slot,
+        _subject:'⏰ Rappel 24h -- RDV avec Dr. '+rdv.proFn+' '+rdv.proLn+' demain à '+rdv.slot,
         type:'RAPPEL_24H',
         destinataire:rdv.patFn+' '+rdv.patLn,
         praticien:'Dr. '+rdv.proFn+' '+rdv.proLn+' ('+rdv.spec+')',
@@ -3345,7 +3344,7 @@ function sendReminderEmails(rdv){
       });
       // Rappel aussi au pro
       sendEmailNotification({
-        _subject:'⏰ Rappel 24h — Consultation '+rdv.patFn+' '+rdv.patLn+' demain à '+rdv.slot,
+        _subject:'⏰ Rappel 24h -- Consultation '+rdv.patFn+' '+rdv.patLn+' demain à '+rdv.slot,
         type:'RAPPEL_24H_PRO',
         destinataire:'Dr. '+rdv.proFn+' '+rdv.proLn,
         patient:rdv.patFn+' '+rdv.patLn,
@@ -3355,11 +3354,11 @@ function sendReminderEmails(rdv){
       });
     },msTo24h);
   }
-  // Rappel 2h avant — avec demande d'envoyer le lien Meet
+  // Rappel 2h avant -- avec demande d'envoyer le lien Meet
   if(msTo2h>0){
     setTimeout(()=>{
       sendEmailNotification({
-        _subject:'⏰ Rappel 2h — Votre RDV commence bientôt ('+rdv.slot+')',
+        _subject:'⏰ Rappel 2h -- Votre RDV commence bientôt ('+rdv.slot+')',
         type:'RAPPEL_2H',
         destinataire:rdv.patFn+' '+rdv.patLn,
         praticien:'Dr. '+rdv.proFn+' '+rdv.proLn,
@@ -3372,7 +3371,7 @@ function sendReminderEmails(rdv){
       // Notification au pro pour qu'il envoie le lien Meet
       if(rdv.type==='video'){
         sendEmailNotification({
-          _subject:'⏰ Rappel 2h — Envoyez le lien Google Meet à '+rdv.patFn+' '+rdv.patLn,
+          _subject:'⏰ Rappel 2h -- Envoyez le lien Google Meet à '+rdv.patFn+' '+rdv.patLn,
           type:'RAPPEL_2H_PRO_MEET',
           destinataire:'Dr. '+rdv.proFn+' '+rdv.proLn,
           patient:rdv.patFn+' '+rdv.patLn,
@@ -3384,18 +3383,18 @@ function sendReminderEmails(rdv){
   }
 }
 
-// ════════════════════════════════════════════════
+// ================================================
 //  EMAIL PREVIEWS
-// ════════════════════════════════════════════════
+// ================================================
 function showEmailPreview(type){
   const s=getSession();const db=getDB();
   const pro=s?db.pros.find(p=>p.id===s.id):null;
   const previews={
-    confirm:{ttl:'📧 Confirmation de rendez-vous',meta:`De : noreply@psycholab.com<br/>À : patient@email.com<br/>Objet : ✅ Votre RDV avec Dr. ${pro?pro.ln:'Nom'} est confirmé`,body:`Bonjour [Prénom],<br/><br/>Nous avons le plaisir de vous confirmer votre rendez-vous :<br/><br/><strong>👨‍⚕️ Praticien :</strong> Dr. ${pro?pro.fn+' '+pro.ln:'[Praticien]'} (${pro?pro.spec:'[Spécialité]'})<br/><strong>📅 Date :</strong> [Date et heure]<br/><strong>🎯 Type :</strong> Consultation vidéo sécurisée<br/><strong>🔗 Lien vidéo :</strong> <a href="#">https://meet.psycholab.com/[code]</a><br/><br/>Des rappels vous seront envoyés 24h et 2h avant la consultation.<br/><br/><em>— L'équipe Psycholab</em>`},
-    r24:{ttl:'⏰ Rappel 24h avant',meta:`De : noreply@psycholab.com<br/>À : patient@email.com<br/>Objet : ⏰ Rappel : votre RDV demain avec Dr. ${pro?pro.ln:'Nom'}`,body:`Bonjour [Prénom],<br/><br/>Votre rendez-vous avec <strong>Dr. ${pro?pro.fn+' '+pro.ln:'[Praticien]'}</strong> est prévu <strong>demain à [Heure]</strong>.<br/><br/><strong>🔗 Accès vidéo :</strong> <a href="#">https://meet.psycholab.com/[code]</a><br/><br/>Si vous devez annuler, merci de le faire au moins 24h à l'avance.<br/><br/><em>— L'équipe Psycholab</em>`},
-    r2:{ttl:'⏰ Rappel 2h avant',meta:`De : noreply@psycholab.com<br/>À : patient@email.com<br/>Objet : ⏰ Votre RDV commence dans 2h`,body:`Bonjour [Prénom],<br/><br/>Votre consultation avec <strong>Dr. ${pro?pro.fn+' '+pro.ln:'[Praticien]'}</strong> commence dans <strong>2 heures</strong>.<br/><br/><strong>🔗 Rejoindre maintenant :</strong> <a href="#">https://meet.psycholab.com/[code]</a><br/><br/>Assurez-vous d'être dans un endroit calme et privé.<br/><br/><em>— L'équipe Psycholab</em>`},
-    pro_notify:{ttl:'🩺 Nouvelle demande de RDV',meta:`De : noreply@psycholab.com<br/>À : ${pro?pro.email:'pro@cabinet.com'}<br/>Objet : 📋 Nouvelle demande de RDV sur Psycholab`,body:`Bonjour Dr. ${pro?pro.ln:'[Nom]'},<br/><br/>Un patient a demandé un rendez-vous :<br/><br/><strong>👤 Patient :</strong> [Prénom Nom]<br/><strong>📅 Date demandée :</strong> [Date] à [Heure]<br/><strong>📧 Contact :</strong> patient@email.com<br/><strong>📝 Motif :</strong> [Motif de consultation]<br/><br/>Connectez-vous à votre tableau de bord pour <strong>accepter ou refuser</strong> cette demande.<br/><br/><a href="#">👉 Voir ma demande de RDV</a><br/><br/><em>— L'équipe Psycholab</em>`},
-    cancel:{ttl:'❌ Annulation de rendez-vous',meta:`De : noreply@psycholab.com<br/>À : patient@email.com<br/>Objet : ❌ Votre RDV a été annulé`,body:`Bonjour [Prénom],<br/><br/>Nous vous informons que votre rendez-vous avec <strong>Dr. ${pro?pro.fn+' '+pro.ln:'[Praticien]'}</strong> prévu le <strong>[Date]</strong> a été annulé.<br/><br/>Vous pouvez prendre un nouveau rendez-vous à tout moment sur Psycholab.<br/><br/><a href="#">🔍 Trouver un spécialiste</a><br/><br/><em>— L'équipe Psycholab</em>`}
+    confirm:{ttl:'📧 Confirmation de rendez-vous',meta:`De : noreply@psycholab.com<br/>À : patient@email.com<br/>Objet : ✅ Votre RDV avec Dr. ${pro?pro.ln:'Nom'} est confirmé`,body:`Bonjour [Prénom],<br/><br/>Nous avons le plaisir de vous confirmer votre rendez-vous :<br/><br/><strong>👨‍⚕️ Praticien :</strong> Dr. ${pro?pro.fn+' '+pro.ln:'[Praticien]'} (${pro?pro.spec:'[Spécialité]'})<br/><strong>📅 Date :</strong> [Date et heure]<br/><strong>🎯 Type :</strong> Consultation vidéo sécurisée<br/><strong>🔗 Lien vidéo :</strong> <a href="#">https://meet.psycholab.com/[code]</a><br/><br/>Des rappels vous seront envoyés 24h et 2h avant la consultation.<br/><br/><em>-- L'équipe Psycholab</em>`},
+    r24:{ttl:'⏰ Rappel 24h avant',meta:`De : noreply@psycholab.com<br/>À : patient@email.com<br/>Objet : ⏰ Rappel : votre RDV demain avec Dr. ${pro?pro.ln:'Nom'}`,body:`Bonjour [Prénom],<br/><br/>Votre rendez-vous avec <strong>Dr. ${pro?pro.fn+' '+pro.ln:'[Praticien]'}</strong> est prévu <strong>demain à [Heure]</strong>.<br/><br/><strong>🔗 Accès vidéo :</strong> <a href="#">https://meet.psycholab.com/[code]</a><br/><br/>Si vous devez annuler, merci de le faire au moins 24h à l'avance.<br/><br/><em>-- L'équipe Psycholab</em>`},
+    r2:{ttl:'⏰ Rappel 2h avant',meta:`De : noreply@psycholab.com<br/>À : patient@email.com<br/>Objet : ⏰ Votre RDV commence dans 2h`,body:`Bonjour [Prénom],<br/><br/>Votre consultation avec <strong>Dr. ${pro?pro.fn+' '+pro.ln:'[Praticien]'}</strong> commence dans <strong>2 heures</strong>.<br/><br/><strong>🔗 Rejoindre maintenant :</strong> <a href="#">https://meet.psycholab.com/[code]</a><br/><br/>Assurez-vous d'être dans un endroit calme et privé.<br/><br/><em>-- L'équipe Psycholab</em>`},
+    pro_notify:{ttl:'🩺 Nouvelle demande de RDV',meta:`De : noreply@psycholab.com<br/>À : ${pro?pro.email:'pro@cabinet.com'}<br/>Objet : 📋 Nouvelle demande de RDV sur Psycholab`,body:`Bonjour Dr. ${pro?pro.ln:'[Nom]'},<br/><br/>Un patient a demandé un rendez-vous :<br/><br/><strong>👤 Patient :</strong> [Prénom Nom]<br/><strong>📅 Date demandée :</strong> [Date] à [Heure]<br/><strong>📧 Contact :</strong> patient@email.com<br/><strong>📝 Motif :</strong> [Motif de consultation]<br/><br/>Connectez-vous à votre tableau de bord pour <strong>accepter ou refuser</strong> cette demande.<br/><br/><a href="#">👉 Voir ma demande de RDV</a><br/><br/><em>-- L'équipe Psycholab</em>`},
+    cancel:{ttl:'❌ Annulation de rendez-vous',meta:`De : noreply@psycholab.com<br/>À : patient@email.com<br/>Objet : ❌ Votre RDV a été annulé`,body:`Bonjour [Prénom],<br/><br/>Nous vous informons que votre rendez-vous avec <strong>Dr. ${pro?pro.fn+' '+pro.ln:'[Praticien]'}</strong> prévu le <strong>[Date]</strong> a été annulé.<br/><br/>Vous pouvez prendre un nouveau rendez-vous à tout moment sur Psycholab.<br/><br/><a href="#">🔍 Trouver un spécialiste</a><br/><br/><em>-- L'équipe Psycholab</em>`}
   };
   const p=previews[type];if(!p)return;
   document.getElementById('em-ttl').textContent=p.ttl;
@@ -3406,9 +3405,9 @@ function showEmailPreview(type){
 
 function closeEmailModal(){document.getElementById('email-modal-bg').classList.remove('on')}
 
-// ════════════════════════════════════════════════
+// ================================================
 //  AI ASSISTANT (Claude API)
-// ════════════════════════════════════════════════
+// ================================================
 function initAiPanel(){}
 
 function aiPrompt(text){
@@ -3450,9 +3449,9 @@ async function aiAsk(){
   btn.disabled=false;spin.style.display='none';
 }
 
-// ════════════════════════════════════════════════
+// ================================================
 //  EMAIL GENERATION (Claude API)
-// ════════════════════════════════════════════════
+// ================================================
 async function generatePatientWelcomeEmail(fn,ln,email){
   const el=document.getElementById('conf-patient-body');
   try{
@@ -3461,14 +3460,14 @@ async function generatePatientWelcomeEmail(fn,ln,email){
       headers:{'Content-Type':'application/json'},
       body:JSON.stringify({
         model:'claude-sonnet-4-20250514',max_tokens:400,
-        messages:[{role:'user',content:`Rédige un court email de bienvenue chaleureux (3-4 phrases max, HTML simple) pour ${fn} ${ln} (${email}) qui vient de créer son compte patient sur Psycholab, une plateforme de santé mentale. Mentionne qu'il peut maintenant trouver des spécialistes et que des rappels email seront envoyés pour chaque RDV. Termine par "— L'équipe Psycholab". Réponse en HTML simple, sans balises html/head/body.`}]
+        messages:[{role:'user',content:`Rédige un court email de bienvenue chaleureux (3-4 phrases max, HTML simple) pour ${fn} ${ln} (${email}) qui vient de créer son compte patient sur Psycholab, une plateforme de santé mentale. Mentionne qu'il peut maintenant trouver des spécialistes et que des rappels email seront envoyés pour chaque RDV. Termine par "-- L'équipe Psycholab". Réponse en HTML simple, sans balises html/head/body.`}]
       })
     });
     const data=await res.json();
     const text=data.content&&data.content[0]&&data.content[0].text;
     if(text&&el)el.innerHTML=text;
   }catch(e){
-    if(el)el.innerHTML=`Bonjour <strong>${fn}</strong>,<br/><br/>Votre compte patient Psycholab a bien été créé. Vous pouvez maintenant rechercher des spécialistes et prendre rendez-vous en ligne ou en vidéo sécurisée.<br/><br/>Vous recevrez des rappels automatiques <strong>24h</strong> et <strong>2h avant</strong> chaque rendez-vous.<br/><br/><em>— L'équipe Psycholab</em>`;
+    if(el)el.innerHTML=`Bonjour <strong>${fn}</strong>,<br/><br/>Votre compte patient Psycholab a bien été créé. Vous pouvez maintenant rechercher des spécialistes et prendre rendez-vous en ligne ou en vidéo sécurisée.<br/><br/>Vous recevrez des rappels automatiques <strong>24h</strong> et <strong>2h avant</strong> chaque rendez-vous.<br/><br/><em>-- L'équipe Psycholab</em>`;
   }
 }
 
@@ -3480,23 +3479,23 @@ async function generateProWelcomeEmail(fn,ln,spec,rpps){
       headers:{'Content-Type':'application/json'},
       body:JSON.stringify({
         model:'claude-sonnet-4-20250514',max_tokens:400,
-        messages:[{role:'user',content:`Rédige un email professionnel (4-5 phrases, HTML simple) de confirmation de réception de dossier pour Dr. ${fn} ${ln}, ${spec}, numéro ${rpps}, qui vient de s'inscrire sur Psycholab. Mentionne la vérification sous 24-48h, l'email de confirmation d'activation, et la possibilité de gérer les RDV depuis le tableau de bord. Termine par "— L'équipe Psycholab". Réponse en HTML simple.`}]
+        messages:[{role:'user',content:`Rédige un email professionnel (4-5 phrases, HTML simple) de confirmation de réception de dossier pour Dr. ${fn} ${ln}, ${spec}, numéro ${rpps}, qui vient de s'inscrire sur Psycholab. Mentionne la vérification sous 24-48h, l'email de confirmation d'activation, et la possibilité de gérer les RDV depuis le tableau de bord. Termine par "-- L'équipe Psycholab". Réponse en HTML simple.`}]
       })
     });
     const data=await res.json();
     const text=data.content&&data.content[0]&&data.content[0].text;
     if(text&&el)el.innerHTML=text;
   }catch(e){
-    if(el)el.innerHTML=`Bonjour Dr. <strong>${fn} ${ln}</strong>,<br/><br/>Nous avons bien reçu votre dossier d'inscription en tant que <strong>${spec}</strong> (N° ${rpps}).<br/><br/>Notre équipe va vérifier votre numéro d'agrément et activer votre profil sous <strong>24 à 48h</strong>. Vous recevrez un email dès que votre compte est activé.<br/><br/><em>— L'équipe Psycholab</em>`;
+    if(el)el.innerHTML=`Bonjour Dr. <strong>${fn} ${ln}</strong>,<br/><br/>Nous avons bien reçu votre dossier d'inscription en tant que <strong>${spec}</strong> (N° ${rpps}).<br/><br/>Notre équipe va vérifier votre numéro d'agrément et activer votre profil sous <strong>24 à 48h</strong>. Vous recevrez un email dès que votre compte est activé.<br/><br/><em>-- L'équipe Psycholab</em>`;
   }
 }
 
-// ════════════════════════════════════════════════
+// ================================================
 //  VIDEO CONTROLS
-// ════════════════════════════════════════════════
-// ════════════════════════════════════════════════
+// ================================================
+// ================================================
 //  SYSTÈME DE PAIEMENT
-// ════════════════════════════════════════════════
+// ================================================
 const PAY_INSTRUCTIONS={
   western_union:`<strong>Bénéficiaire :</strong> Psycholab Services<br/><strong>Pays :</strong> France<br/><br/>Rendez-vous dans un bureau Western Union, envoyez le montant indiqué et renseignez le numéro MTCN (10 chiffres) ci-dessous.<br/><br/>⚠️ Gardez bien votre reçu et prenez-en une photo.`,
   virement:`<strong>Banque :</strong> Psycholab Finance<br/><strong>IBAN :</strong> FR76 XXXX XXXX XXXX XXXX XXXX XXX<br/><strong>BIC/SWIFT :</strong> BNPAFRPP<br/><strong>Référence :</strong> Votre nom + date du RDV<br/><br/>Effectuez le virement depuis votre banque et conservez le justificatif.`,
@@ -3591,18 +3590,18 @@ function submitPayment(){
   db.paiements.push(paiement);saveDB(db);
   // Notifier l'admin via Formspree
   sendEmailNotification({
-    _subject:'💳 Nouveau justificatif de paiement — '+paiement.patName,
+    _subject:'💳 Nouveau justificatif de paiement -- '+paiement.patName,
     type:'JUSTIFICATIF_PAIEMENT',
     patient:paiement.patName,
     email_patient:paiement.patEmail,
     praticien:paiement.proName,
-    rdv_date:currentPayRdv?new Date(currentPayRdv.date).toLocaleDateString('fr-FR'):'—',
-    rdv_heure:currentPayRdv?currentPayRdv.slot:'—',
+    rdv_date:currentPayRdv?new Date(currentPayRdv.date).toLocaleDateString('fr-FR'):'--',
+    rdv_heure:currentPayRdv?currentPayRdv.slot:'--',
     mode_paiement:mode.value,
     reference:ref,
     montant:montant+' €',
     date_paiement:date,
-    notes:notes||'—',
+    notes:notes||'--',
     fichier:payFileData?payFileData.name:'Aucun fichier joint',
     message:'Un patient a envoyé un justificatif de paiement. Connectez-vous au panel admin pour valider ou refuser ce paiement.'
   });
@@ -3613,9 +3612,9 @@ function submitPayment(){
   setTimeout(()=>goPatient(),2000);
 }
 
-// ════════════════════════════════════════════════
+// ================================================
 //  ADMIN FUNCTIONS
-// ════════════════════════════════════════════════
+// ================================================
 function showAdmTab(id,btn){
   document.querySelectorAll('.adm-pane').forEach(p=>p.classList.remove('on'));
   document.querySelectorAll('.adm-tab').forEach(b=>b.classList.remove('on'));
@@ -3654,7 +3653,7 @@ function renderAdminPanel(){
           <span style="background:var(--orange-l);color:var(--orange);font-size:.65rem;font-weight:700;padding:.22rem .6rem;border-radius:20px;flex-shrink:0">⏳ En attente</span>
         </div>
         <div style="font-size:.78rem;color:var(--mid);line-height:1.8;background:var(--sand);border-radius:10px;padding:.75rem;margin-bottom:.75rem">
-          📧 <strong>${escHtml(p.email)}</strong> · 📞 ${escHtml(p.tel||'—')}<br/>
+          📧 <strong>${escHtml(p.email)}</strong> · 📞 ${escHtml(p.tel||'--')}<br/>
           📅 Inscrit le : ${formatDate(p.createdAt)}<br/>
           💰 Tarif : ${p.price?p.price+'€/séance':'Non communiqué'}<br/>
           📝 Bio : ${escHtml((p.bio||'').substring(0,100))}…
@@ -3704,14 +3703,14 @@ function renderAdmPaiements(){
         <span style="background:${statutColors[p.statut]||'var(--orange-l)'};color:#fff;font-size:.65rem;font-weight:700;padding:.25rem .65rem;border-radius:20px;flex-shrink:0">${statutLabels[p.statut]}</span>
       </div>
       <div style="background:var(--sand);border-radius:var(--r-sm);padding:.8rem;margin-bottom:.8rem;font-size:.78rem;color:var(--ch);line-height:1.85">
-        📅 <strong>RDV :</strong> ${p.rdvDate?new Date(p.rdvDate).toLocaleDateString('fr-FR'):'—'} à ${p.rdvSlot||'—'}<br/>
+        📅 <strong>RDV :</strong> ${p.rdvDate?new Date(p.rdvDate).toLocaleDateString('fr-FR'):'--'} à ${p.rdvSlot||'--'}<br/>
         💳 <strong>Mode :</strong> ${modeLabels[p.mode]||p.mode}<br/>
         🔢 <strong>Référence :</strong> ${escHtml(p.ref)}<br/>
         💰 <strong>Montant :</strong> <span style="font-weight:700;color:var(--teal-d)">${p.montant} €</span><br/>
         📆 <strong>Date paiement :</strong> ${new Date(p.date).toLocaleDateString('fr-FR')}<br/>
         📎 <strong>Fichier :</strong> ${p.fichier?'<span style="color:var(--green);font-weight:600">'+escHtml(p.fichier)+'</span>':'Aucun fichier'}<br/>
         ${p.notes?`📝 <strong>Notes :</strong> ${escHtml(p.notes)}`:''}
-        <br/>📧 <strong>Email patient :</strong> ${escHtml(p.patEmail||'—')}
+        <br/>📧 <strong>Email patient :</strong> ${escHtml(p.patEmail||'--')}
         <br/>⏱️ <strong>Soumis le :</strong> ${formatDate(p.createdAt)}
       </div>
       ${p.statut==='en_attente'?`
@@ -3729,7 +3728,7 @@ function validerPaiement(payId){
   pay.statut='valide';
   pay.updatedAt=new Date().toISOString();
 
-  // ── Passer le RDV en "pending" → visible par le spécialiste pour confirmation ──
+  // -- Passer le RDV en "pending" → visible par le spécialiste pour confirmation --
   if(pay.rdvId){
     const rdv=db.rdvs.find(r=>r.id===pay.rdvId);
     if(rdv){
@@ -3740,25 +3739,25 @@ function validerPaiement(payId){
   }
   saveDB(db);
 
-  // ── Notifier le patient ──
+  // -- Notifier le patient --
   if(pay.patId) addNotif(pay.patId,'patient','💳 Paiement validé !',
     'Votre paiement de '+pay.montant+'€ a été validé. '+
     'Votre demande est maintenant transmise au spécialiste pour confirmation du créneau.');
 
-  // ── Notifier le spécialiste ──
+  // -- Notifier le spécialiste --
   if(pay.proId) addNotif(pay.proId,'pro','📋 Nouvelle demande de téléconsultation',
     'Le paiement du patient '+pay.patName+' a été validé. '+
     'Vous pouvez maintenant confirmer ou modifier le créneau.');
 
-  // ── Email au patient ──
+  // -- Email au patient --
   sendEmailNotification({
-    _subject:'💳 Paiement validé — Votre demande est transmise au spécialiste',
+    _subject:'💳 Paiement validé -- Votre demande est transmise au spécialiste',
     type:'PAIEMENT_VALIDE',
     destinataire:pay.patName,
     email_patient:pay.patEmail,
     praticien:pay.proName,
-    rdv_date:pay.rdvDate?new Date(pay.rdvDate).toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long',year:'numeric'}):'—',
-    rdv_heure:pay.rdvSlot||'—',
+    rdv_date:pay.rdvDate?new Date(pay.rdvDate).toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long',year:'numeric'}):'--',
+    rdv_heure:pay.rdvSlot||'--',
     montant:pay.montant+'€',
     message:
       'Votre paiement a été vérifié et validé par l\'équipe Psycholab.\n\n'+
@@ -3767,15 +3766,15 @@ function validerPaiement(payId){
       'Vous recevrez un email de confirmation dès que le spécialiste aura validé votre rendez-vous.'
   });
 
-  // ── Email au spécialiste ──
+  // -- Email au spécialiste --
   sendEmailNotification({
-    _subject:'📋 Nouvelle téléconsultation à confirmer — '+pay.patName,
+    _subject:'📋 Nouvelle téléconsultation à confirmer -- '+pay.patName,
     type:'DEMANDE_TELECONSULTATION_PRO',
     destinataire:pay.proName,
     patient:pay.patName,
     email_patient:pay.patEmail,
-    rdv_date:pay.rdvDate?new Date(pay.rdvDate).toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long',year:'numeric'}):'—',
-    rdv_heure:pay.rdvSlot||'—',
+    rdv_date:pay.rdvDate?new Date(pay.rdvDate).toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long',year:'numeric'}):'--',
+    rdv_heure:pay.rdvSlot||'--',
     montant:pay.montant+'€',
     message:
       'Le paiement de '+pay.patName+' a été validé par l\'administrateur Psycholab.\n\n'+
@@ -3783,7 +3782,7 @@ function validerPaiement(payId){
       'Lien : https://psycholab-conseil.github.io/Psycholab.tn/'
   });
 
-  toast('✅ Paiement validé — Spécialiste et patient notifiés','green');
+  toast('✅ Paiement validé -- Spécialiste et patient notifiés','green');
   renderAdmPaiements();
   renderAdminPanel();
 }
@@ -3793,18 +3792,18 @@ function refuserPaiement(payId){
   const db=getDB();
   const pay=(db.paiements||[]).find(p=>p.id===payId);
   if(!pay)return;
-  pay.statut='refuse';pay.updatedAt=new Date().toISOString();pay.raisonRefus=raison||'—';
+  pay.statut='refuse';pay.updatedAt=new Date().toISOString();pay.raisonRefus=raison||'--';
   saveDB(db);
-  if(pay.patId)addNotif(pay.patId,'patient','❌ Paiement refusé','Votre justificatif n\'a pas pu être validé : '+(raison||'—')+'. Veuillez soumettre un nouveau justificatif.');
+  if(pay.patId)addNotif(pay.patId,'patient','❌ Paiement refusé','Votre justificatif n\'a pas pu être validé : '+(raison||'--')+'. Veuillez soumettre un nouveau justificatif.');
   sendEmailNotification({
-    _subject:'❌ Justificatif de paiement non conforme — Action requise',
+    _subject:'❌ Justificatif de paiement non conforme -- Action requise',
     type:'PAIEMENT_REFUSE',
     destinataire:pay.patName,
     email_patient:pay.patEmail,
     raison:raison||'Justificatif non conforme',
-    message:'Votre justificatif de paiement n\'a pas pu être validé pour la raison suivante : '+(raison||'—')+'. Veuillez vous connecter à votre espace Psycholab pour soumettre un nouveau justificatif.'
+    message:'Votre justificatif de paiement n\'a pas pu être validé pour la raison suivante : '+(raison||'--')+'. Veuillez vous connecter à votre espace Psycholab pour soumettre un nouveau justificatif.'
   });
-  toast('❌ Paiement refusé — Patient notifié','red');
+  toast('❌ Paiement refusé -- Patient notifié','red');
   renderAdmPaiements();
   renderAdminPanel();
 }
@@ -3853,7 +3852,7 @@ function showNewMessageForm(){
   const rdvs=db.rdvs.filter(r=>r.proId===s.id);
   const patIds=[...new Set(rdvs.map(r=>r.patId).filter(Boolean))];
   const sel=document.getElementById('msg-patient-select');
-  sel.innerHTML='<option value="">— Sélectionner un patient —</option>';
+  sel.innerHTML='<option value="">-- Sélectionner un patient --</option>';
   patIds.forEach(pid=>{
     const u=db.users.find(u=>u.id===pid);
     if(u)sel.innerHTML+=`<option value="${pid}">${u.fn} ${u.ln} (${u.email})</option>`;
@@ -3938,7 +3937,7 @@ function patSendMessage(){
   db.messages.push(msg);saveDB(db);
   addNotif(proId,'pro','💬 Message de '+(user?user.fn+' '+user.ln:'Patient'),body.substring(0,80)+'…');
   sendEmailNotification({
-    _subject:'💬 Nouveau message patient sur Psycholab — '+(user?user.fn+' '+user.ln:''),
+    _subject:'💬 Nouveau message patient sur Psycholab -- '+(user?user.fn+' '+user.ln:''),
     type:'MESSAGE_PATIENT',
     destinataire:pro?'Dr. '+pro.fn+' '+pro.ln:'Praticien',
     patient:user?user.fn+' '+user.ln:'Patient',
@@ -3969,12 +3968,12 @@ function renderPatMessages(){
   // Charger pros pour le select
   const proDone=db.pros.filter(p=>p.active);
   const sel=document.getElementById('pat-msg-pro');
-  if(sel){sel.innerHTML='<option value="">— Sélectionner —</option>';proDone.forEach(p=>sel.innerHTML+=`<option value="${p.id}">Dr. ${p.fn} ${p.ln} (${p.spec})</option>`);}
+  if(sel){sel.innerHTML='<option value="">-- Sélectionner --</option>';proDone.forEach(p=>sel.innerHTML+=`<option value="${p.id}">Dr. ${p.fn} ${p.ln} (${p.spec})</option>`);}
 }
 
-// ════════════════════════════════════════════════
+// ================================================
 //  FACTURATION
-// ════════════════════════════════════════════════
+// ================================================
 function showNewFactureForm(){
   const s=getSession();if(!s)return;
   const db=getDB();
@@ -3989,7 +3988,7 @@ function showNewFactureForm(){
   const rdvs=db.rdvs.filter(r=>r.proId===s.id&&r.status==='confirmed');
   const patIds=[...new Set(rdvs.map(r=>r.patId).filter(Boolean))];
   const sel=document.getElementById('fact-patient');
-  sel.innerHTML='<option value="">— Sélectionner —</option>';
+  sel.innerHTML='<option value="">-- Sélectionner --</option>';
   // Also add from fiches
   const fiches=(db.fiches||[]).filter(f=>f.proId===s.id);
   const allPats=[...patIds.map(pid=>{const u=db.users.find(u=>u.id===pid);return u?{id:pid,name:u.fn+' '+u.ln,email:u.email}:null}).filter(Boolean),
@@ -4084,9 +4083,9 @@ function viewFacture(factureId){
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1.5rem">
         <div style="background:#F8F5F0;border-radius:10px;padding:.9rem">
           <div style="font-size:.65rem;font-weight:700;color:#1B6B61;text-transform:uppercase;letter-spacing:.07em;margin-bottom:.5rem">🩺 Praticien</div>
-          <div style="font-weight:700;color:#18211F">${pro?'Dr. '+pro.fn+' '+pro.ln:'—'}</div>
-          <div style="font-size:.78rem;color:#4A5C59;margin-top:.2rem">${pro?pro.spec:'—'}</div>
-          <div style="font-size:.75rem;color:#8A9E9B;margin-top:.2rem">${pro?pro.email:'—'}</div>
+          <div style="font-weight:700;color:#18211F">${pro?'Dr. '+pro.fn+' '+pro.ln:'--'}</div>
+          <div style="font-size:.78rem;color:#4A5C59;margin-top:.2rem">${pro?pro.spec:'--'}</div>
+          <div style="font-size:.75rem;color:#8A9E9B;margin-top:.2rem">${pro?pro.email:'--'}</div>
           <div style="font-size:.75rem;color:#8A9E9B">${pro&&pro.tel?pro.tel:''}</div>
         </div>
         <div style="background:#F8F5F0;border-radius:10px;padding:.9rem">
@@ -4149,7 +4148,7 @@ function viewFacture(factureId){
   // Envoyer la facture par email au patient
   if(pro){
     sendEmailNotification({
-      _subject:'🧾 Facture N° '+f.num+' — Psycholab',
+      _subject:'🧾 Facture N° '+f.num+' -- Psycholab',
       type:'FACTURE',
       destinataire:f.patName,
       email_patient:f.patEmail,
@@ -4229,13 +4228,13 @@ function renderFichesList(){
     return;
   }
   const urgColors={faible:'var(--green)',moyen:'var(--orange)',eleve:'var(--red)',crise:'#8B0000','':`var(--soft)`};
-  const urgLabels={faible:'🟢 Faible',moyen:'🟡 Moyen',eleve:'🔴 Élevé',crise:'🆘 Crise','':`—`};
+  const urgLabels={faible:'🟢 Faible',moyen:'🟡 Moyen',eleve:'🔴 Élevé',crise:'🆘 Crise','':`--`};
   el.innerHTML=fiches.sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt)).map(f=>`
     <div style="background:#fff;border:1.5px solid var(--border);border-radius:var(--r-md);padding:1rem;margin-bottom:.75rem;border-left:4px solid ${urgColors[f.urgence]||'var(--teal)'}">
       <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:.6rem;gap:.5rem">
         <div>
           <div style="font-family:'Playfair Display',serif;font-size:.98rem;font-weight:700;color:var(--ch)">${escHtml(f.fn)} ${escHtml(f.ln)}</div>
-          <div style="font-size:.72rem;color:var(--teal);font-weight:600;text-transform:uppercase;letter-spacing:.04em;margin-top:.1rem">${escHtml(f.motif||'—')}</div>
+          <div style="font-size:.72rem;color:var(--teal);font-weight:600;text-transform:uppercase;letter-spacing:.04em;margin-top:.1rem">${escHtml(f.motif||'--')}</div>
         </div>
         <span style="background:${urgColors[f.urgence]||'var(--sand)'};color:#fff;font-size:.63rem;font-weight:700;padding:.2rem .55rem;border-radius:20px;flex-shrink:0;white-space:nowrap">${urgLabels[f.urgence]}</span>
       </div>
@@ -4260,26 +4259,26 @@ function viewFiche(ficheId){
   const db=getDB();
   const f=(db.fiches||[]).find(x=>x.id===ficheId);
   if(!f)return;
-  const age=f.dob?Math.floor((new Date()-new Date(f.dob))/(365.25*24*3600*1000))+'ans':'—';
+  const age=f.dob?Math.floor((new Date()-new Date(f.dob))/(365.25*24*3600*1000))+'ans':'--';
   const urgColors={faible:'#1E7A4A',moyen:'#C9621A',eleve:'#C0392B',crise:'#8B0000','':`#8A9E9B`};
   const risqueColors={aucun:'var(--green)',faible:'var(--orange)',moyen:'var(--orange)',eleve:'var(--red)'};
-  document.getElementById('em-ttl').textContent='🗂️ Fiche — '+f.fn+' '+f.ln;
+  document.getElementById('em-ttl').textContent='🗂️ Fiche -- '+f.fn+' '+f.ln;
   document.getElementById('em-meta').innerHTML=`
     <strong>Créée le :</strong> ${formatDate(f.createdAt)} &nbsp;·&nbsp;
-    <strong>Urgence :</strong> <span style="color:${urgColors[f.urgence]};font-weight:700">${f.urgence||'—'}</span>`;
+    <strong>Urgence :</strong> <span style="color:${urgColors[f.urgence]};font-weight:700">${f.urgence||'--'}</span>`;
   document.getElementById('em-body').innerHTML=`
     <div style="font-family:'DM Sans',sans-serif;font-size:.84rem;line-height:1.7;color:#18211F">
 
     <div style="background:linear-gradient(135deg,#1B6B61,#2A8A7E);color:#fff;border-radius:12px;padding:1rem 1.2rem;margin-bottom:1rem">
       <div style="font-family:'Playfair Display',serif;font-size:1.2rem;font-weight:700;margin-bottom:.3rem">${escHtml(f.fn)} ${escHtml(f.ln)}</div>
-      <div style="font-size:.78rem;opacity:.85">${f.genre||''} · ${age} · ${escHtml(f.motif||'—')}</div>
+      <div style="font-size:.78rem;opacity:.85">${f.genre||''} · ${age} · ${escHtml(f.motif||'--')}</div>
     </div>
 
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem;margin-bottom:.9rem">
-      <div style="background:#F8F5F0;border-radius:8px;padding:.7rem"><div style="font-size:.65rem;color:#8A9E9B;text-transform:uppercase;letter-spacing:.06em;margin-bottom:.2rem">📞 Téléphone</div><div style="font-weight:600">${escHtml(f.tel||'—')}</div></div>
-      <div style="background:#F8F5F0;border-radius:8px;padding:.7rem"><div style="font-size:.65rem;color:#8A9E9B;text-transform:uppercase;letter-spacing:.06em;margin-bottom:.2rem">📧 Email</div><div style="font-weight:600;word-break:break-all">${escHtml(f.email||'—')}</div></div>
-      <div style="background:#F8F5F0;border-radius:8px;padding:.7rem"><div style="font-size:.65rem;color:#8A9E9B;text-transform:uppercase;letter-spacing:.06em;margin-bottom:.2rem">👤 Situation</div><div style="font-weight:600">${escHtml(f.famille||'—')}</div></div>
-      <div style="background:#F8F5F0;border-radius:8px;padding:.7rem"><div style="font-size:.65rem;color:#8A9E9B;text-transform:uppercase;letter-spacing:.06em;margin-bottom:.2rem">💼 Profession</div><div style="font-weight:600">${escHtml(f.profession||'—')}</div></div>
+      <div style="background:#F8F5F0;border-radius:8px;padding:.7rem"><div style="font-size:.65rem;color:#8A9E9B;text-transform:uppercase;letter-spacing:.06em;margin-bottom:.2rem">📞 Téléphone</div><div style="font-weight:600">${escHtml(f.tel||'--')}</div></div>
+      <div style="background:#F8F5F0;border-radius:8px;padding:.7rem"><div style="font-size:.65rem;color:#8A9E9B;text-transform:uppercase;letter-spacing:.06em;margin-bottom:.2rem">📧 Email</div><div style="font-weight:600;word-break:break-all">${escHtml(f.email||'--')}</div></div>
+      <div style="background:#F8F5F0;border-radius:8px;padding:.7rem"><div style="font-size:.65rem;color:#8A9E9B;text-transform:uppercase;letter-spacing:.06em;margin-bottom:.2rem">👤 Situation</div><div style="font-weight:600">${escHtml(f.famille||'--')}</div></div>
+      <div style="background:#F8F5F0;border-radius:8px;padding:.7rem"><div style="font-size:.65rem;color:#8A9E9B;text-transform:uppercase;letter-spacing:.06em;margin-bottom:.2rem">💼 Profession</div><div style="font-weight:600">${escHtml(f.profession||'--')}</div></div>
     </div>
 
     ${f.motifDesc?`<div style="background:#E3F4F2;border-radius:8px;padding:.8rem;margin-bottom:.7rem;border-left:3px solid #1B6B61"><div style="font-size:.7rem;font-weight:700;color:#104F48;text-transform:uppercase;letter-spacing:.06em;margin-bottom:.3rem">🏥 Motif de consultation</div><div>${escHtml(f.motifDesc)}</div>${f.depuis?`<div style="font-size:.72rem;color:#4A5C59;margin-top:.3rem">Depuis : ${escHtml(f.depuis)}</div>`:''}</div>`:''}
@@ -4296,7 +4295,7 @@ function viewFiche(ficheId){
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem;margin-bottom:.7rem">
       <div style="background:#F8F5F0;border-radius:8px;padding:.7rem">
         <div style="font-size:.65rem;color:#8A9E9B;text-transform:uppercase;letter-spacing:.06em;margin-bottom:.2rem">⚡ Urgence</div>
-        <div style="font-weight:700;color:${urgColors[f.urgence]||'#8A9E9B'}">${f.urgence||'—'}</div>
+        <div style="font-weight:700;color:${urgColors[f.urgence]||'#8A9E9B'}">${f.urgence||'--'}</div>
       </div>
       <div style="background:#F8F5F0;border-radius:8px;padding:.7rem">
         <div style="font-size:.65rem;color:#8A9E9B;text-transform:uppercase;letter-spacing:.06em;margin-bottom:.2rem">⚠️ Risque suicidaire</div>
@@ -4331,7 +4330,7 @@ function addSessionNote(ficheId){
   const f=(db.fiches||[]).find(x=>x.id===ficheId);
   if(!f)return;
   if(!f.sessions)f.sessions=[];
-  f.sessions.push({id:'ses_'+Date.now(),date:new Date().toISOString(),heure:heure||'—',notes});
+  f.sessions.push({id:'ses_'+Date.now(),date:new Date().toISOString(),heure:heure||'--',notes});
   f.updatedAt=new Date().toISOString();
   saveDB(db);
   toast('✅ Note de séance ajoutée !','green');
@@ -4396,12 +4395,12 @@ function shareMeetWithPatient(){
   const today=new Date().toLocaleDateString('fr-FR');
   // Envoyer le lien via Formspree
   sendEmailNotification({
-    _subject:'📹 Lien Google Meet pour votre consultation — '+today,
+    _subject:'📹 Lien Google Meet pour votre consultation -- '+today,
     type:'LIEN_MEET',
     destinataire:'Patient',
     praticien:pro?'Dr. '+pro.fn+' '+pro.ln:'Votre praticien',
     lien_meet:currentMeetLink,
-    message:'Voici votre lien Google Meet pour la consultation. Cliquez dessus à l\'heure du rendez-vous : '+currentMeetLink+'\n\nAucune application à installer — fonctionne directement dans votre navigateur.'
+    message:'Voici votre lien Google Meet pour la consultation. Cliquez dessus à l\'heure du rendez-vous : '+currentMeetLink+'\n\nAucune application à installer -- fonctionne directement dans votre navigateur.'
   });
   toast('📧 Lien Meet envoyé au patient !','green');
 }
@@ -4433,7 +4432,7 @@ function renderTodayVideoRDVs(pro,db,meetLink){
 function sendMeetToPatient(email,name,slot){
   if(!currentMeetLink){toast('Créez d\'abord un lien Meet','red');return}
   sendEmailNotification({
-    _subject:'📹 Votre lien Google Meet — Consultation à '+slot,
+    _subject:'📹 Votre lien Google Meet -- Consultation à '+slot,
     type:'LIEN_MEET_PATIENT',
     destinataire:name,
     email_patient:email,
@@ -4449,9 +4448,9 @@ function toggleCam(){toast('📷 Utilisez Google Meet pour la caméra','blue')}
 function endCall(){toast('📵 Fermez la fenêtre Google Meet','blue')}
 function sendMsg(){const inp=document.getElementById('chat-in');if(!inp||!inp.value.trim())return;toast('💬 Utilisez le chat Google Meet','blue');inp.value=''}
 
-// ════════════════════════════════════════════════
+// ================================================
 //  UTILS
-// ════════════════════════════════════════════════
+// ================================================
 async function setupSupabaseTables(){
   // Vérifie la connexion Supabase silencieusement
   try{
@@ -4465,16 +4464,16 @@ async function setupSupabaseTables(){
 function hashPwd(s){let h=0;for(let i=0;i<s.length;i++){h=((h<<5)-h+s.charCodeAt(i))|0}return h.toString(36)}
 function isValidEmail(e){return/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e)}
 function escHtml(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
-function formatDate(iso){try{return new Date(iso).toLocaleDateString('fr-FR',{day:'numeric',month:'long',year:'numeric'})}catch(e){return iso||'—'}}
+function formatDate(iso){try{return new Date(iso).toLocaleDateString('fr-FR',{day:'numeric',month:'long',year:'numeric'})}catch(e){return iso||'--'}}
 function toast(msg,type=''){
   const el=document.getElementById('toastEl');
   el.textContent=msg;el.className='toast show '+(type||'');
   setTimeout(()=>el.classList.remove('show'),3200);
 }
 
-// ════════════════════════════════════════════════
+// ================================================
 //  LANGUAGE (simplified)
-// ════════════════════════════════════════════════
+// ================================================
 let LANG='fr';
 function setLang(l){
   LANG=l;localStorage.setItem('plLang',l);
