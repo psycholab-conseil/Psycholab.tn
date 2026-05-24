@@ -1017,6 +1017,22 @@ body[data-lang="ar"]{font-family:'Segoe UI',Tahoma,'Arabic Typesetting',sans-ser
       </div>
       <div class="fgroup"><label>Email *</label><input type="email" id="spat-email" placeholder="votre@email.com"/></div>
       <div class="fgroup"><label>Téléphone</label><input type="tel" id="spat-tel" placeholder="+33 6 12 34 56 78"/></div>
+
+      <!-- PHOTO PATIENT -->
+      <div class="fgroup">
+        <label>📸 Photo de profil (optionnel)</label>
+        <div style="display:flex;align-items:center;gap:.9rem;margin-top:.3rem">
+          <div id="spat-photo-preview" style="width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,var(--blue-l),var(--blue));display:flex;align-items:center;justify-content:center;font-size:1.6rem;flex-shrink:0;overflow:hidden;border:2.5px solid var(--border)">👤</div>
+          <div style="flex:1" onclick="document.getElementById('spat-photo-input').click()" style="cursor:pointer">
+            <div style="border:2px dashed var(--border);border-radius:var(--r-sm);padding:.75rem;text-align:center;background:var(--sand);cursor:pointer;transition:all .2s" onmouseover="this.style.borderColor='var(--teal)'" onmouseout="this.style.borderColor='var(--border)'">
+              <div style="font-size:1.1rem;margin-bottom:.2rem">📷</div>
+              <div style="font-size:.78rem;font-weight:600;color:var(--ch)">Ajouter une photo</div>
+              <div style="font-size:.68rem;color:var(--soft)">JPG, PNG · Max 2MB</div>
+            </div>
+            <input type="file" id="spat-photo-input" accept="image/*" style="display:none" onchange="handlePatPhotoUpload(this)"/>
+          </div>
+        </div>
+      </div>
       <div class="form-section-title">🔒 Sécurité</div>
       <div class="fgroup"><label>Mot de passe * (min. 8 caractères)</label><input type="password" id="spat-pwd" placeholder="••••••••"/></div>
       <div class="fgroup"><label>Confirmer le mot de passe *</label><input type="password" id="spat-pwd2" placeholder="••••••••"/></div>
@@ -1187,39 +1203,72 @@ body[data-lang="ar"]{font-family:'Segoe UI',Tahoma,'Arabic Typesetting',sans-ser
 <!-- ══ VIEW: SUCCESS PRO ══ -->
 <div class="view" id="v-success-pro">
   <div class="auth-wrap">
-    <div class="auth-card">
-      <div class="success-screen">
-        <div class="success-ico">🩺</div>
-        <h2 class="success-title">Dossier soumis !</h2>
-        <p class="success-sub">Votre demande d'inscription professionnelle est en cours de vérification.</p>
-        <div class="email-preview-box">
-          <p class="ep-hdr">📧 Email de confirmation</p>
-          <div class="ep-row"><span class="ep-k">À :</span><span class="ep-v" id="conf-pro-email">—</span></div>
-          <div class="ep-row"><span class="ep-k">Objet :</span><span class="ep-v">🩺 Dossier Psycholab Pro reçu — vérification en cours</span></div>
-          <div class="ep-body" id="conf-pro-body">Chargement…</div>
-        </div>
-        <div class="next-steps">
-          <h4>⏳ Processus d'activation</h4>
-          <div class="next-step-item"><div class="step-num">1</div><span>Vérification de votre numéro RPPS/agrément (24-48h)</span></div>
-          <div class="next-step-item"><div class="step-num">2</div><span>Email de confirmation d'activation envoyé</span></div>
-          <div class="next-step-item"><div class="step-num">3</div><span>Votre profil apparaît sur la plateforme</span></div>
-          <div class="next-step-item"><div class="step-num">4</div><span>Gérez vos RDV depuis votre tableau de bord</span></div>
-        </div>
-        <div style="background:var(--teal-xl);border-radius:var(--r-md);padding:1rem;text-align:center;border:1.5px solid var(--teal)">
-          <p style="font-size:.88rem;font-weight:600;color:var(--teal-d);margin-bottom:.3rem">📧 Email envoyé à l'équipe Psycholab</p>
-          <p style="font-size:.78rem;color:var(--mid);line-height:1.55">Votre dossier a été transmis à <strong>reservation.psycholab@gmail.com</strong>.<br/>Vous recevrez une confirmation sous <strong>24 à 48h</strong>.</p>
-        </div>
-        <button class="btn-submit" style="margin-top:.9rem;background:var(--mid)" onclick="goHome()">← Retour à l'accueil</button>
+    <div class="auth-card" style="text-align:center;padding:2.5rem 1.5rem">
+
+      <!-- Icône succès animée -->
+      <div style="width:90px;height:90px;border-radius:50%;background:linear-gradient(135deg,var(--teal),var(--teal-l));display:flex;align-items:center;justify-content:center;font-size:2.5rem;margin:0 auto 1.3rem;box-shadow:0 8px 32px rgba(27,107,97,.3);animation:popIn .5s cubic-bezier(.175,.885,.32,1.275)">
+        ✅
       </div>
+
+      <h2 style="font-family:'Playfair Display',serif;font-size:1.5rem;font-weight:700;color:var(--ch);margin-bottom:.5rem">
+        Dossier envoyé avec succès !
+      </h2>
+
+      <p style="color:var(--mid);font-size:.9rem;line-height:1.65;margin-bottom:1.5rem">
+        Un email de confirmation a été envoyé à<br/>
+        <strong style="color:var(--teal-d)" id="conf-pro-email-simple">—</strong>
+      </p>
+
+      <!-- Message principal -->
+      <div style="background:var(--teal-xl);border-radius:var(--r-md);padding:1.2rem;margin-bottom:1.5rem;border-left:4px solid var(--teal)">
+        <div style="font-size:.88rem;font-weight:700;color:var(--teal-d);margin-bottom:.4rem">
+          📧 Email envoyé à reservation.psycholab@gmail.com
+        </div>
+        <div style="font-size:.82rem;color:var(--mid);line-height:1.6">
+          Votre dossier est en cours de vérification.<br/>
+          Vous serez contacté sous <strong>24 à 48h</strong>.
+        </div>
+      </div>
+
+      <!-- Étapes simples -->
+      <div style="background:var(--sand);border-radius:var(--r-md);padding:1rem;margin-bottom:1.5rem;text-align:left">
+        <div style="font-size:.78rem;font-weight:700;color:var(--ch);margin-bottom:.7rem">⏳ Que se passe-t-il maintenant ?</div>
+        <div style="display:flex;flex-direction:column;gap:.55rem">
+          <div style="display:flex;align-items:center;gap:.6rem;font-size:.8rem;color:var(--mid)">
+            <div style="width:22px;height:22px;border-radius:50%;background:var(--teal);color:#fff;display:flex;align-items:center;justify-content:center;font-size:.65rem;font-weight:700;flex-shrink:0">1</div>
+            L'équipe Psycholab vérifie votre dossier
+          </div>
+          <div style="display:flex;align-items:center;gap:.6rem;font-size:.8rem;color:var(--mid)">
+            <div style="width:22px;height:22px;border-radius:50%;background:var(--teal);color:#fff;display:flex;align-items:center;justify-content:center;font-size:.65rem;font-weight:700;flex-shrink:0">2</div>
+            Vous recevez un email de validation
+          </div>
+          <div style="display:flex;align-items:center;gap:.6rem;font-size:.8rem;color:var(--mid)">
+            <div style="width:22px;height:22px;border-radius:50%;background:var(--teal);color:#fff;display:flex;align-items:center;justify-content:center;font-size:.65rem;font-weight:700;flex-shrink:0">3</div>
+            Votre profil apparaît sur la plateforme
+          </div>
+        </div>
+      </div>
+
+      <button class="btn-submit" onclick="goHome()" style="font-size:.95rem;padding:.9rem">
+        ← Retour à l'accueil
+      </button>
+
     </div>
   </div>
 </div>
+
+<style>
+@keyframes popIn{
+  0%{transform:scale(0);opacity:0}
+  100%{transform:scale(1);opacity:1}
+}
+</style>
 
 <!-- ══ VIEW: PATIENT SPACE ══ -->
 <div class="view" id="v-patient">
   <div class="patient-wrap">
     <div class="pat-hdr">
-      <div class="pat-av">👤</div>
+      <div id="pat-av-display" style="width:46px;height:46px;border-radius:50%;background:linear-gradient(135deg,var(--blue-l),var(--blue));display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0;overflow:hidden;border:2px solid var(--border)">👤</div>
       <div>
         <div class="pat-name" id="pat-display-name">Patient</div>
         <div class="pat-email" id="pat-display-email">—</div>
@@ -2170,7 +2219,43 @@ function doLogin(){
 // ════════════════════════════════════════════════
 //  PHOTO DE PROFIL
 // ════════════════════════════════════════════════
-let proPhotoData=null;
+let patPhotoData=null;
+
+function handlePatPhotoUpload(input){
+  const file=input.files[0];
+  if(!file)return;
+  if(file.size>2*1024*1024){toast('Photo trop volumineuse (max 2MB)','red');return}
+  const reader=new FileReader();
+  reader.onload=e=>{
+    patPhotoData=e.target.result;
+    const preview=document.getElementById('spat-photo-preview');
+    if(preview)preview.innerHTML=`<img src="${patPhotoData}" style="width:64px;height:64px;border-radius:50%;object-fit:cover;" alt="Photo"/>`;
+    toast('📸 Photo chargée !','green');
+  };
+  reader.readAsDataURL(file);
+}
+
+function handlePatPhotoDashboard(input,userId){
+  const file=input.files[0];
+  if(!file)return;
+  if(file.size>2*1024*1024){toast('Photo trop volumineuse (max 2MB)','red');return}
+  const reader=new FileReader();
+  reader.onload=e=>{
+    const photoData=e.target.result;
+    const db=getDB();
+    const user=db.users.find(u=>u.id===userId);
+    if(!user)return;
+    user.photo=photoData;
+    saveDB(db);
+    // Mettre à jour affichage immédiat
+    const display=document.getElementById('pat-photo-display');
+    if(display)display.innerHTML=`<img src="${photoData}" style="width:80px;height:80px;object-fit:cover" alt="Photo"/>`;
+    const av=document.getElementById('pat-av-display');
+    if(av)av.innerHTML=`<img src="${photoData}" style="width:46px;height:46px;border-radius:50%;object-fit:cover;" alt="Photo"/>`;
+    toast('✅ Photo de profil mise à jour !','green');
+  };
+  reader.readAsDataURL(file);
+}
 
 function handleProPhotoUpload(input){
   const file=input.files[0];
@@ -2284,7 +2369,8 @@ function doSignupPatient(){
   }
   const id='pat_'+Date.now();
   const tel=document.getElementById('spat-tel')?document.getElementById('spat-tel').value.trim():'';
-  const user={id,fn,ln,email,tel,tz:'Europe/Paris',pwd:hashPwd(pwd),notif:document.getElementById('spat-notif').checked,createdAt:new Date().toISOString()};
+  const user={id,fn,ln,email,tel,tz:'Europe/Paris',pwd:hashPwd(pwd),notif:document.getElementById('spat-notif').checked,photo:patPhotoData||null,createdAt:new Date().toISOString()};
+  patPhotoData=null;
   db.users.push(user);
   saveDB(db);
   sbSaveUser(user);
@@ -2351,12 +2437,12 @@ function doSignupPro(){
   proPhotoData=null;
   db.pros.push(pro);
   saveDB(db);
-  sbSavePro(pro); // ── Sauvegarde en ligne Supabase ──
-  document.getElementById('conf-pro-email').textContent=email;
-  document.getElementById('conf-pro-body').innerHTML=generateProWelcomeEmail(fn,ln,spec,rpps);
+  sbSavePro(pro);
+  // ── Afficher la page de confirmation simple ──
+  document.getElementById('conf-pro-email-simple').textContent=email;
   // ── Envoi email réel via Formspree ──
   const btn=document.querySelector('#v-signup-pro .btn-submit');
-  if(btn){btn.disabled=true;btn.textContent='📧 Envoi en cours…';}
+  if(btn){btn.disabled=true;btn.textContent='📧 Envoi en cours… Veuillez patienter';}
   fetch('https://formspree.io/f/xjgzoarv',{
     method:'POST',
     headers:{'Content-Type':'application/json','Accept':'application/json'},
@@ -2375,17 +2461,14 @@ function doSignupPro(){
       date:new Date().toLocaleDateString('fr-FR',{day:'numeric',month:'long',year:'numeric'})
     })
   }).then(r=>r.json()).then(data=>{
-    if(data.ok){
-      toast('📧 Email envoyé à reservation.psycholab@gmail.com','green');
-    } else {
-      toast('📧 Dossier soumis avec succès','green');
-    }
-    if(btn){btn.disabled=false;btn.textContent='Soumettre mon dossier d\'inscription';}
+    if(btn){btn.disabled=false;btn.textContent='Soumettre mon dossier';}
+    showView('v-success-pro');
+    toast('✅ Dossier envoyé ! Email transmis à reservation.psycholab@gmail.com','green');
   }).catch(()=>{
-    toast('📧 Dossier enregistré — email en cours','green');
-    if(btn){btn.disabled=false;btn.textContent='Soumettre mon dossier d\'inscription';}
+    if(btn){btn.disabled=false;btn.textContent='Soumettre mon dossier';}
+    showView('v-success-pro');
+    toast('✅ Dossier enregistré avec succès','green');
   });
-  showView('v-success-pro');
 }
 
 function activateProDemo(){
@@ -2493,25 +2576,50 @@ function validatePro(proId){
   pro.active=true;
   pro.validatedAt=new Date().toISOString();
   saveDB(db);
-  sbUpdateProStatus(proId,true); // ── Mise à jour Supabase ──
-  // Envoyer email de validation via Formspree
+  sbUpdateProStatus(proId,true);
+
+  // ── Email envoyé DIRECTEMENT à l'adresse email du spécialiste ──
+  const dateValidation=new Date().toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
   fetch('https://formspree.io/f/xjgzoarv',{
     method:'POST',
     headers:{'Content-Type':'application/json','Accept':'application/json'},
     body:JSON.stringify({
-      _subject:'✅ Compte Psycholab Pro validé — Dr. '+pro.fn+' '+pro.ln,
-      type:'VALIDATION_COMPTE',
-      destinataire:'Dr. '+pro.fn+' '+pro.ln,
-      email_pro:pro.email,
+      _subject:'✅ Votre compte Psycholab Pro est activé — Bienvenue Dr. '+pro.fn+' '+pro.ln+' !',
+      _replyto:pro.email,
+      type:'ACTIVATION_COMPTE_PRO',
+      // Champ destinataire = email du spécialiste
+      destinataire_email:pro.email,
+      destinataire_nom:'Dr. '+pro.fn+' '+pro.ln,
       specialite:pro.spec,
-      message:'Votre compte professionnel Psycholab a été validé. Vous pouvez maintenant vous connecter et recevoir des rendez-vous.',
-      date_validation:new Date().toLocaleDateString('fr-FR',{day:'numeric',month:'long',year:'numeric'})
+      date_activation:dateValidation,
+      email_connexion:pro.email,
+      lien_connexion:'https://psycholab-conseil.github.io/Psycholab.tn/',
+      message_complet:
+        'Bonjour Dr. '+pro.fn+' '+pro.ln+',\n\n'+
+        '✅ Votre compte professionnel Psycholab a été vérifié et activé avec succès !\n\n'+
+        '📋 Vos informations :\n'+
+        '• Nom : Dr. '+pro.fn+' '+pro.ln+'\n'+
+        '• Spécialité : '+pro.spec+'\n'+
+        '• Email de connexion : '+pro.email+'\n'+
+        '• Date d\'activation : '+dateValidation+'\n\n'+
+        '🚀 Vous pouvez maintenant :\n'+
+        '• Vous connecter sur Psycholab avec votre email et mot de passe\n'+
+        '• Configurer vos disponibilités\n'+
+        '• Recevoir des demandes de rendez-vous de patients\n'+
+        '• Gérer votre profil et vos consultations\n\n'+
+        '🔗 Connexion : https://psycholab-conseil.github.io/Psycholab.tn/\n\n'+
+        'Bienvenue dans la communauté Psycholab !\n\n'+
+        '— L\'équipe Psycholab\n'+
+        'reservation.psycholab@gmail.com'
     })
   }).then(()=>{
-    toast('✅ Compte validé — Email envoyé à Dr. '+pro.ln,'green');
+    toast('✅ Compte validé — Email envoyé à '+pro.email,'green');
   }).catch(()=>{
-    toast('✅ Compte validé','green');
+    toast('✅ Compte validé — Vérifiez la connexion email','green');
   });
+
+  // Notification interne
+  addNotif(pro.id,'pro','✅ Compte activé !','Votre compte professionnel Psycholab est maintenant actif. Connectez-vous pour configurer vos disponibilités.');
   renderHome();
   renderAdminPanel();
 }
@@ -2883,6 +2991,12 @@ function updatePatientDash(session){
   if(!user)return;
   document.getElementById('pat-display-name').textContent=user.fn+' '+user.ln;
   document.getElementById('pat-display-email').textContent=user.email;
+  // ── Afficher photo dans le header ──
+  const av=document.getElementById('pat-av-display');
+  if(av){
+    if(user.photo)av.innerHTML=`<img src="${user.photo}" style="width:46px;height:46px;border-radius:50%;object-fit:cover;" alt="Photo"/>`;
+    else av.innerHTML='👤';
+  }
   const rdvs=db.rdvs.filter(r=>r.patId===user.id);
   const upcoming=rdvs.filter(r=>r.status!=='cancelled'&&r.status!=='done'&&new Date(r.date)>=new Date());
   const past=rdvs.filter(r=>r.status==='done'||new Date(r.date)<new Date());
@@ -2933,11 +3047,21 @@ function updatePatientDash(session){
   // Profile
   const profEl=document.getElementById('pat-profile-form');
   profEl.innerHTML=`<div class="profile-card">
+    <div style="text-align:center;margin-bottom:1rem;padding-bottom:1rem;border-bottom:1px solid var(--border)">
+      <div style="position:relative;display:inline-block;margin-bottom:.6rem">
+        <div id="pat-photo-display" style="width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,var(--blue-l),var(--blue));display:flex;align-items:center;justify-content:center;font-size:2rem;overflow:hidden;border:3px solid var(--border);margin:0 auto">
+          ${user.photo?`<img src="${user.photo}" style="width:80px;height:80px;object-fit:cover" alt="Photo"/>`:'👤'}
+        </div>
+        <button onclick="document.getElementById('pat-photo-change').click()" style="position:absolute;bottom:0;right:0;width:26px;height:26px;border-radius:50%;background:var(--teal);color:#fff;border:2px solid #fff;font-size:.7rem;cursor:pointer;display:flex;align-items:center;justify-content:center">📷</button>
+      </div>
+      <input type="file" id="pat-photo-change" accept="image/*" style="display:none" onchange="handlePatPhotoDashboard(this,'${user.id}')"/>
+      <div style="font-size:.88rem;font-weight:600;color:var(--ch)">${escHtml(user.fn)} ${escHtml(user.ln)}</div>
+      <div style="font-size:.72rem;color:var(--soft)">Patient depuis ${formatDate(user.createdAt)}</div>
+    </div>
     <div class="form-section-title">👤 Mes informations</div>
     <div class="profile-field"><label>Nom complet</label><div class="val">${escHtml(user.fn)} ${escHtml(user.ln)}</div></div>
     <div class="profile-field"><label>Email</label><div class="val">${escHtml(user.email)}</div></div>
     <div class="profile-field"><label>Téléphone</label><div class="val">${user.tel||'—'}</div></div>
-    <div class="profile-field"><label>Fuseau horaire</label><div class="val">${user.tz||'—'}</div></div>
     <div class="profile-field"><label>Membre depuis</label><div class="val">${formatDate(user.createdAt)}</div></div>
     <div class="profile-field"><label>Notifications email</label><div class="val">${user.notif?'✅ Activées':'❌ Désactivées'}</div></div>
   </div>`;
