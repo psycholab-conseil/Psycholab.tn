@@ -1120,6 +1120,27 @@ body[data-lang="ar"]{font-family:'Segoe UI',Tahoma,'Arabic Typesetting',sans-ser
       </div>
 
       <div class="form-section-title">📝 Présentation</div>
+
+      <!-- PHOTO DE PROFIL -->
+      <div class="fgroup">
+        <label>📸 Photo de profil professionnelle</label>
+        <div style="display:flex;align-items:flex-start;gap:.9rem;margin-top:.3rem">
+          <!-- Prévisualisation -->
+          <div id="spro-photo-preview" style="width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,var(--teal-xl),var(--teal-mid));display:flex;align-items:center;justify-content:center;font-size:2rem;flex-shrink:0;overflow:hidden;border:3px solid var(--border)">🩺</div>
+          <!-- Zone upload -->
+          <div style="flex:1">
+            <div onclick="document.getElementById('spro-photo-input').click()" style="border:2px dashed var(--border);border-radius:var(--r-sm);padding:.9rem;text-align:center;background:var(--sand);cursor:pointer;transition:all .2s" onmouseover="this.style.borderColor='var(--teal)';this.style.background='var(--teal-xl)'" onmouseout="this.style.borderColor='var(--border)';this.style.background='var(--sand)'">
+              <div style="font-size:1.3rem;margin-bottom:.3rem">📷</div>
+              <div style="font-size:.8rem;font-weight:600;color:var(--ch)">Cliquez pour ajouter votre photo</div>
+              <div style="font-size:.7rem;color:var(--soft);margin-top:.2rem">JPG, PNG · Max 2MB · Photo professionnelle recommandée</div>
+            </div>
+            <input type="file" id="spro-photo-input" accept="image/*" style="display:none" onchange="handleProPhotoUpload(this)"/>
+            <div id="spro-photo-status" style="display:none;margin-top:.4rem;font-size:.75rem;color:var(--green);font-weight:600">✅ Photo chargée avec succès !</div>
+          </div>
+        </div>
+        <div style="font-size:.72rem;color:var(--soft);margin-top:.4rem;line-height:1.5">💡 Une photo professionnelle augmente la confiance des patients et votre visibilité sur la plateforme.</div>
+      </div>
+
       <div class="fgroup"><label>Biographie *</label><textarea id="spro-bio" placeholder="Décrivez votre approche, vos spécialisations…" style="min-height:90px"></textarea></div>
       <div class="fgroup"><label>Domaines d'intervention</label><input id="spro-tags" placeholder="Ex: Anxiété, Dépression, TCC, Couple…"/></div>
 
@@ -1250,7 +1271,7 @@ body[data-lang="ar"]{font-family:'Segoe UI',Tahoma,'Arabic Typesetting',sans-ser
 <div class="view" id="v-pro">
   <div class="pro-wrap">
     <div class="pro-top">
-      <div class="pro-av" id="pro-av-ico">🩺</div>
+      <div id="pro-av-ico" style="width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,var(--teal-xl),var(--teal-mid));display:flex;align-items:center;justify-content:center;font-size:1.4rem;flex-shrink:0;overflow:hidden;border:2px solid var(--border)">🩺</div>
       <div>
         <div class="pro-name" id="pro-display-name">Dr. Nom</div>
         <div class="pro-spec" id="pro-display-spec">Spécialité</div>
@@ -2072,9 +2093,12 @@ function renderHome(){
   list.innerHTML='<div class="spec-grid">'+pros.map(p=>{
     const langs=[p.langFr&&'🇫🇷 FR',p.langAr&&'🇸🇦 AR',p.langEn&&'🇬🇧 EN'].filter(Boolean);
     const tags=(p.tags||'').split(',').map(t=>t.trim()).filter(Boolean);
+    const photoEl=p.photo
+      ?`<img src="${p.photo}" style="width:52px;height:52px;border-radius:var(--r-sm);object-fit:cover;flex-shrink:0" alt="Dr. ${p.fn} ${p.ln}"/>`
+      :`<div class="av">🩺</div>`;
     return `<div class="scard" onclick="openSheet('${p.id}')">
       <div class="card-top">
-        <div class="av">🩺</div>
+        ${photoEl}
         <div>
           <div class="c-name">Dr. ${p.fn} ${p.ln}</div>
           <div class="c-spec">${p.spec}</div>
@@ -2144,8 +2168,58 @@ function doLogin(){
 }
 
 // ════════════════════════════════════════════════
-//  VALIDATION HELPER
+//  PHOTO DE PROFIL
 // ════════════════════════════════════════════════
+let proPhotoData=null;
+
+function handleProPhotoUpload(input){
+  const file=input.files[0];
+  if(!file)return;
+  if(file.size>2*1024*1024){toast('Photo trop volumineuse (max 2MB)','red');return}
+  if(!file.type.startsWith('image/')){toast('Veuillez sélectionner une image','red');return}
+  const reader=new FileReader();
+  reader.onload=e=>{
+    proPhotoData=e.target.result;
+    // Prévisualiser dans le formulaire d'inscription
+    const preview=document.getElementById('spro-photo-preview');
+    if(preview){
+      preview.innerHTML=`<img src="${proPhotoData}" style="width:80px;height:80px;border-radius:50%;object-fit:cover;" alt="Photo"/>`;
+    }
+    const status=document.getElementById('spro-photo-status');
+    if(status)status.style.display='block';
+    toast('📸 Photo chargée !','green');
+  };
+  reader.readAsDataURL(file);
+}
+
+function handleProPhotoDashboard(input){
+  const file=input.files[0];
+  if(!file)return;
+  if(file.size>2*1024*1024){toast('Photo trop volumineuse (max 2MB)','red');return}
+  if(!file.type.startsWith('image/')){toast('Veuillez sélectionner une image','red');return}
+  const reader=new FileReader();
+  reader.onload=e=>{
+    const photoData=e.target.result;
+    const s=getSession();if(!s)return;
+    const db=getDB();
+    const pro=db.pros.find(p=>p.id===s.id);
+    if(!pro)return;
+    pro.photo=photoData;
+    saveDB(db);
+    // Mise à jour affichage immédiat
+    const display=document.getElementById('prof-photo-display');
+    if(display)display.innerHTML=`<img src="${photoData}" style="width:90px;height:90px;border-radius:50%;object-fit:cover;border:3px solid var(--teal)" alt="Photo"/>`;
+    const status=document.getElementById('prof-photo-status');
+    if(status)status.style.display='block';
+    // Mettre à jour le header du dashboard
+    const av=document.getElementById('pro-av-ico');
+    if(av)av.innerHTML=`<img src="${photoData}" style="width:52px;height:52px;border-radius:50%;object-fit:cover;" alt="Photo"/>`;
+    // Mettre à jour la liste sur la page d'accueil
+    renderHome();
+    toast('✅ Photo de profil mise à jour !','green');
+  };
+  reader.readAsDataURL(file);
+}
 function showFieldError(inputId,message){
   const input=document.getElementById(inputId);
   if(!input)return;
@@ -2273,7 +2347,8 @@ function doSignupPro(){
     showFieldError('spro-email','Cette adresse email est déjà utilisée sur Psycholab');return;
   }
   const id='pro_'+Date.now();
-  const pro={id,fn,ln,email,tel,spec,rpps:'',diplome:'',exp:'',bio,tags,price:price?parseInt(price):null,tz:'Europe/Paris',consVid,consPres,langFr,langEn,langAr,pwd:hashPwd(pwd),active:false,avail:{},notif:document.getElementById('spro-notif').checked,createdAt:new Date().toISOString()};
+  const pro={id,fn,ln,email,tel,spec,rpps:'',diplome:'',exp:'',bio,tags,price:price?parseInt(price):null,tz:'Europe/Paris',consVid,consPres,langFr,langEn,langAr,pwd:hashPwd(pwd),active:false,avail:{},notif:document.getElementById('spro-notif').checked,photo:proPhotoData||null,createdAt:new Date().toISOString()};
+  proPhotoData=null;
   db.pros.push(pro);
   saveDB(db);
   sbSavePro(pro); // ── Sauvegarde en ligne Supabase ──
@@ -2558,6 +2633,15 @@ function updateProDashboard(session){
   document.getElementById('pro-display-spec').textContent=pro.spec;
   document.getElementById('pro-welcome').textContent='Bonjour Dr. '+pro.ln+' 👋';
   document.getElementById('vid-pro-tag').textContent='Dr. '+pro.ln;
+  // ── Afficher la photo si disponible ──
+  const av=document.getElementById('pro-av-ico');
+  if(av){
+    if(pro.photo){
+      av.innerHTML=`<img src="${pro.photo}" style="width:52px;height:52px;border-radius:50%;object-fit:cover;" alt="Photo Dr. ${pro.fn}"/>`;
+    } else {
+      av.innerHTML='🩺';
+    }
+  }
   const rdvs=db.rdvs.filter(r=>r.proId===pro.id);
   const pending=rdvs.filter(r=>r.status==='pending');
   const confirmed=rdvs.filter(r=>r.status==='confirmed');
@@ -2729,14 +2813,29 @@ function renderProProfile(session){
   const db=getDB();
   const pro=db.pros.find(p=>p.id===session.id);
   if(!pro)return;
+  const photoEl=pro.photo
+    ?`<img src="${pro.photo}" style="width:90px;height:90px;border-radius:50%;object-fit:cover;border:3px solid var(--teal)" alt="Photo"/>`
+    :`<div style="width:90px;height:90px;border-radius:50%;background:linear-gradient(135deg,var(--teal-xl),var(--teal-mid));display:flex;align-items:center;justify-content:center;font-size:2.2rem;border:3px solid var(--border)">🩺</div>`;
   document.getElementById('pro-profile-content').innerHTML=`
     <div class="profile-card" style="margin-bottom:.9rem">
+
+      <!-- Photo de profil -->
+      <div style="text-align:center;margin-bottom:1.2rem;padding-bottom:1rem;border-bottom:1px solid var(--border)">
+        <div style="position:relative;display:inline-block;margin-bottom:.7rem">
+          <div id="prof-photo-display">${photoEl}</div>
+          <button onclick="document.getElementById('prof-photo-input').click()" style="position:absolute;bottom:0;right:0;width:28px;height:28px;border-radius:50%;background:var(--teal);color:#fff;border:2px solid #fff;font-size:.75rem;cursor:pointer;display:flex;align-items:center;justify-content:center" title="Changer la photo">📷</button>
+        </div>
+        <input type="file" id="prof-photo-input" accept="image/*" style="display:none" onchange="handleProPhotoDashboard(this)"/>
+        <div style="font-size:.75rem;color:var(--mid)">Dr. ${escHtml(pro.fn)} ${escHtml(pro.ln)}</div>
+        <div style="font-size:.7rem;color:var(--teal);font-weight:600;text-transform:uppercase;letter-spacing:.04em">${escHtml(pro.spec)}</div>
+        <div id="prof-photo-status" style="display:none;font-size:.73rem;color:var(--green);font-weight:600;margin-top:.3rem">✅ Photo mise à jour !</div>
+      </div>
+
       <div class="form-section-title">👤 Informations personnelles</div>
       <div class="fgroup"><label>Prénom</label><input id="pp-fn" value="${escHtml(pro.fn)}" style="border:1.5px solid var(--border);border-radius:var(--r-sm);padding:.62rem .9rem;font-size:.86rem;background:var(--sand);outline:none;width:100%"/></div>
       <div class="fgroup"><label>Nom</label><input id="pp-ln" value="${escHtml(pro.ln)}" style="border:1.5px solid var(--border);border-radius:var(--r-sm);padding:.62rem .9rem;font-size:.86rem;background:var(--sand);outline:none;width:100%"/></div>
       <div class="fgroup"><label>Email</label><div class="profile-field"><div class="val">${escHtml(pro.email)}</div></div></div>
       <div class="fgroup"><label>Spécialité</label><div class="profile-field"><div class="val">${escHtml(pro.spec)}</div></div></div>
-      <div class="fgroup"><label>N° RPPS</label><div class="profile-field"><div class="val">${escHtml(pro.rpps)}</div></div></div>
       <div class="form-section-title">📝 Présentation</div>
       <div class="fgroup"><label>Biographie</label><textarea id="pp-bio" style="border:1.5px solid var(--border);border-radius:var(--r-sm);padding:.62rem .9rem;font-size:.86rem;background:var(--sand);outline:none;width:100%;min-height:90px;resize:vertical;line-height:1.55">${escHtml(pro.bio)}</textarea></div>
       <div class="fgroup"><label>Domaines d'intervention</label><input id="pp-tags" value="${escHtml(pro.tags||'')}" style="border:1.5px solid var(--border);border-radius:var(--r-sm);padding:.62rem .9rem;font-size:.86rem;background:var(--sand);outline:none;width:100%"/></div>
@@ -2756,6 +2855,10 @@ function saveProfile(){
   if(tags)pro.tags=tags.value.trim();
   if(price)pro.price=price.value?parseInt(price.value):null;
   saveDB(db);
+  // Mettre à jour le header
+  const av=document.getElementById('pro-av-ico');
+  if(av&&pro.photo)av.innerHTML=`<img src="${pro.photo}" style="width:52px;height:52px;border-radius:50%;object-fit:cover;" alt="Photo"/>`;
+  document.getElementById('pro-display-name').textContent='Dr. '+(fn?fn.value.trim():pro.fn)+' '+(ln?ln.value.trim():pro.ln);
   toast('✅ Profil mis à jour !','green');
   addNotif(s.id,'pro','✅ Profil mis à jour','Vos informations professionnelles ont été mises à jour avec succès.');
   renderHome();
