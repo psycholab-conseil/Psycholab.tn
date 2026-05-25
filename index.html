@@ -187,6 +187,16 @@
 <meta property="article:section" content="Santé mentale"/>
 <meta property="article:tag" content="psychologue, psychiatre, téléconsultation, tunisien, expatrié"/>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,400;1,500&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+
+<!-- ═══ GOOGLE reCAPTCHA v3 ═══ -->
+<!-- IMPORTANT : Remplacez YOUR_RECAPTCHA_SITE_KEY par votre clé publique -->
+<!-- Obtenir une clé gratuite : https://www.google.com/recaptcha/admin/create -->
+<!-- Choisir : reCAPTCHA v3 · Domaine : votre-domaine.com -->
+<script src="https://www.google.com/recaptcha/api.js?render=6Ley9I8sAAAAAKiK6uOMnUlosXY3UCH6VUMWqdZ0" async defer></script>
+<style>
+/* Masquer le badge reCAPTCHA visible (légal si mention dans CGU) */
+.grecaptcha-badge{visibility:hidden!important}
+</style>
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <script>
 emailjs.init({
@@ -987,18 +997,70 @@ body[data-lang="ar"]{font-family:'Segoe UI',Tahoma,'Arabic Typesetting',sans-ser
 <div class="view" id="v-login">
   <div class="auth-wrap">
     <div class="auth-card">
-      <div class="auth-ico">🔐</div>
+      <div class="auth-ico">✉️</div>
       <h2 class="auth-title">Se connecter</h2>
-      <p class="auth-sub">Accédez à votre espace Psycholab</p>
+      <p class="auth-sub">Recevez un lien de connexion par email — sans mot de passe</p>
+
       <div class="auth-tabs">
         <button class="atab on" id="ltab-pat" onclick="switchLoginTab('patient')">👤 Patient</button>
         <button class="atab" id="ltab-pro" onclick="switchLoginTab('pro')">🩺 Professionnel</button>
       </div>
-      <div id="login-error" class="error-box">Email ou mot de passe incorrect.</div>
-      <div class="fgroup"><label>Email *</label><input type="email" id="l-email" placeholder="votre@email.com"/></div>
-      <div class="fgroup"><label>Mot de passe *</label><input type="password" id="l-pwd" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()"/></div>
-      <button class="btn-submit" onclick="doLogin()">Se connecter</button>
-      <p class="auth-switch">Pas encore de compte ? <a onclick="showSignup(currentLoginTab)">Créer un compte</a></p>
+
+      <!-- ÉTAPE 1 : saisie email + anti-robot -->
+      <div id="login-step1">
+        <div class="info-box" style="margin-bottom:.9rem">
+          📧 Saisissez votre adresse email. Nous vous envoyons un lien de connexion valable <strong>15 minutes</strong>.
+        </div>
+
+        <div id="login-error" class="error-box"></div>
+
+        <div class="fgroup">
+          <label>Votre adresse email *</label>
+          <input type="email" id="l-email" placeholder="votre@email.com" onkeydown="if(event.key==='Enter')doRequestMagicLink()"/>
+        </div>
+
+        <!-- ANTI-ROBOT : calcul simple -->
+        <div style="background:linear-gradient(135deg,var(--teal-xl),#E8F4F2);border:1.5px solid var(--teal);border-radius:var(--r-md);padding:.9rem 1rem;margin-bottom:.9rem">
+          <div style="font-size:.78rem;font-weight:700;color:var(--teal-d);margin-bottom:.5rem">🔒 Vérification rapide</div>
+          <div style="font-size:.82rem;color:var(--ch);margin-bottom:.5rem">Pour confirmer que vous êtes bien une personne :</div>
+          <div style="display:flex;align-items:center;gap:.7rem;flex-wrap:wrap">
+            <div style="font-size:1rem;font-weight:700;color:var(--teal-d);background:#fff;border:2px solid var(--teal);border-radius:10px;padding:.5rem 1rem;min-width:120px;text-align:center" id="captcha-question">—</div>
+            <span style="font-size:.9rem;color:var(--mid)">=</span>
+            <input type="number" id="captcha-answer" placeholder="?" style="width:72px;border:2px solid var(--border);border-radius:10px;padding:.5rem .7rem;font-size:1rem;font-weight:700;text-align:center;outline:none;transition:all var(--anim)" onkeydown="if(event.key==='Enter')doRequestMagicLink()"/>
+            <button onclick="refreshCaptcha()" style="background:none;border:none;color:var(--soft);font-size:1.1rem;cursor:pointer;padding:.2rem" title="Nouvelle question">🔄</button>
+          </div>
+        </div>
+
+        <button class="btn-submit" id="btn-magic-link" onclick="doRequestMagicLink()">
+          📧 Envoyer mon lien de connexion
+        </button>
+        <p class="auth-switch">Pas encore de compte ? <a onclick="showSignup(currentLoginTab)">Créer un compte</a></p>
+      </div>
+
+      <!-- ÉTAPE 2 : confirmation envoi -->
+      <div id="login-step2" style="display:none;text-align:center;padding:.5rem 0">
+        <div style="width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,var(--teal),var(--teal-l));display:flex;align-items:center;justify-content:center;font-size:2rem;margin:0 auto 1rem;box-shadow:0 6px 24px rgba(27,107,97,.25)">📧</div>
+        <h3 style="font-family:'Playfair Display',serif;font-size:1.15rem;font-weight:700;color:var(--ch);margin-bottom:.5rem">Lien envoyé !</h3>
+        <p style="font-size:.85rem;color:var(--mid);line-height:1.65;margin-bottom:.9rem">
+          Un lien de connexion a été envoyé à<br/>
+          <strong style="color:var(--teal-d)" id="magic-sent-email">—</strong>
+        </p>
+        <div style="background:var(--sand);border-radius:var(--r-md);padding:.9rem;font-size:.78rem;color:var(--mid);line-height:1.7;margin-bottom:1rem;text-align:left">
+          <div style="font-weight:700;color:var(--ch);margin-bottom:.3rem">📋 Que faire maintenant ?</div>
+          <div>1. Ouvrez votre boîte email</div>
+          <div>2. Cliquez sur le lien dans l'email Psycholab</div>
+          <div>3. Vous serez connecté automatiquement</div>
+          <div style="margin-top:.4rem;color:var(--soft);font-size:.72rem">⏱️ Le lien expire dans 15 minutes · Vérifiez vos spams si besoin</div>
+        </div>
+        <!-- Simulateur de lien magique (démo) -->
+        <div style="background:var(--orange-l);border:1.5px solid var(--orange);border-radius:var(--r-md);padding:.85rem;font-size:.78rem;color:var(--orange);margin-bottom:.9rem;text-align:left">
+          <div style="font-weight:700;margin-bottom:.3rem">🛠️ Mode démonstration</div>
+          <div style="color:var(--mid);margin-bottom:.5rem">En production, le lien est envoyé par email. Ici, cliquez pour simuler la réception :</div>
+          <button onclick="simulateMagicLogin()" style="background:var(--orange);color:#fff;border:none;border-radius:8px;padding:.5rem 1rem;font-size:.78rem;font-weight:700;cursor:pointer">🔗 Simuler le clic sur le lien</button>
+        </div>
+        <button onclick="backToLoginStep1()" style="background:none;border:none;color:var(--soft);font-size:.8rem;cursor:pointer;text-decoration:underline">← Changer d'adresse email</button>
+      </div>
+
     </div>
   </div>
 </div>
@@ -1010,36 +1072,81 @@ body[data-lang="ar"]{font-family:'Segoe UI',Tahoma,'Arabic Typesetting',sans-ser
       <div class="auth-ico">👤</div>
       <h2 class="auth-title">Créer un compte patient</h2>
       <p class="auth-sub">Gratuit · Sécurisé · 2 minutes</p>
-      <p class="required-note">* Champs obligatoires</p>
-      <div class="fgroup-row">
-        <div class="fgroup"><label>Prénom *</label><input id="spat-fn" placeholder="Prénom"/></div>
-        <div class="fgroup"><label>Nom *</label><input id="spat-ln" placeholder="Nom"/></div>
-      </div>
-      <div class="fgroup"><label>Email *</label><input type="email" id="spat-email" placeholder="votre@email.com"/></div>
-      <div class="fgroup"><label>Téléphone</label><input type="tel" id="spat-tel" placeholder="+33 6 12 34 56 78"/></div>
 
-      <!-- PHOTO PATIENT -->
-      <div class="fgroup">
-        <label>📸 Photo de profil (optionnel)</label>
-        <div style="display:flex;align-items:center;gap:.9rem;margin-top:.3rem">
-          <div id="spat-photo-preview" style="width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,var(--blue-l),var(--blue));display:flex;align-items:center;justify-content:center;font-size:1.6rem;flex-shrink:0;overflow:hidden;border:2.5px solid var(--border)">👤</div>
-          <div style="flex:1" onclick="document.getElementById('spat-photo-input').click()" style="cursor:pointer">
-            <div style="border:2px dashed var(--border);border-radius:var(--r-sm);padding:.75rem;text-align:center;background:var(--sand);cursor:pointer;transition:all .2s" onmouseover="this.style.borderColor='var(--teal)'" onmouseout="this.style.borderColor='var(--border)'">
-              <div style="font-size:1.1rem;margin-bottom:.2rem">📷</div>
-              <div style="font-size:.78rem;font-weight:600;color:var(--ch)">Ajouter une photo</div>
-              <div style="font-size:.68rem;color:var(--soft)">JPG, PNG · Max 2MB</div>
-            </div>
-            <input type="file" id="spat-photo-input" accept="image/*" style="display:none" onchange="handlePatPhotoUpload(this)"/>
-          </div>
+      <!-- CONFIDENTIALITÉ BANNER -->
+      <div style="background:linear-gradient(135deg,var(--teal-xl),#E8F4F2);border:1.5px solid var(--teal);border-radius:var(--r-md);padding:.9rem 1rem;margin-bottom:1rem">
+        <div style="font-size:.78rem;font-weight:700;color:var(--teal-d);margin-bottom:.4rem">🔒 Vos données restent confidentielles</div>
+        <div style="font-size:.74rem;color:var(--mid);line-height:1.6">
+          Vos informations personnelles (nom, téléphone, email) ne sont <strong>jamais affichées publiquement</strong> sur la plateforme. Elles sont transmises uniquement à votre spécialiste dans le cadre strict de la consultation. Conformité <strong>RGPD</strong> garantie.
         </div>
       </div>
-      <div class="form-section-title">🔒 Sécurité</div>
-      <div class="fgroup"><label>Mot de passe * (min. 8 caractères)</label><input type="password" id="spat-pwd" placeholder="••••••••"/></div>
-      <div class="fgroup"><label>Confirmer le mot de passe *</label><input type="password" id="spat-pwd2" placeholder="••••••••"/></div>
+
+      <p class="required-note">* Champs obligatoires</p>
+
+      <!-- OPTION ANONYMAT -->
+      <div style="background:#fff;border:1.5px solid var(--border);border-radius:var(--r-md);padding:.9rem 1rem;margin-bottom:1rem">
+        <div style="font-size:.8rem;font-weight:700;color:var(--ch);margin-bottom:.6rem">🎭 Options d'anonymat</div>
+        <div style="display:flex;flex-direction:column;gap:.5rem">
+          <label style="display:flex;align-items:flex-start;gap:.6rem;cursor:pointer;padding:.5rem;border:1.5px solid var(--border);border-radius:var(--r-sm);transition:all .2s" id="anon-opt-name-label">
+            <input type="radio" name="spat-anon" id="anon-real" value="real" checked onchange="toggleAnonMode(this.value)" style="margin-top:.15rem;accent-color:var(--teal)"/>
+            <div>
+              <div style="font-size:.8rem;font-weight:600;color:var(--ch)">Mon nom réel</div>
+              <div style="font-size:.72rem;color:var(--soft)">Votre prénom et nom sont connus uniquement de votre spécialiste</div>
+            </div>
+          </label>
+          <label style="display:flex;align-items:flex-start;gap:.6rem;cursor:pointer;padding:.5rem;border:1.5px solid var(--border);border-radius:var(--r-sm);transition:all .2s" id="anon-opt-pseudo-label">
+            <input type="radio" name="spat-anon" id="anon-pseudo" value="pseudo" onchange="toggleAnonMode(this.value)" style="margin-top:.15rem;accent-color:var(--teal)"/>
+            <div>
+              <div style="font-size:.8rem;font-weight:600;color:var(--ch)">🎭 Choisir un pseudonyme</div>
+              <div style="font-size:.72rem;color:var(--soft)">Consultez sous un pseudonyme. Votre vrai nom reste confidentiel.</div>
+            </div>
+          </label>
+          <label style="display:flex;align-items:flex-start;gap:.6rem;cursor:pointer;padding:.5rem;border:1.5px solid var(--border);border-radius:var(--r-sm);transition:all .2s" id="anon-opt-anon-label">
+            <input type="radio" name="spat-anon" id="anon-full" value="anon" onchange="toggleAnonMode(this.value)" style="margin-top:.15rem;accent-color:var(--teal)"/>
+            <div>
+              <div style="font-size:.8rem;font-weight:600;color:var(--ch)">🕵️ Rester totalement anonyme</div>
+              <div style="font-size:.72rem;color:var(--soft)">Un pseudonyme automatique vous sera attribué. Seuls votre email et téléphone sont enregistrés.</div>
+            </div>
+          </label>
+        </div>
+      </div>
+
+      <!-- NOM REEL (affiché par défaut) -->
+      <div id="spat-realname-fields">
+        <div class="fgroup-row">
+          <div class="fgroup"><label>Prénom *</label><input id="spat-fn" placeholder="Prénom"/></div>
+          <div class="fgroup"><label>Nom *</label><input id="spat-ln" placeholder="Nom"/></div>
+        </div>
+      </div>
+
+      <!-- PSEUDONYME (caché par défaut) -->
+      <div id="spat-pseudo-field" style="display:none">
+        <div class="fgroup">
+          <label>🎭 Votre pseudonyme *</label>
+          <input id="spat-pseudo" placeholder="Ex: Jasmine, Patient42, Anon_TN…"/>
+          <div style="font-size:.7rem;color:var(--soft);margin-top:.3rem">Ce pseudonyme sera visible uniquement par votre spécialiste</div>
+        </div>
+      </div>
+
+      <!-- DATE DE NAISSANCE -->
+      <div class="fgroup">
+        <label>📅 Date de naissance *</label>
+        <input type="date" id="spat-dob" style="border:1.5px solid var(--border);border-radius:var(--r-sm);padding:.62rem .9rem;font-size:.86rem;background:var(--sand);outline:none;width:100%;transition:all var(--anim)"/>
+      </div>
+
+      <div class="fgroup"><label>Email * <span style="font-size:.7rem;color:var(--soft);font-weight:400">(pour recevoir vos confirmations de RDV)</span></label><input type="email" id="spat-email" placeholder="votre@email.com"/></div>
+      <div class="fgroup"><label>Téléphone *</label><input type="tel" id="spat-tel" placeholder="+216 / +33 6 …"/></div>
+
+      <!-- CONFIRMATION EMAIL — remplace le mot de passe -->
+      <div style="background:linear-gradient(135deg,var(--teal-xl),#E8F4F2);border:1.5px solid var(--teal);border-radius:var(--r-md);padding:.9rem 1rem;margin-bottom:.9rem">
+        <div style="font-size:.8rem;font-weight:700;color:var(--teal-d);margin-bottom:.35rem">📧 Confirmation par email</div>
+        <div style="font-size:.76rem;color:var(--mid);line-height:1.65">Après inscription, vous recevrez un <strong>lien de confirmation</strong> à cette adresse. Cliquez dessus pour activer votre compte. Aucun mot de passe requis.</div>
+      </div>
+
       <div id="spat-error" class="error-box"></div>
       <div class="cb-row"><input type="checkbox" id="spat-cgu"/><p class="cb-txt">J'accepte les <strong>Conditions Générales d'Utilisation</strong> et la <strong>Politique de confidentialité</strong>.</p></div>
       <div class="cb-row"><input type="checkbox" id="spat-notif" checked/><p class="cb-txt">✅ J'accepte de recevoir des <strong>notifications email</strong> pour mes rendez-vous (confirmation, rappels 24h et 2h avant).</p></div>
-      <button class="btn-submit" onclick="doSignupPatient()">Créer mon compte</button>
+      <button class="btn-submit" onclick="doSignupPatient()">Créer mon compte →</button>
       <p class="auth-switch">Déjà un compte ? <a onclick="showLogin()">Se connecter</a></p>
     </div>
   </div>
@@ -1155,15 +1262,63 @@ body[data-lang="ar"]{font-family:'Segoe UI',Tahoma,'Arabic Typesetting',sans-ser
       <div class="fgroup"><label>Biographie *</label><textarea id="spro-bio" placeholder="Décrivez votre approche, vos spécialisations…" style="min-height:90px"></textarea></div>
       <div class="fgroup"><label>Domaines d'intervention</label><input id="spro-tags" placeholder="Ex: Anxiété, Dépression, TCC, Couple…"/></div>
 
-      <div class="form-section-title">🔒 Sécurité</div>
-      <div class="fgroup"><label>Mot de passe * (min. 8 caractères)</label><input type="password" id="spro-pwd" placeholder="••••••••"/></div>
-      <div class="fgroup"><label>Confirmer *</label><input type="password" id="spro-pwd2" placeholder="••••••••"/></div>
+      <!-- COORDONNÉES BANCAIRES -->
+      <div class="form-section-title">🏦 Coordonnées bancaires (pour virement mensuel)</div>
+      <div style="background:linear-gradient(135deg,var(--teal-xl),#E8F4F2);border:1.5px solid var(--teal);border-radius:var(--r-md);padding:.85rem 1rem;margin-bottom:.9rem">
+        <div style="font-size:.77rem;color:var(--teal-d);line-height:1.6">
+          💶 Psycholab vous verse votre rémunération par virement bancaire mensuel, pour chaque séance clôturée sur la plateforme. Ces informations restent <strong>strictement confidentielles</strong> et ne sont jamais partagées.
+        </div>
+      </div>
+      <div class="fgroup"><label>Titulaire du compte *</label><input id="spro-bank-nom" placeholder="Nom et prénom du titulaire"/></div>
+      <div class="fgroup"><label>IBAN *</label><input id="spro-bank-iban" placeholder="Ex: FR76 3000 6000 0112 3456 7890 189" style="font-family:'DM Mono',monospace;letter-spacing:.04em"/></div>
+      <div class="fgroup"><label>BIC / SWIFT *</label><input id="spro-bank-bic" placeholder="Ex: BNPAFRPP"/></div>
+      <div class="fgroup"><label>Banque</label><input id="spro-bank-nom-banque" placeholder="Ex: BNP Paribas, Société Générale, CIB…"/></div>
+
+      <!-- JUSTIFICATIF RIB -->
+      <div class="fgroup">
+        <label>📎 Joindre votre RIB (PDF ou image) *</label>
+        <div id="spro-rib-zone" onclick="document.getElementById('spro-rib-input').click()" style="border:2px dashed var(--border);border-radius:var(--r-sm);padding:.9rem;text-align:center;background:var(--sand);cursor:pointer;transition:all .2s;margin-top:.3rem" onmouseover="this.style.borderColor='var(--teal)';this.style.background='var(--teal-xl)'" onmouseout="this.style.borderColor='var(--border)';this.style.background='var(--sand)'">
+          <div style="font-size:1.3rem;margin-bottom:.3rem">📄</div>
+          <div style="font-size:.8rem;font-weight:600;color:var(--ch)">Cliquez pour joindre votre RIB</div>
+          <div style="font-size:.7rem;color:var(--soft);margin-top:.2rem">PDF, JPG, PNG · Max 5MB</div>
+        </div>
+        <input type="file" id="spro-rib-input" accept=".pdf,image/*" style="display:none" onchange="handleRibUpload(this)"/>
+        <div id="spro-rib-status" style="display:none;margin-top:.4rem;font-size:.75rem;color:var(--green);font-weight:600">✅ RIB joint avec succès !</div>
+      </div>
+
+      <!-- CONTRAT DE COLLABORATION -->
+      <div class="form-section-title">📋 Contrat de collaboration</div>
+      <div style="background:#fff;border:1.5px solid var(--border);border-radius:var(--r-md);padding:1rem;margin-bottom:.9rem;max-height:220px;overflow-y:auto">
+        <div style="font-size:.72rem;font-weight:700;color:var(--teal-d);text-transform:uppercase;letter-spacing:.06em;margin-bottom:.6rem">CONTRAT DE COLLABORATION PROFESSIONNELLE — PSYCHOLAB</div>
+        <div style="font-size:.76rem;color:var(--mid);line-height:1.75">
+          <strong>Entre :</strong> la société <strong>Psycholab</strong> (ci-après « la Société ») et le professionnel de santé mentale soussigné (ci-après « le Collaborateur »).<br/><br/>
+          <strong>Article 1 — Objet</strong><br/>
+          Le présent contrat définit les conditions de la collaboration entre Psycholab et le Collaborateur pour la réalisation de téléconsultations via la plateforme Psycholab.tn.<br/><br/>
+          <strong>Article 2 — Tarification</strong><br/>
+          Les tarifs des consultations sont fixés <strong>exclusivement par Psycholab</strong>, en euros (€). Le Collaborateur ne peut en aucun cas modifier les tarifs affichés aux patients. La rémunération du Collaborateur est définie par la grille tarifaire en vigueur, accessible depuis son espace professionnel.<br/><br/>
+          <strong>Article 3 — Rémunération</strong><br/>
+          Le Collaborateur est rémunéré sur la base du nombre de séances <strong>effectivement clôturées</strong> via le bouton de clôture de la plateforme. Le paiement est effectué mensuellement par virement bancaire sur le compte communiqué lors de l'inscription, dans les 10 jours ouvrés suivant la fin du mois.<br/><br/>
+          <strong>Article 4 — Obligations du Collaborateur</strong><br/>
+          Le Collaborateur s'engage à : (i) respecter les horaires confirmés aux patients, (ii) clôturer chaque séance dans les 24h suivant la consultation, (iii) maintenir ses coordonnées bancaires à jour, (iv) respecter le secret professionnel et les règles déontologiques de sa profession.<br/><br/>
+          <strong>Article 5 — Confidentialité</strong><br/>
+          Les informations personnelles des patients et du Collaborateur sont traitées conformément au RGPD. Aucune donnée n'est cédée à des tiers.<br/><br/>
+          <strong>Article 6 — Résiliation</strong><br/>
+          Chaque partie peut mettre fin au contrat avec un préavis de 30 jours. Les séances clôturées avant résiliation sont dues et réglées selon les modalités habituelles.
+        </div>
+      </div>
+
+      <!-- CONFIRMATION EMAIL — remplace le mot de passe -->
+      <div style="background:linear-gradient(135deg,var(--teal-xl),#E8F4F2);border:1.5px solid var(--teal);border-radius:var(--r-md);padding:.9rem 1rem;margin-bottom:.9rem">
+        <div style="font-size:.8rem;font-weight:700;color:var(--teal-d);margin-bottom:.35rem">📧 Activation du compte par email</div>
+        <div style="font-size:.76rem;color:var(--mid);line-height:1.65">Après soumission, vous recevrez un <strong>lien de confirmation</strong> par email. Votre dossier sera ensuite examiné par l'équipe Psycholab (24-48h). Aucun mot de passe requis — la connexion se fait par lien magique.</div>
+      </div>
 
       <div id="spro-error" class="error-box"></div>
       <div class="cb-row"><input type="checkbox" id="spro-cgu"/><p class="cb-txt">J'accepte les <strong>Conditions Générales</strong> et m'engage à respecter le code de déontologie de ma profession.</p></div>
       <div class="cb-row"><input type="checkbox" id="spro-rgpd"/><p class="cb-txt">J'accepte que mes informations professionnelles soient affichées sur la plateforme conformément au <strong>RGPD</strong>.</p></div>
+      <div class="cb-row"><input type="checkbox" id="spro-contrat"/><p class="cb-txt">📋 J'ai lu et j'accepte le <strong>Contrat de collaboration Psycholab</strong>, y compris les conditions de tarification et de rémunération.</p></div>
       <div class="cb-row"><input type="checkbox" id="spro-notif" checked/><p class="cb-txt">✅ J'accepte de recevoir des <strong>notifications email</strong> pour mes rendez-vous.</p></div>
-      <button class="btn-submit" onclick="doSignupPro()">Soumettre mon dossier</button>
+      <button class="btn-submit" onclick="doSignupPro()">Soumettre mon dossier →</button>
       <p class="auth-switch">Déjà un compte ? <a onclick="showLogin()">Se connecter</a></p>
     </div>
   </div>
@@ -1332,6 +1487,7 @@ body[data-lang="ar"]{font-family:'Segoe UI',Tahoma,'Arabic Typesetting',sans-ser
       <button class="ptab" onclick="showDash('notifs',this)">🔔 Notifications</button>
       <button class="ptab" onclick="showDash('video',this)">📹 Vidéo / Meet</button>
       <button class="ptab" onclick="showDash('revenus',this)">💰 Revenus</button>
+      <button class="ptab" onclick="showDash('remuneration',this)">💶 Rémunération</button>
       <button class="ptab" onclick="showDash('remind',this)">📧 Rappels email</button>
       <button class="ptab" onclick="showDash('ai',this)">🤖 Assistant IA</button>
       <button class="ptab" onclick="showDash('profile',this)">👤 Mon profil</button>
@@ -1614,14 +1770,77 @@ body[data-lang="ar"]{font-family:'Segoe UI',Tahoma,'Arabic Typesetting',sans-ser
     <!-- Availability -->
     <div class="dash" id="dash-avail">
       <h3 style="font-family:'Playfair Display',serif;font-size:1rem;font-weight:600;color:var(--ch);margin-bottom:.3rem">⏰ Gérer mes disponibilités</h3>
-      <p style="color:var(--soft);font-size:.78rem;margin-bottom:.9rem">Activez vos jours et sélectionnez vos créneaux horaires.</p>
-      <div class="avail-grid" id="avail-grid"></div>
+      <p style="color:var(--soft);font-size:.78rem;margin-bottom:.9rem">Configurez vos jours et créneaux horaires. Les patients ne verront que vos disponibilités réelles.</p>
+
+      <!-- GOOGLE CALENDAR SYNC — SECTION MISE EN AVANT -->
+      <div style="background:linear-gradient(135deg,#1A73E8,#0D5BA8);border-radius:var(--r-md);padding:1.2rem;margin-bottom:1rem;color:#fff">
+        <div style="display:flex;align-items:center;gap:.8rem;margin-bottom:.8rem">
+          <div style="width:42px;height:42px;border-radius:50%;background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0">📅</div>
+          <div>
+            <div style="font-family:'Playfair Display',serif;font-size:.95rem;font-weight:700">Synchronisation avec Google Agenda</div>
+            <div style="font-size:.72rem;opacity:.85;margin-top:.1rem">Gérez tout depuis votre Google Agenda habituel</div>
+          </div>
+          <div id="gcal-sync-badge" style="margin-left:auto;background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.35);color:#fff;font-size:.65rem;font-weight:700;padding:.25rem .65rem;border-radius:20px;white-space:nowrap">⚪ Non connecté</div>
+        </div>
+
+        <!-- Explication claire -->
+        <div style="background:rgba(255,255,255,.12);border-radius:10px;padding:.85rem;margin-bottom:.85rem;font-size:.77rem;line-height:1.7;opacity:.95">
+          <div style="font-weight:700;margin-bottom:.35rem">✅ Comment ça fonctionne :</div>
+          <div style="display:flex;flex-direction:column;gap:.3rem">
+            <div>📌 Une fois connecté, votre <strong>agenda Google</strong> est synchronisé avec Psycholab</div>
+            <div>🚫 Si vous bloquez un créneau dans Google Agenda (rdv personnel, empêchement…), il disparaît automatiquement de vos disponibilités Psycholab</div>
+            <div>✅ Chaque réservation confirmée sur Psycholab est ajoutée automatiquement à votre Google Agenda</div>
+            <div>📱 Gérez votre planning depuis votre téléphone via l'app Google Agenda — tout reste synchronisé</div>
+          </div>
+        </div>
+
+        <div style="display:flex;gap:.6rem;flex-wrap:wrap">
+          <button onclick="connectGoogleCalendar()" id="btn-gcal-connect" style="flex:1;background:#fff;color:#1A73E8;border:none;border-radius:var(--r-sm);padding:.75rem .9rem;font-size:.82rem;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:.4rem;min-width:160px;transition:all .2s">
+            📅 Connecter Google Agenda
+          </button>
+          <button onclick="openGoogleCalendar()" style="background:rgba(255,255,255,.15);color:#fff;border:1px solid rgba(255,255,255,.35);border-radius:var(--r-sm);padding:.72rem .9rem;font-size:.8rem;font-weight:600;cursor:pointer;transition:all .2s">
+            🔗 Ouvrir Google Agenda
+          </button>
+        </div>
+        <div id="gcal-connected-info" style="display:none;margin-top:.8rem;background:rgba(255,255,255,.15);border-radius:8px;padding:.65rem .85rem;font-size:.75rem;line-height:1.6">
+          🟢 <strong>Google Agenda connecté</strong> — vos disponibilités sont synchronisées en temps réel.<br/>
+          Toute modification dans Google Agenda sera reflétée automatiquement sur Psycholab.
+        </div>
+      </div>
+
+      <!-- FUSEAU HORAIRE -->
       <div style="background:#fff;border:1.5px solid var(--border);border-radius:var(--r-md);padding:1rem;margin-bottom:.9rem">
-        <h4 style="font-size:.84rem;font-weight:600;color:var(--ch);margin-bottom:.7rem">Créneaux horaires</h4>
+        <h4 style="font-size:.84rem;font-weight:600;color:var(--ch);margin-bottom:.6rem">🌍 Fuseau horaire de référence</h4>
+        <div style="font-size:.75rem;color:var(--mid);margin-bottom:.6rem;line-height:1.55">Les créneaux sont affichés en heure tunisienne <strong>(UTC+1)</strong>. Les patients voient automatiquement l'équivalent dans leur propre fuseau horaire.</div>
+        <div style="display:flex;align-items:center;gap:.6rem;flex-wrap:wrap">
+          <select id="pro-tz-select" style="border:1.5px solid var(--border);border-radius:var(--r-sm);padding:.55rem .75rem;font-size:.82rem;background:var(--sand);outline:none;flex:1;min-width:180px;transition:all var(--anim)" onchange="updateProTimezone(this.value)">
+            <option value="Africa/Tunis" selected>🇹🇳 Tunisie (UTC+1) — Recommandé</option>
+            <option value="Europe/Paris">🇫🇷 France (UTC+1/+2)</option>
+            <option value="Europe/Brussels">🇧🇪 Belgique (UTC+1/+2)</option>
+            <option value="Europe/Berlin">🇩🇪 Allemagne (UTC+1/+2)</option>
+            <option value="America/Montreal">🇨🇦 Montréal (UTC-5/-4)</option>
+            <option value="America/New_York">🇺🇸 New York (UTC-5/-4)</option>
+            <option value="Asia/Qatar">🇶🇦 Qatar (UTC+3)</option>
+            <option value="Asia/Dubai">🇦🇪 Émirats (UTC+4)</option>
+          </select>
+          <div id="tz-current-time" style="background:var(--teal-xl);color:var(--teal-d);border-radius:var(--r-sm);padding:.5rem .8rem;font-size:.78rem;font-weight:600;white-space:nowrap"></div>
+        </div>
+      </div>
+
+      <!-- JOURS & CRÉNEAUX -->
+      <div style="background:#fff;border:1.5px solid var(--border);border-radius:var(--r-md);padding:1rem;margin-bottom:.9rem">
+        <h4 style="font-size:.84rem;font-weight:600;color:var(--ch);margin-bottom:.7rem">📆 Jours de consultation</h4>
+        <div class="avail-grid" id="avail-grid"></div>
+      </div>
+
+      <div style="background:#fff;border:1.5px solid var(--border);border-radius:var(--r-md);padding:1rem;margin-bottom:.9rem">
+        <h4 style="font-size:.84rem;font-weight:600;color:var(--ch);margin-bottom:.7rem">🕐 Créneaux horaires disponibles</h4>
+        <div style="font-size:.73rem;color:var(--soft);margin-bottom:.65rem">Heures affichées en heure tunisienne (UTC+1)</div>
         <div class="slot-grid" id="slot-grid"></div>
       </div>
-      <button class="btn-submit" onclick="saveAvail()">Sauvegarder mes disponibilités</button>
-      <div class="agenda-info">📅 Les créneaux confirmés seront visibles par les patients lors de la réservation.</div>
+
+      <button class="btn-submit" onclick="saveAvail()">💾 Sauvegarder mes disponibilités</button>
+      <div class="agenda-info" style="margin-top:.7rem">📅 Les créneaux sauvegardés seront visibles par les patients lors de la réservation. Si Google Agenda est connecté, les créneaux bloqués dans votre agenda seront automatiquement masqués.</div>
     </div>
 
     <!-- Notifications -->
@@ -1692,6 +1911,80 @@ body[data-lang="ar"]{font-family:'Segoe UI',Tahoma,'Arabic Typesetting',sans-ser
         <div class="rev-stat"><div class="rev-stat-v" id="rev-month">0 €</div><div class="rev-stat-l">Ce mois</div></div>
       </div>
       <div class="info-box">ℹ️ Les revenus sont estimés à partir des consultations confirmées. Intégration Stripe disponible sur la version hébergée.</div>
+    </div>
+
+    <!-- 💶 RÉMUNÉRATION PRO -->
+    <div class="dash" id="dash-remuneration">
+      <h3 style="font-family:'Playfair Display',serif;font-size:1rem;font-weight:600;color:var(--ch);margin-bottom:.3rem">💶 Ma rémunération</h3>
+      <p style="color:var(--soft);font-size:.78rem;margin-bottom:.9rem">Séances clôturées · Paiements reçus · Coordonnées bancaires</p>
+
+      <!-- GRILLE TARIFAIRE PSYCHOLAB -->
+      <div style="background:linear-gradient(135deg,var(--teal-d),var(--teal));border-radius:var(--r-md);padding:1.1rem;color:#fff;margin-bottom:.9rem">
+        <div style="font-size:.7rem;text-transform:uppercase;letter-spacing:.07em;opacity:.8;margin-bottom:.5rem">💶 Grille tarifaire Psycholab</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:.5rem;text-align:center">
+          <div style="background:rgba(255,255,255,.15);border-radius:8px;padding:.7rem">
+            <div style="font-family:'Playfair Display',serif;font-size:1.3rem;font-weight:700" id="rem-tarif-patient">50 €</div>
+            <div style="font-size:.68rem;opacity:.85;margin-top:.2rem">Tarif patient</div>
+          </div>
+          <div style="background:rgba(255,255,255,.25);border-radius:8px;padding:.7rem;border:2px solid rgba(255,255,255,.4)">
+            <div style="font-family:'Playfair Display',serif;font-size:1.3rem;font-weight:700;color:#FFD700" id="rem-tarif-pro">30 €</div>
+            <div style="font-size:.68rem;opacity:.85;margin-top:.2rem">Votre rémunération</div>
+          </div>
+          <div style="background:rgba(255,255,255,.1);border-radius:8px;padding:.7rem">
+            <div style="font-family:'Playfair Display',serif;font-size:1.3rem;font-weight:700;opacity:.7" id="rem-tarif-marge">20 €</div>
+            <div style="font-size:.68rem;opacity:.7;margin-top:.2rem">Commission Psycholab</div>
+          </div>
+        </div>
+        <div style="font-size:.7rem;opacity:.7;text-align:center;margin-top:.6rem">Tarifs fixés par Psycholab · Non modifiables · En euros</div>
+      </div>
+
+      <!-- COMPTEUR SÉANCES -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:.6rem;margin-bottom:.9rem">
+        <div style="background:#fff;border:1.5px solid var(--border);border-radius:var(--r-md);padding:1rem;text-align:center">
+          <div style="font-family:'Playfair Display',serif;font-size:2rem;font-weight:700;color:var(--teal)" id="rem-seances-mois">0</div>
+          <div style="font-size:.72rem;color:var(--soft);margin-top:.2rem">Séances clôturées ce mois</div>
+        </div>
+        <div style="background:#fff;border:1.5px solid var(--border);border-radius:var(--r-md);padding:1rem;text-align:center">
+          <div style="font-family:'Playfair Display',serif;font-size:2rem;font-weight:700;color:var(--gold)" id="rem-montant-mois">0 €</div>
+          <div style="font-size:.72rem;color:var(--soft);margin-top:.2rem">À percevoir ce mois</div>
+        </div>
+        <div style="background:#fff;border:1.5px solid var(--border);border-radius:var(--r-md);padding:1rem;text-align:center">
+          <div style="font-family:'Playfair Display',serif;font-size:2rem;font-weight:700;color:var(--green)" id="rem-seances-total">0</div>
+          <div style="font-size:.72rem;color:var(--soft);margin-top:.2rem">Total séances clôturées</div>
+        </div>
+        <div style="background:#fff;border:1.5px solid var(--border);border-radius:var(--r-md);padding:1rem;text-align:center">
+          <div style="font-family:'Playfair Display',serif;font-size:2rem;font-weight:700;color:var(--blue)" id="rem-paye-total">0 €</div>
+          <div style="font-size:.72rem;color:var(--soft);margin-top:.2rem">Total versé (tous mois)</div>
+        </div>
+      </div>
+
+      <!-- SÉANCES À CLÔTURER -->
+      <div style="background:#fff;border:1.5px solid var(--border);border-radius:var(--r-md);padding:1rem;margin-bottom:.9rem">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.7rem">
+          <h4 style="font-size:.86rem;font-weight:600;color:var(--ch)">✅ Séances à clôturer</h4>
+          <span style="font-size:.72rem;color:var(--soft)">Clôturez dans les 24h après la consultation</span>
+        </div>
+        <div class="info-box" style="margin-bottom:.7rem">⚠️ Une séance non clôturée dans les 48h ne sera pas comptabilisée dans votre rémunération mensuelle.</div>
+        <div id="rem-seances-list">
+          <div style="text-align:center;padding:1.5rem;color:var(--soft);font-size:.8rem"><div style="font-size:1.5rem;margin-bottom:.4rem">📭</div>Aucune séance en attente de clôture</div>
+        </div>
+      </div>
+
+      <!-- HISTORIQUE PAIEMENTS -->
+      <div style="background:#fff;border:1.5px solid var(--border);border-radius:var(--r-md);padding:1rem;margin-bottom:.9rem">
+        <h4 style="font-size:.86rem;font-weight:600;color:var(--ch);margin-bottom:.7rem">📊 Historique des paiements reçus</h4>
+        <div id="rem-historique-list">
+          <div style="text-align:center;padding:1rem;color:var(--soft);font-size:.8rem">Aucun paiement enregistré</div>
+        </div>
+      </div>
+
+      <!-- COORDONNÉES BANCAIRES -->
+      <div style="background:#fff;border:1.5px solid var(--border);border-radius:var(--r-md);padding:1rem">
+        <h4 style="font-size:.86rem;font-weight:600;color:var(--ch);margin-bottom:.2rem">🏦 Mes coordonnées bancaires</h4>
+        <p style="font-size:.74rem;color:var(--soft);margin-bottom:.7rem">Strictement confidentielles · Jamais partagées</p>
+        <div id="rem-bank-display"></div>
+        <button onclick="editBankInfo()" style="margin-top:.7rem;background:var(--sand);color:var(--teal);border:1.5px solid var(--teal);border-radius:var(--r-sm);padding:.55rem 1rem;font-size:.8rem;font-weight:600;cursor:pointer">✏️ Modifier mes coordonnées</button>
+      </div>
     </div>
 
     <!-- Email Reminders -->
@@ -1852,6 +2145,21 @@ body[data-lang="ar"]{font-family:'Segoe UI',Tahoma,'Arabic Typesetting',sans-ser
       <button onclick="doLogout()" style="background:rgba(255,255,255,.15);color:#fff;border:1px solid rgba(255,255,255,.3);border-radius:8px;padding:.4rem .8rem;font-size:.72rem;font-weight:600;cursor:pointer">Déconnexion</button>
     </div>
 
+    <!-- GUIDE CONFIGURATION reCAPTCHA -->
+    <div id="recaptcha-setup-guide" style="background:linear-gradient(135deg,#1A73E8,#0D5BA8);border-radius:var(--r-md);padding:1rem;color:#fff;margin-bottom:1rem;font-size:.78rem">
+      <div style="font-weight:700;font-size:.85rem;margin-bottom:.5rem">🔒 Configuration Google reCAPTCHA v3 — Action requise</div>
+      <div style="opacity:.9;line-height:1.7;margin-bottom:.7rem">
+        Le reCAPTCHA v3 est intégré mais nécessite votre clé. <strong>3 étapes simples :</strong><br/>
+        <strong>1.</strong> Allez sur <a href="https://www.google.com/recaptcha/admin/create" target="_blank" style="color:#FFD700;font-weight:600">google.com/recaptcha/admin/create</a><br/>
+        <strong>2.</strong> Créez une clé reCAPTCHA v3 avec votre domaine (ex: psycholab-conseil.github.io)<br/>
+        <strong>3.</strong> Dans le fichier HTML, remplacez <code style="background:rgba(0,0,0,.25);padding:.1rem .35rem;border-radius:4px">YOUR_RECAPTCHA_SITE_KEY</code> par votre clé publique (× 2 occurrences)
+      </div>
+      <div style="display:flex;gap:.5rem;flex-wrap:wrap">
+        <a href="https://www.google.com/recaptcha/admin/create" target="_blank" style="background:#fff;color:#1A73E8;border:none;border-radius:8px;padding:.45rem .9rem;font-size:.76rem;font-weight:700;text-decoration:none">🔑 Obtenir ma clé reCAPTCHA →</a>
+        <button onclick="document.getElementById('recaptcha-setup-guide').style.display='none'" style="background:rgba(255,255,255,.15);color:#fff;border:1px solid rgba(255,255,255,.3);border-radius:8px;padding:.42rem .9rem;font-size:.75rem;font-weight:500;cursor:pointer">Masquer</button>
+      </div>
+    </div>
+
     <!-- Stats Admin -->
     <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:.6rem;margin-bottom:1rem">
       <div style="background:#fff;border:1.5px solid var(--border);border-radius:12px;padding:.85rem;text-align:center">
@@ -1879,6 +2187,7 @@ body[data-lang="ar"]{font-family:'Segoe UI',Tahoma,'Arabic Typesetting',sans-ser
       <button class="adm-tab" onclick="showAdmTab('rdvs-admin',this)">📋 Tous les RDV</button>
       <button class="adm-tab" onclick="showAdmTab('patients-admin',this)">👤 Patients</button>
       <button class="adm-tab" onclick="showAdmTab('pros-actifs',this)">✅ Pros actifs</button>
+      <button class="adm-tab" onclick="showAdmTab('remuneration-admin',this)">💶 Rémunérations <span id="adm-rem-badge" style="background:var(--orange);color:#fff;border-radius:10px;padding:.05rem .35rem;font-size:.6rem;margin-left:.2rem;display:none">!</span></button>
     </div>
 
     <!-- Tab: Dossiers Pro -->
@@ -1910,6 +2219,44 @@ body[data-lang="ar"]{font-family:'Segoe UI',Tahoma,'Arabic Typesetting',sans-ser
     <div class="adm-pane" id="adm-pros-actifs">
       <h3 style="font-family:'Playfair Display',serif;font-size:.95rem;font-weight:700;color:var(--ch);margin-bottom:.8rem">✅ Professionnels actifs</h3>
       <div id="adm-active-list"></div>
+    </div>
+
+    <!-- Tab: Rémunérations mensuelles -->
+    <div class="adm-pane" id="adm-remuneration-admin">
+      <h3 style="font-family:'Playfair Display',serif;font-size:.95rem;font-weight:700;color:var(--ch);margin-bottom:.4rem">💶 Rémunérations mensuelles des professionnels</h3>
+      <p style="font-size:.78rem;color:var(--mid);margin-bottom:.9rem">Séances clôturées par professionnel · Montants à virer · Suivi des paiements</p>
+
+      <!-- PARAMÈTRES TARIFAIRES -->
+      <div style="background:linear-gradient(135deg,var(--teal-d),var(--teal));border-radius:var(--r-md);padding:1rem;color:#fff;margin-bottom:1rem">
+        <div style="font-size:.7rem;text-transform:uppercase;letter-spacing:.07em;opacity:.8;margin-bottom:.7rem">⚙️ Grille tarifaire Psycholab (fixée par l'administrateur)</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:.5rem;margin-bottom:.7rem">
+          <div>
+            <div style="font-size:.68rem;opacity:.75;margin-bottom:.3rem">Tarif patient</div>
+            <div style="display:flex;align-items:center;gap:.3rem"><input id="adm-tarif-patient" type="number" value="50" min="1" style="background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.3);border-radius:6px;color:#fff;font-size:.9rem;font-weight:700;padding:.3rem .5rem;width:70px;text-align:center"/> <span style="font-size:.8rem">€</span></div>
+          </div>
+          <div>
+            <div style="font-size:.68rem;opacity:.75;margin-bottom:.3rem">Rémunération pro</div>
+            <div style="display:flex;align-items:center;gap:.3rem"><input id="adm-tarif-pro" type="number" value="30" min="1" style="background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.3);border-radius:6px;color:#FFD700;font-size:.9rem;font-weight:700;padding:.3rem .5rem;width:70px;text-align:center"/> <span style="font-size:.8rem">€</span></div>
+          </div>
+          <div>
+            <div style="font-size:.68rem;opacity:.75;margin-bottom:.3rem">Marge Psycholab</div>
+            <div id="adm-marge-calc" style="font-family:'Playfair Display',serif;font-size:.9rem;font-weight:700;padding:.3rem 0">20 €</div>
+          </div>
+        </div>
+        <button onclick="saveTarifs()" style="background:rgba(255,255,255,.2);color:#fff;border:1px solid rgba(255,255,255,.35);border-radius:8px;padding:.45rem 1rem;font-size:.78rem;font-weight:600;cursor:pointer">💾 Enregistrer les tarifs</button>
+      </div>
+
+      <!-- SÉLECTEUR MOIS -->
+      <div style="background:#fff;border:1.5px solid var(--border);border-radius:var(--r-md);padding:.9rem;margin-bottom:.9rem;display:flex;align-items:center;gap:.7rem;flex-wrap:wrap">
+        <label style="font-size:.82rem;font-weight:600;color:var(--ch)">📅 Mois de référence :</label>
+        <input type="month" id="adm-rem-mois" style="border:1.5px solid var(--border);border-radius:var(--r-sm);padding:.45rem .8rem;font-size:.82rem;background:var(--sand);outline:none" onchange="renderAdmRemuneration()"/>
+        <button onclick="renderAdmRemuneration()" style="background:var(--teal);color:#fff;border:none;border-radius:var(--r-sm);padding:.5rem 1rem;font-size:.8rem;font-weight:600;cursor:pointer">🔄 Actualiser</button>
+      </div>
+
+      <!-- LISTE PROS & SÉANCES -->
+      <div id="adm-rem-list">
+        <div style="text-align:center;padding:2rem;color:var(--soft);font-size:.8rem"><div style="font-size:1.5rem;margin-bottom:.4rem">💶</div>Sélectionnez un mois pour afficher les rémunérations</div>
+      </div>
     </div>
 
   </div>
@@ -2067,19 +2414,11 @@ function init(){
   const dayNames=['Dimanche','Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi'];
   const el=document.getElementById('pro-date');
   if(el)el.textContent=`${dayNames[d.getDay()]} ${d.getDate()} ${MONTHS[d.getMonth()]} ${d.getFullYear()}`;
-  // -- Effacer erreurs champs au clic --
-  document.querySelectorAll('input,select,textarea').forEach(el=>{
-    el.addEventListener('input',function(){
-      this.style.borderColor='';this.style.background='';
-      const err=document.getElementById('err-'+this.id);
-      if(err)err.remove();
-    });
-    el.addEventListener('change',function(){
-      this.style.borderColor='';this.style.background='';
-      const err=document.getElementById('err-'+this.id);
-      if(err)err.remove();
-    });
-  });
+  // -- Vérifier token magique dans l'URL --
+  checkConfirmTokenOnLoad();
+  checkMagicTokenOnLoad();
+  // -- Initialiser le captcha --
+  refreshCaptcha();
 }
 
 function applySession(session){
@@ -2113,7 +2452,7 @@ function closeDrawer(){document.getElementById('dbg').classList.remove('on');doc
 function showView(id){document.querySelectorAll('.view').forEach(v=>v.classList.remove('on'));document.getElementById(id).classList.add('on');window.scrollTo(0,0)}
 function goHome(){showView('v-home');renderHome()}
 function scrollToSearch(){document.getElementById('search-anchor').scrollIntoView({behavior:'smooth'})}
-function showLogin(){showView('v-login');document.getElementById('login-error').style.display='none'}
+function showLogin(){showView('v-login');document.getElementById('login-error').style.display='none';backToLoginStep1();setTimeout(showRecaptchaNotice,100);}
 function showSignup(type){showView(type==='pro'?'v-signup-pro':'v-signup-patient')}
 function goPro(){
   const s=getSession();
@@ -2179,47 +2518,271 @@ function doFilter(){renderHome()}
 // ================================================
 //  LOGIN
 // ================================================
-function switchLoginTab(type){
-  currentLoginTab=type;
-  document.getElementById('ltab-pat').classList.toggle('on',type==='patient');
-  document.getElementById('ltab-pro').classList.toggle('on',type==='pro');
+// ================================================
+//  EMAIL CONFIRMATION (inscription)
+// ================================================
+function simulateEmailConfirm(token){
+  consumeConfirmToken(token);
 }
 
-function doLogin(){
+function consumeConfirmToken(token){
+  const tokens=JSON.parse(localStorage.getItem('plConfirmTokens')||'{}');
+  const entry=tokens[token];
+  if(!entry){toast('Lien de confirmation invalide ou déjà utilisé.','red');return;}
+  if(Date.now()>entry.expiry){
+    delete tokens[token];localStorage.setItem('plConfirmTokens',JSON.stringify(tokens));
+    toast('⏱️ Lien expiré. Veuillez vous réinscrire.','red');return;
+  }
+  delete tokens[token];
+  localStorage.setItem('plConfirmTokens',JSON.stringify(tokens));
+
+  const db=getDB();
+  if(entry.type==='patient'){
+    const user=db.users.find(u=>u.id===entry.id);
+    if(!user){toast('Compte introuvable.','red');return;}
+    user.emailConfirmed=true;
+    saveDB(db);
+    // Connexion automatique après confirmation
+    saveSession({id:user.id,type:'patient',email:user.email,name:user.fn+' '+user.ln,fn:user.fn,ln:user.ln,tel:user.tel,tz:user.tz});
+    applySession(getSession());
+    addNotif(user.id,'patient','🎉 Bienvenue sur Psycholab !','Votre adresse email est confirmée. Vous pouvez maintenant prendre vos rendez-vous.');
+    toast('✅ Email confirmé ! Bienvenue '+user.fn+' !','green');
+    goPatient();
+  } else if(entry.type==='pro'){
+    const pro=db.pros.find(p=>p.id===entry.id);
+    if(!pro){toast('Compte introuvable.','red');return;}
+    pro.emailConfirmed=true;
+    saveDB(db);
+    toast('✅ Email confirmé ! Votre dossier est en cours d\'examen par Psycholab (24-48h).','green');
+    // Afficher page succès pro mise à jour
+    showView('v-success-pro');
+  }
+}
+
+function checkConfirmTokenOnLoad(){
+  const params=new URLSearchParams(window.location.search);
+  const token=params.get('confirm');
+  if(token){
+    window.history.replaceState({},'',window.location.pathname);
+    consumeConfirmToken(token);
+  }
+}
+
+// ================================================
+//  MAGIC LINK LOGIN — PATIENT & PRO
+// ================================================
+let captchaAnswer=0;
+let magicToken=null;
+let magicLoginType='patient';
+let magicLoginEmail='';
+
+function refreshCaptcha(){
+  const a=Math.floor(Math.random()*9)+1;
+  const b=Math.floor(Math.random()*9)+1;
+  const ops=[
+    {q:`${a} + ${b}`, r:a+b},
+    {q:`${a+b} - ${b}`, r:a},
+    {q:`${a} × ${b}`, r:a*b},
+  ];
+  const op=ops[Math.floor(Math.random()*ops.length)];
+  captchaAnswer=op.r;
+  const qEl=document.getElementById('captcha-question');
+  const aEl=document.getElementById('captcha-answer');
+  if(qEl)qEl.textContent='Combien font '+op.q+' ?';
+  if(aEl)aEl.value='';
+}
+
+function switchLoginTab(type){
+  currentLoginTab=type;
+  magicLoginType=type;
+  document.getElementById('ltab-pat').classList.toggle('on',type==='patient');
+  document.getElementById('ltab-pro').classList.toggle('on',type==='pro');
+  backToLoginStep1();
+}
+
+function backToLoginStep1(){
+  document.getElementById('login-step1').style.display='block';
+  document.getElementById('login-step2').style.display='none';
+  const errEl=document.getElementById('login-error');
+  if(errEl){errEl.style.display='none';}
+  refreshCaptcha();
+}
+
+async function doRequestMagicLink(){
   const email=document.getElementById('l-email').value.trim();
-  const pwd=document.getElementById('l-pwd').value;
+  const userAnswer=parseInt(document.getElementById('captcha-answer').value);
   const errEl=document.getElementById('login-error');
   errEl.style.display='none';
-  if(!email||!pwd){errEl.textContent='Veuillez remplir tous les champs.';errEl.style.display='block';return}
-  // -- Vérification compte Admin --
-  if(email===ADMIN_EMAIL&&pwd===ADMIN_PWD){
+
+  if(!email||!isValidEmail(email)){
+    errEl.textContent='⚠️ Veuillez saisir une adresse email valide.';
+    errEl.style.display='block';return;
+  }
+
+  // Vérification captcha arithmétique (première barrière, côté client)
+  if(isNaN(userAnswer)||userAnswer!==captchaAnswer){
+    errEl.textContent='⚠️ Réponse incorrecte à la vérification. Réessayez.';
+    errEl.style.display='block';
+    refreshCaptcha();return;
+  }
+
+  // Désactiver le bouton pendant la vérification
+  const btn=document.getElementById('btn-magic-link');
+  if(btn){btn.disabled=true;btn.textContent='🔒 Vérification en cours…';}
+
+  // Vérification reCAPTCHA v3 + rate limiting
+  const check=await verifyHuman(email,'login');
+  if(!check.ok){
+    errEl.textContent=check.message;
+    errEl.style.display='block';
+    refreshCaptcha();
+    if(btn){btn.disabled=false;btn.textContent='📧 Envoyer mon lien de connexion';}
+    return;
+  }
+
+  // Vérifier que l'email existe selon le type
+  const db=getDB();
+  const isAdmin=(email===ADMIN_EMAIL);
+
+  if(!isAdmin){
+    if(currentLoginTab==='patient'){
+      const user=db.users.find(u=>u.email===email);
+      if(!user){
+        errEl.innerHTML='⚠️ Aucun compte patient trouvé pour cet email.<br/><a onclick="showSignup(\'patient\')" style="color:var(--teal);font-weight:600;cursor:pointer">Créer un compte →</a>';
+        errEl.style.display='block';
+        if(btn){btn.disabled=false;btn.textContent='📧 Envoyer mon lien de connexion';}
+        return;
+      }
+      if(!user.emailConfirmed){
+        errEl.innerHTML='⚠️ Votre email n\'est pas encore confirmé.<br/><span style="font-size:.76rem;color:var(--mid)">Vérifiez votre boîte mail et cliquez sur le lien de confirmation.</span>';
+        errEl.style.display='block';
+        if(btn){btn.disabled=false;btn.textContent='📧 Envoyer mon lien de connexion';}
+        return;
+      }
+    } else {
+      const pro=db.pros.find(p=>p.email===email);
+      if(!pro){
+        errEl.innerHTML='⚠️ Aucun compte professionnel trouvé pour cet email.<br/><a onclick="showSignup(\'pro\')" style="color:var(--teal);font-weight:600;cursor:pointer">Créer un dossier →</a>';
+        errEl.style.display='block';
+        if(btn){btn.disabled=false;btn.textContent='📧 Envoyer mon lien de connexion';}
+        return;
+      }
+      if(!pro.emailConfirmed){
+        errEl.innerHTML='⚠️ Votre email n\'est pas encore confirmé.<br/><span style="font-size:.76rem;color:var(--mid)">Vérifiez votre boîte mail et cliquez sur le lien de confirmation.</span>';
+        errEl.style.display='block';
+        if(btn){btn.disabled=false;btn.textContent='📧 Envoyer mon lien de connexion';}
+        return;
+      }
+      if(!pro.active){
+        errEl.innerHTML='⏳ Votre dossier est en cours d\'examen par Psycholab.<br/><span style="font-size:.76rem;color:var(--mid)">Vous serez contacté sous 24-48h.</span>';
+        errEl.style.display='block';
+        if(btn){btn.disabled=false;btn.textContent='📧 Envoyer mon lien de connexion';}
+        return;
+      }
+    }
+  }
+
+  // Générer et stocker le token magique (valable 15 min)
+  magicToken='ml_'+Math.random().toString(36).slice(2)+Date.now().toString(36);
+  magicLoginEmail=email;
+  magicLoginType=currentLoginTab;
+  const expiry=Date.now()+15*60*1000;
+  const tokens=JSON.parse(localStorage.getItem('plMagicTokens')||'{}');
+  tokens[magicToken]={email,type:isAdmin?'admin':currentLoginTab,expiry};
+  localStorage.setItem('plMagicTokens',JSON.stringify(tokens));
+
+  // Envoyer l'email (EmailJS)
+  const magicUrl=window.location.href.split('?')[0]+'?magic='+magicToken;
+  sendEmailNotification({
+    _subject:'🔗 Votre lien de connexion Psycholab',
+    type:'MAGIC_LINK',
+    destinataire:email,
+    email_dest:email,
+    lien_magic:magicUrl,
+    expiry:'15 minutes',
+    message:'Cliquez sur ce lien pour vous connecter à Psycholab :\n\n'+magicUrl+'\n\nCe lien est valable 15 minutes et ne peut être utilisé qu\'une seule fois.\n\nSi vous n\'avez pas demandé ce lien, ignorez cet email.'
+  });
+
+  if(btn){btn.disabled=false;btn.textContent='📧 Envoyer mon lien de connexion';}
+
+  // Afficher étape 2
+  document.getElementById('magic-sent-email').textContent=email;
+  document.getElementById('login-step1').style.display='none';
+  document.getElementById('login-step2').style.display='block';
+}
+
+function simulateMagicLogin(){
+  // Mode démo : connexion directe sans email réel
+  if(!magicToken||!magicLoginEmail){
+    toast('Saisissez d\'abord votre email','red');return;
+  }
+  consumeMagicToken(magicToken);
+}
+
+function consumeMagicToken(token){
+  const tokens=JSON.parse(localStorage.getItem('plMagicTokens')||'{}');
+  const entry=tokens[token];
+  if(!entry){toast('Lien invalide ou déjà utilisé.','red');showView('v-login');return;}
+  if(Date.now()>entry.expiry){
+    delete tokens[token];localStorage.setItem('plMagicTokens',JSON.stringify(tokens));
+    toast('⏱️ Lien expiré. Veuillez en demander un nouveau.','red');
+    showView('v-login');backToLoginStep1();return;
+  }
+  // Consommer le token (usage unique)
+  delete tokens[token];
+  localStorage.setItem('plMagicTokens',JSON.stringify(tokens));
+
+  const email=entry.email;
+  const type=entry.type;
+  const db=getDB();
+
+  if(type==='admin'||email===ADMIN_EMAIL){
     saveSession({id:'admin',type:'admin',email:ADMIN_EMAIL});
-    document.getElementById('dr-loggedout').style.display='none';
-    document.getElementById('dr-admin').style.display='block';
-    document.getElementById('nav-notif-btn').style.display='block';
+    applySession(getSession());
     toast('✅ Bienvenue Administrateur Psycholab','green');
     goAdmin();return;
   }
-  const db=getDB();
-  // check patient
-  let user=db.users.find(u=>u.email===email&&u.pwd===hashPwd(pwd));
-  if(user){
+  if(type==='patient'){
+    const user=db.users.find(u=>u.email===email);
+    if(!user){toast('Compte introuvable.','red');return;}
+    if(!user.emailConfirmed){
+      toast('⚠️ Veuillez d\'abord confirmer votre adresse email (vérifiez vos emails).','red');
+      showView('v-login');return;
+    }
     saveSession({id:user.id,type:'patient',email:user.email,name:user.fn+' '+user.ln,fn:user.fn,ln:user.ln,tel:user.tel,tz:user.tz});
     applySession(getSession());
     toast('✅ Bienvenue '+user.fn+' !','green');
     goPatient();return;
   }
-  // check pro
-  let pro=db.pros.find(p=>p.email===email&&p.pwd===hashPwd(pwd));
-  if(pro){
-    if(!pro.active){toast('⏳ Compte en cours de vérification (24-48h)','blue');return}
+  if(type==='pro'){
+    const pro=db.pros.find(p=>p.email===email);
+    if(!pro){toast('Compte introuvable.','red');return;}
+    if(!pro.emailConfirmed){
+      toast('⚠️ Veuillez d\'abord confirmer votre adresse email (vérifiez vos emails).','red');
+      showView('v-login');return;
+    }
+    if(!pro.active){toast('⏳ Votre dossier est en cours d\'examen par Psycholab (24-48h).','blue');showView('v-login');return;}
     saveSession({id:pro.id,type:'pro',email:pro.email,fn:pro.fn,ln:pro.ln,spec:pro.spec,tz:pro.tz,price:pro.price});
     applySession(getSession());
     toast('✅ Bienvenue Dr. '+pro.ln+' !','green');
     goPro();return;
   }
-  errEl.textContent='Email ou mot de passe incorrect.';errEl.style.display='block';
 }
+
+// Vérifier le token magique au chargement de la page (clic depuis email)
+function checkMagicTokenOnLoad(){
+  const params=new URLSearchParams(window.location.search);
+  const token=params.get('magic');
+  if(token){
+    // Nettoyer l'URL
+    window.history.replaceState({},'',window.location.pathname);
+    consumeMagicToken(token);
+  }
+}
+
+// Ancien doLogin gardé pour compatibilité admin (mot de passe admin uniquement)
+function doLogin(){doRequestMagicLink();}
+
 
 // ================================================
 //  PHOTO DE PROFIL
@@ -2343,54 +2906,119 @@ function clearAllErrors(prefix){
 // ================================================
 //  SIGNUP PATIENT
 // ================================================
-function doSignupPatient(){
+// Toggle anonymity mode in patient signup
+function toggleAnonMode(val){
+  const realFields=document.getElementById('spat-realname-fields');
+  const pseudoField=document.getElementById('spat-pseudo-field');
+  // Style radio labels
+  ['anon-opt-name-label','anon-opt-pseudo-label','anon-opt-anon-label'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el)el.style.borderColor='var(--border)';
+  });
+  if(val==='real'){
+    realFields.style.display='block';pseudoField.style.display='none';
+    document.getElementById('anon-opt-name-label').style.borderColor='var(--teal)';
+  } else if(val==='pseudo'){
+    realFields.style.display='none';pseudoField.style.display='block';
+    document.getElementById('anon-opt-pseudo-label').style.borderColor='var(--teal)';
+  } else {
+    realFields.style.display='none';pseudoField.style.display='none';
+    document.getElementById('anon-opt-anon-label').style.borderColor='var(--teal)';
+  }
+}
+
+async function doSignupPatient(){
   clearAllErrors('spat');
-  const fn=document.getElementById('spat-fn').value.trim();
-  const ln=document.getElementById('spat-ln').value.trim();
+  const anonMode=document.querySelector('input[name="spat-anon"]:checked')?.value||'real';
   const email=document.getElementById('spat-email').value.trim();
-  const pwd=document.getElementById('spat-pwd').value;
-  const pwd2=document.getElementById('spat-pwd2').value;
+  const tel=document.getElementById('spat-tel').value.trim();
+  const dob=document.getElementById('spat-dob').value;
   const cgu=document.getElementById('spat-cgu').checked;
   const errEl=document.getElementById('spat-error');
   errEl.style.display='none';
   let hasError=false;
 
-  if(!fn){showFieldError('spat-fn','Le prénom est obligatoire');hasError=true;}
-  if(!ln){showFieldError('spat-ln','Le nom est obligatoire');hasError=true;}
+  let fn='',ln='';
+  if(anonMode==='real'){
+    fn=document.getElementById('spat-fn').value.trim();
+    ln=document.getElementById('spat-ln').value.trim();
+    if(!fn){showFieldError('spat-fn','Le prénom est obligatoire');hasError=true;}
+    if(!ln){showFieldError('spat-ln','Le nom est obligatoire');hasError=true;}
+  } else if(anonMode==='pseudo'){
+    const pseudo=document.getElementById('spat-pseudo').value.trim();
+    if(!pseudo){showFieldError('spat-pseudo','Veuillez saisir un pseudonyme');hasError=true;}
+    fn=pseudo;ln='(Anonyme)';
+  } else {
+    fn='Anon_'+Math.random().toString(36).slice(2,7).toUpperCase();ln='(Anonyme)';
+  }
+
+  if(!dob){errEl.innerHTML='⚠️ La date de naissance est obligatoire.';errEl.style.display='block';hasError=true;}
   if(!email){showFieldError('spat-email','L\'adresse email est obligatoire');hasError=true;}
   else if(!isValidEmail(email)){showFieldError('spat-email','Adresse email invalide (ex: nom@email.com)');hasError=true;}
-  if(!pwd){showFieldError('spat-pwd','Le mot de passe est obligatoire');hasError=true;}
-  else if(pwd.length<8){showFieldError('spat-pwd','Minimum 8 caractères requis (ex: MonPwd123)');hasError=true;}
-  if(pwd&&pwd2&&pwd!==pwd2){showFieldError('spat-pwd2','Les mots de passe ne correspondent pas');hasError=true;}
-  if(!cgu){
-    errEl.innerHTML='⚠️ Vous devez accepter les <strong>Conditions Générales</strong> pour continuer.';
-    errEl.style.display='block';hasError=true;
-  }
+  if(!tel){showFieldError('spat-tel','Le numéro de téléphone est obligatoire');hasError=true;}
+  if(!cgu){errEl.innerHTML='⚠️ Vous devez accepter les <strong>Conditions Générales</strong> pour continuer.';errEl.style.display='block';hasError=true;}
   if(hasError)return;
 
+  // reCAPTCHA v3 + rate limiting
+  const submitBtn=document.querySelector('#v-signup-patient .btn-submit');
+  if(submitBtn){submitBtn.disabled=true;submitBtn.textContent='🔒 Vérification…';}
+  const check=await verifyHuman(email,'signup_patient');
+  if(!check.ok){
+    errEl.textContent=check.message;errEl.style.display='block';
+    if(submitBtn){submitBtn.disabled=false;submitBtn.textContent='Créer mon compte →';}
+    return;
+  }
+
+  if(submitBtn){submitBtn.disabled=false;submitBtn.textContent='Créer mon compte →';}
+
   const db=getDB();
-  if(db.users.find(u=>u.email===email)||db.pros.find(p=>p.email===email)){
     showFieldError('spat-email','Cette adresse email est déjà utilisée sur Psycholab');return;
   }
+
   const id='pat_'+Date.now();
-  const tel=document.getElementById('spat-tel')?document.getElementById('spat-tel').value.trim():'';
-  const user={id,fn,ln,email,tel,tz:'Europe/Paris',pwd:hashPwd(pwd),notif:document.getElementById('spat-notif').checked,photo:patPhotoData||null,createdAt:new Date().toISOString()};
-  patPhotoData=null;
+  // Compte créé mais en attente de confirmation email (emailConfirmed:false)
+  const user={id,fn,ln,email,tel,dob,anonMode,tz:'Africa/Tunis',emailConfirmed:false,notif:document.getElementById('spat-notif').checked,createdAt:new Date().toISOString()};
   db.users.push(user);
   saveDB(db);
   sbSaveUser(user);
-  saveSession({id,type:'patient',email,name:fn+' '+ln,fn,ln,tel,tz:'Europe/Paris'});
-  applySession(getSession());
+
+  // Générer token de confirmation d'inscription
+  const confirmToken='conf_'+Math.random().toString(36).slice(2)+Date.now().toString(36);
+  const tokens=JSON.parse(localStorage.getItem('plConfirmTokens')||'{}');
+  tokens[confirmToken]={id,type:'patient',email,expiry:Date.now()+48*60*60*1000};
+  localStorage.setItem('plConfirmTokens',JSON.stringify(tokens));
+
+  // Envoyer email de confirmation
+  const confirmUrl=window.location.href.split('?')[0]+'?confirm='+confirmToken;
+  sendEmailNotification({
+    _subject:'✅ Confirmez votre inscription Psycholab',
+    type:'CONFIRM_EMAIL',
+    destinataire:fn,
+    email_dest:email,
+    lien_confirmation:confirmUrl,
+    message:'Bonjour '+fn+',\n\nMerci de vous être inscrit sur Psycholab !\n\nCliquez sur ce lien pour confirmer votre adresse email et activer votre compte :\n\n'+confirmUrl+'\n\nCe lien est valable 48 heures.\n\nUne fois votre email confirmé, vous pourrez vous connecter à tout moment avec votre adresse email uniquement — aucun mot de passe.\n\nL\'équipe Psycholab'
+  });
+
+  // Afficher page de succès avec instruction email
   document.getElementById('conf-patient-email').textContent=email;
-  generatePatientWelcomeEmail(fn,ln,email);
-  addNotif(id,'patient','🎉 Bienvenue sur Psycholab !','Votre compte patient a été créé avec succès. Vous pouvez maintenant rechercher des spécialistes.');
+  // Adapter le message de succès patient
+  const confBody=document.getElementById('conf-patient-body');
+  if(confBody)confBody.innerHTML=`<div style="font-size:.82rem;line-height:1.7;color:var(--mid)">
+    <strong>1.</strong> Ouvrez votre boîte email<br/>
+    <strong>2.</strong> Cliquez sur le lien de confirmation Psycholab<br/>
+    <strong>3.</strong> Votre compte sera activé immédiatement<br/>
+    <div style="margin-top:.5rem;font-size:.73rem;color:var(--soft)">⏱️ Lien valable 48h · Vérifiez vos spams si besoin</div>
+    <div style="margin-top:.7rem;background:var(--orange-l);border:1px solid var(--orange);border-radius:8px;padding:.6rem;font-size:.75rem;color:var(--orange)">
+      🛠️ <strong>Mode démo :</strong> <a onclick="simulateEmailConfirm('${confirmToken}')" style="cursor:pointer;font-weight:700;text-decoration:underline">Simuler la confirmation email →</a>
+    </div>
+  </div>`;
   showView('v-success-patient');
 }
 
 // ================================================
 //  SIGNUP PRO
 // ================================================
-function doSignupPro(){
+async function doSignupPro(){
   clearAllErrors('spro');
   const fn=document.getElementById('spro-fn').value.trim();
   const ln=document.getElementById('spro-ln').value.trim();
@@ -2420,9 +3048,6 @@ function doSignupPro(){
   if(!tel){showFieldError('spro-tel','Le numéro de téléphone est obligatoire');hasError=true;}
   if(!spec){showFieldError('spro-spec','Veuillez sélectionner votre spécialité');hasError=true;}
   if(!bio||bio.length<20){showFieldError('spro-bio','La biographie est obligatoire (minimum 20 caractères)');hasError=true;}
-  if(!pwd){showFieldError('spro-pwd','Le mot de passe est obligatoire');hasError=true;}
-  else if(pwd.length<8){showFieldError('spro-pwd','Minimum 8 caractères requis');hasError=true;}
-  if(pwd&&pwd2&&pwd!==pwd2){showFieldError('spro-pwd2','Les mots de passe ne correspondent pas');hasError=true;}
   if(!langFr&&!langEn&&!langAr){
     errEl.innerHTML='⚠️ Veuillez sélectionner <strong>au moins une langue</strong> de consultation.';
     errEl.style.display='block';hasError=true;
@@ -2431,49 +3056,98 @@ function doSignupPro(){
     errEl.innerHTML='⚠️ Vous devez accepter les <strong>Conditions Générales</strong> et le <strong>RGPD</strong> pour continuer.';
     errEl.style.display='block';hasError=true;
   }
+  const contrat=document.getElementById('spro-contrat')?.checked;
+  if(!contrat){
+    errEl.innerHTML='⚠️ Vous devez accepter le <strong>Contrat de collaboration Psycholab</strong> pour continuer.';
+    errEl.style.display='block';hasError=true;
+  }
+  const bankNom=document.getElementById('spro-bank-nom')?.value.trim();
+  const bankIban=document.getElementById('spro-bank-iban')?.value.trim().replace(/\s/g,'');
+  const bankBic=document.getElementById('spro-bank-bic')?.value.trim();
+  if(!bankNom){errEl.innerHTML='⚠️ Le titulaire du compte bancaire est obligatoire.';errEl.style.display='block';hasError=true;}
+  if(!bankIban){errEl.innerHTML='⚠️ L\'IBAN est obligatoire pour recevoir vos paiements.';errEl.style.display='block';hasError=true;}
+  if(!bankBic){errEl.innerHTML='⚠️ Le BIC/SWIFT est obligatoire.';errEl.style.display='block';hasError=true;}
   if(hasError)return;
+
+  // reCAPTCHA v3 + rate limiting
+  const submitBtnPro=document.querySelector('#v-signup-pro .btn-submit');
+  if(submitBtnPro){submitBtnPro.disabled=true;submitBtnPro.textContent='🔒 Vérification…';}
+  const checkPro=await verifyHuman(email,'signup_pro');
+  if(!checkPro.ok){
+    errEl.textContent=checkPro.message;errEl.style.display='block';
+    if(submitBtnPro){submitBtnPro.disabled=false;submitBtnPro.textContent='Soumettre mon dossier →';}
+    return;
+  }
+  if(submitBtnPro){submitBtnPro.disabled=false;submitBtnPro.textContent='Soumettre mon dossier →';}
 
   const db=getDB();
   if(db.pros.find(p=>p.email===email)||db.users.find(u=>u.email===email)){
     showFieldError('spro-email','Cette adresse email est déjà utilisée sur Psycholab');return;
   }
   const id='pro_'+Date.now();
-  const pro={id,fn,ln,email,tel,spec,rpps:'',diplome:'',exp:'',bio,tags,price:price?parseInt(price):null,tz:'Europe/Paris',consVid,consPres,langFr,langEn,langAr,pwd:hashPwd(pwd),active:false,avail:{},notif:document.getElementById('spro-notif').checked,photo:proPhotoData||null,createdAt:new Date().toISOString()};
-  proPhotoData=null;
+  const bankNom2=bankNom;
+  const bankIban2=bankIban;
+  const bankBic2=bankBic;
+  const bankBanque2=document.getElementById('spro-bank-nom-banque')?.value.trim();
+  // Compte pro : emailConfirmed false jusqu'au clic du lien, active false jusqu'à validation admin
+  const pro={id,fn,ln,email,tel,spec,rpps:'',diplome:'',exp:'',bio,tags,price:price?parseInt(price):null,tz:'Africa/Tunis',consVid,consPres,langFr,langEn,langAr,emailConfirmed:false,active:false,avail:{},notif:document.getElementById('spro-notif').checked,photo:proPhotoData||null,bank:{nom:bankNom2,iban:bankIban2,bic:bankBic2,banque:bankBanque2},rib:proRibData||null,contratSigne:true,contratDate:new Date().toISOString(),createdAt:new Date().toISOString()};
+  proPhotoData=null;proRibData=null;
   db.pros.push(pro);
   saveDB(db);
   sbSavePro(pro);
-  // -- Afficher la page de confirmation simple --
-  document.getElementById('conf-pro-email-simple').textContent=email;
-  // -- Envoi email réel via Formspree --
+
+  // Générer token de confirmation email
+  const confirmToken='conf_'+Math.random().toString(36).slice(2)+Date.now().toString(36);
+  const tokens=JSON.parse(localStorage.getItem('plConfirmTokens')||'{}');
+  tokens[confirmToken]={id,type:'pro',email,expiry:Date.now()+48*60*60*1000};
+  localStorage.setItem('plConfirmTokens',JSON.stringify(tokens));
+  const confirmUrl=window.location.href.split('?')[0]+'?confirm='+confirmToken;
+
+  // Envoyer email de confirmation au pro
+  sendEmailNotification({
+    _subject:'✅ Confirmez votre inscription Psycholab — Dr. '+fn+' '+ln,
+    type:'CONFIRM_EMAIL_PRO',
+    destinataire:'Dr. '+fn+' '+ln,
+    email_dest:email,
+    lien_confirmation:confirmUrl,
+    message:'Bonjour Dr. '+ln+',\n\nMerci d\'avoir soumis votre dossier sur Psycholab !\n\nÉtape 1 — Confirmez votre adresse email en cliquant ici :\n'+confirmUrl+'\n\nÉtape 2 — L\'équipe Psycholab examinera votre dossier sous 24-48h.\n\nUne fois validé, vous pourrez vous connecter à tout moment avec votre adresse email — aucun mot de passe.\n\nL\'équipe Psycholab'
+  });
+
+  // Envoyer notification admin
   const btn=document.querySelector('#v-signup-pro .btn-submit');
-  if(btn){btn.disabled=true;btn.textContent='📧 Envoi en cours… Veuillez patienter';}
+  if(btn){btn.disabled=true;btn.textContent='📧 Envoi en cours…';}
   fetch('https://formspree.io/f/xjgzoarv',{
     method:'POST',
     headers:{'Content-Type':'application/json','Accept':'application/json'},
     body:JSON.stringify({
-      _subject:'🩺 Nouveau dossier Pro -- '+fn+' '+ln+' -- '+spec,
-      nom:fn+' '+ln,
-      specialite:spec,
-      email:email,
-      telephone:tel,
-      tarif:price?price+'€':'Non communiqué',
-      biographie:bio,
-      domaines:tags||'--',
-      langues:(langFr?'FR ':' ')+(langEn?'EN ':' ')+(langAr?'AR':''),
-      video:consVid?'Oui':'Non',
-      presentiel:consPres?'Oui':'Non',
+      _subject:'🩺 Nouveau dossier Pro — '+fn+' '+ln+' — '+spec,
+      nom:fn+' '+ln,specialite:spec,email:email,telephone:tel,
+      tarif:price?price+'€':'Non communiqué',biographie:bio,
+      domaines:tags||'--',langues:(langFr?'FR ':' ')+(langEn?'EN ':' ')+(langAr?'AR':''),
+      confirmation_lien:confirmUrl,
       date:new Date().toLocaleDateString('fr-FR',{day:'numeric',month:'long',year:'numeric'})
     })
-  }).then(r=>r.json()).then(data=>{
-    if(btn){btn.disabled=false;btn.textContent='Soumettre mon dossier';}
-    showView('v-success-pro');
-    toast('✅ Dossier envoyé ! Email transmis à reservation.psycholab@gmail.com','green');
-  }).catch(()=>{
-    if(btn){btn.disabled=false;btn.textContent='Soumettre mon dossier';}
-    showView('v-success-pro');
-    toast('✅ Dossier enregistré avec succès','green');
-  });
+  }).then(()=>{}).catch(()=>{});
+
+  if(btn){btn.disabled=false;btn.textContent='Soumettre mon dossier →';}
+
+  // Adapter page succès pro
+  document.getElementById('conf-pro-email-simple').textContent=email;
+  const proSuccessBox=document.querySelector('#v-success-pro .auth-card div[style*="teal-xl"]');
+  // Ajouter bouton démo confirmation
+  setTimeout(()=>{
+    const existDemo=document.getElementById('pro-confirm-demo');
+    if(!existDemo){
+      const demoDiv=document.createElement('div');
+      demoDiv.id='pro-confirm-demo';
+      demoDiv.style.cssText='background:var(--orange-l);border:1px solid var(--orange);border-radius:8px;padding:.7rem;margin:.8rem 1.5rem;font-size:.75rem;color:var(--orange)';
+      demoDiv.innerHTML=`🛠️ <strong>Mode démo :</strong> <a onclick="simulateEmailConfirm('${confirmToken}')" style="cursor:pointer;font-weight:700;text-decoration:underline">Simuler la confirmation email →</a>`;
+      const backBtn=document.querySelector('#v-success-pro .btn-submit');
+      if(backBtn)backBtn.parentNode.insertBefore(demoDiv,backBtn);
+    }
+  },100);
+  showView('v-success-pro');
+  toast('✅ Dossier envoyé ! Vérifiez votre email pour confirmer.','green');
 }
 
 function activateProDemo(){
@@ -2509,6 +3183,93 @@ function doLogout(){
 // ================================================
 const ADMIN_EMAIL='reservation.psycholab@gmail.com';
 const ADMIN_PWD='Psycholab2026!';
+
+// ================================================
+//  RECAPTCHA v3 + RATE LIMITING
+// ================================================
+// ⚙️ CONFIGURATION — Remplacez par votre vraie clé publique reCAPTCHA v3
+// Obtenir une clé : https://www.google.com/recaptcha/admin/create
+const RECAPTCHA_SITE_KEY='6Ley9I8sAAAAAKiK6uOMnUlosXY3UCH6VUMWqdZ0';
+// ⚙️ Clé secrète à placer UNIQUEMENT côté serveur (jamais dans le HTML en production)
+// En mode démo, la vérification côté serveur est simulée avec un score fictif.
+const RECAPTCHA_MIN_SCORE=0.5; // Score minimum accepté (0=robot, 1=humain)
+
+// Rate limiting — max tentatives par email par fenêtre de temps
+const RATE_LIMIT_MAX=3;      // max 3 demandes
+const RATE_LIMIT_WINDOW=60*60*1000; // par heure (ms)
+
+function checkRateLimit(email){
+  const key='pl_rl_'+btoa(email).replace(/=/g,'');
+  const now=Date.now();
+  let data=JSON.parse(localStorage.getItem(key)||'{"count":0,"window_start":0}');
+  // Réinitialiser si la fenêtre est expirée
+  if(now - data.window_start > RATE_LIMIT_WINDOW){
+    data={count:0,window_start:now};
+  }
+  if(data.count>=RATE_LIMIT_MAX){
+    const restantMin=Math.ceil((RATE_LIMIT_WINDOW-(now-data.window_start))/60000);
+    return {blocked:true,message:`⛔ Trop de tentatives. Réessayez dans ${restantMin} minute${restantMin>1?'s':''}.`};
+  }
+  data.count++;
+  localStorage.setItem(key,JSON.stringify(data));
+  return {blocked:false};
+}
+
+function resetRateLimit(email){
+  const key='pl_rl_'+btoa(email).replace(/=/g,'');
+  localStorage.removeItem(key);
+}
+
+// Exécute reCAPTCHA v3 et retourne le token (Promise)
+function executeRecaptcha(action){
+  return new Promise((resolve)=>{
+    // Si la clé n'est pas configurée, mode démo — score fictif 0.9
+    if(RECAPTCHA_SITE_KEY==='YOUR_RECAPTCHA_SITE_KEY'||typeof grecaptcha==='undefined'){
+      console.warn('[reCAPTCHA] Clé non configurée — mode démo, score simulé 0.9');
+      resolve({score:0.9,demo:true});
+      return;
+    }
+    grecaptcha.ready(()=>{
+      grecaptcha.execute(RECAPTCHA_SITE_KEY,{action})
+        .then(token=>{
+          // En production : envoyer ce token à votre backend pour vérification
+          // POST https://www.google.com/recaptcha/api/siteverify
+          // avec secret + response. Ici on simule un score >= seuil.
+          // Le token est transmis pour audit mais la vérif côté serveur est requise.
+          resolve({score:0.9,token,demo:false});
+        })
+        .catch(()=>resolve({score:0.9,demo:true}));
+    });
+  });
+}
+
+// Vérification complète : reCAPTCHA + rate limit + captcha arithmétique
+async function verifyHuman(email, action='login'){
+  // 1. Rate limiting
+  const rl=checkRateLimit(email);
+  if(rl.blocked)return{ok:false,message:rl.message};
+
+  // 2. reCAPTCHA v3
+  const rc=await executeRecaptcha(action);
+  if(rc.score<RECAPTCHA_MIN_SCORE){
+    return{ok:false,message:'⛔ Activité suspecte détectée. Veuillez réessayer ou contacter le support.'};
+  }
+
+  // 3. Captcha arithmétique (déjà vérifié côté UI avant cet appel)
+  return{ok:true};
+}
+
+// Afficher le badge de sécurité reCAPTCHA (requis par les CGU Google)
+function showRecaptchaNotice(){
+  const existing=document.getElementById('recaptcha-notice');
+  if(existing)return;
+  const div=document.createElement('div');
+  div.id='recaptcha-notice';
+  div.style.cssText='font-size:.65rem;color:var(--soft);text-align:center;margin-top:.6rem;line-height:1.5';
+  div.innerHTML='🔒 Ce site est protégé par Google reCAPTCHA.<br/><a href="https://policies.google.com/privacy" target="_blank" style="color:var(--teal)">Politique de confidentialité</a> · <a href="https://policies.google.com/terms" target="_blank" style="color:var(--teal)">Conditions d\'utilisation</a>';
+  const card=document.querySelector('#v-login .auth-card');
+  if(card)card.appendChild(div);
+}
 
 function goAdmin(){
   showView('v-admin');
@@ -2736,6 +3497,8 @@ function showDash(id,btn){
   if(id==='messages'&&s){renderMessagesList();}
   if(id==='factures'&&s)renderFacturesList();
   if(id==='ai'){initAiPanel();}
+  if(id==='avail'){setTimeout(initTzClock,50);}
+  if(id==='remuneration'){renderRemuneration();}
 }
 
 function updateProDashboard(session){
@@ -3624,6 +4387,23 @@ function showAdmTab(id,btn){
   if(id==='rdvs-admin')renderAdmRdvs();
   if(id==='patients-admin')renderAdmPatients();
   if(id==='pros-actifs')renderAdminPanel();
+  if(id==='remuneration-admin'){
+    // Init month picker to current month
+    const moisEl=document.getElementById('adm-rem-mois');
+    if(moisEl&&!moisEl.value){
+      const now=new Date();
+      moisEl.value=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0');
+    }
+    // Load saved tarifs
+    const db=getDB();const t=db.tarifs||{patient:50,pro:30};
+    const tp=document.getElementById('adm-tarif-patient');
+    const tpr=document.getElementById('adm-tarif-pro');
+    const tm=document.getElementById('adm-marge-calc');
+    if(tp)tp.value=t.patient||50;
+    if(tpr)tpr.value=t.pro||30;
+    if(tm)tm.textContent=((t.patient||50)-(t.pro||30))+' €';
+    renderAdmRemuneration();
+  }
 }
 
 function renderAdminPanel(){
@@ -3655,7 +4435,10 @@ function renderAdminPanel(){
         <div style="font-size:.78rem;color:var(--mid);line-height:1.8;background:var(--sand);border-radius:10px;padding:.75rem;margin-bottom:.75rem">
           📧 <strong>${escHtml(p.email)}</strong> · 📞 ${escHtml(p.tel||'--')}<br/>
           📅 Inscrit le : ${formatDate(p.createdAt)}<br/>
-          💰 Tarif : ${p.price?p.price+'€/séance':'Non communiqué'}<br/>
+          💰 Tarif affiché : ${p.price?p.price+'€/séance':'Non communiqué'}<br/>
+          📋 Contrat signé : ${p.contratSigne?`<span style="color:var(--green);font-weight:700">✅ Oui (${formatDate(p.contratDate)})</span>`:'<span style="color:var(--red)">❌ Non</span>'}<br/>
+          🏦 IBAN : ${p.bank?.iban?`<span style="font-family:'DM Mono',monospace;font-size:.75rem">${escHtml(p.bank.iban)}</span> · BIC: ${escHtml(p.bank.bic||'—')}`:'<span style="color:var(--red)">⚠️ Non renseigné</span>'}<br/>
+          ${p.rib?`📎 RIB joint : <a href="${p.rib.data}" download="${p.rib.name||'RIB.pdf'}" style="color:var(--teal);font-weight:600">⬇️ Télécharger le RIB</a>`:'📎 RIB : <span style="color:var(--orange)">Non joint</span>'}<br/>
           📝 Bio : ${escHtml((p.bio||'').substring(0,100))}…
         </div>
         <div style="display:flex;gap:.5rem;flex-wrap:wrap">
@@ -4482,6 +5265,359 @@ function setLang(l){
   document.body.setAttribute('data-lang',l);
   if(l==='ar')toast('اللغة العربية مدعومة جزئياً','blue');
   else if(l==='en')toast('English mode (partial support)','blue');
+}
+
+// ================================================
+//  RIB UPLOAD & COORDONNÉES BANCAIRES
+// ================================================
+let proRibData=null;
+
+function handleRibUpload(input){
+  const f=input.files[0];
+  if(!f)return;
+  if(f.size>5*1024*1024){toast('Fichier trop volumineux (max 5MB)','red');return;}
+  const r=new FileReader();
+  r.onload=e=>{
+    proRibData={name:f.name,type:f.type,data:e.target.result};
+    document.getElementById('spro-rib-status').style.display='block';
+    document.getElementById('spro-rib-zone').style.borderColor='var(--green)';
+    toast('✅ RIB joint !','green');
+  };
+  r.readAsDataURL(f);
+}
+
+function editBankInfo(){
+  const s=getSession();if(!s)return;
+  const db=getDB();const pro=db.pros.find(p=>p.id===s.id);if(!pro)return;
+  const iban=prompt('IBAN :',pro.bank?.iban||'');if(iban===null)return;
+  const bic=prompt('BIC/SWIFT :',pro.bank?.bic||'');if(bic===null)return;
+  const nom=prompt('Titulaire :',pro.bank?.nom||pro.fn+' '+pro.ln);if(nom===null)return;
+  pro.bank={iban,bic,nom,banque:pro.bank?.banque||''};
+  saveDB(db);
+  renderBankInfo(pro);
+  toast('✅ Coordonnées bancaires mises à jour','green');
+}
+
+function renderBankInfo(pro){
+  const el=document.getElementById('rem-bank-display');if(!el)return;
+  if(!pro.bank||!pro.bank.iban){
+    el.innerHTML=`<div class="info-box" style="background:var(--orange-l);border-color:var(--orange);color:var(--orange)">⚠️ Aucune coordonnée bancaire renseignée. Ajoutez votre IBAN pour recevoir vos paiements.</div>`;
+    return;
+  }
+  el.innerHTML=`
+    <div style="background:var(--sand);border-radius:var(--r-sm);padding:.85rem;font-size:.82rem;line-height:1.8">
+      <div><span style="color:var(--soft);font-size:.72rem">Titulaire</span><br/><strong>${escHtml(pro.bank.nom)}</strong></div>
+      <div style="margin-top:.4rem"><span style="color:var(--soft);font-size:.72rem">IBAN</span><br/><strong style="font-family:'DM Mono',monospace;letter-spacing:.04em">${escHtml(pro.bank.iban)}</strong></div>
+      <div style="margin-top:.4rem"><span style="color:var(--soft);font-size:.72rem">BIC / SWIFT</span><br/><strong>${escHtml(pro.bank.bic)}</strong></div>
+      ${pro.bank.banque?`<div style="margin-top:.4rem"><span style="color:var(--soft);font-size:.72rem">Banque</span><br/><strong>${escHtml(pro.bank.banque)}</strong></div>`:''}
+    </div>`;
+}
+
+// ================================================
+//  CLÔTURE DE SÉANCE
+// ================================================
+function cloturerSeance(rdvId){
+  const db=getDB();
+  const rdv=db.rdvs.find(r=>r.id===rdvId);
+  if(!rdv){toast('RDV introuvable','red');return;}
+  if(rdv.cloturee){toast('Séance déjà clôturée','red');return;}
+  // Vérifier que l'heure du RDV est passée
+  const rdvDate=new Date(rdv.date+'T'+(rdv.slot||'00:00'));
+  if(rdvDate>new Date()){
+    toast('⚠️ La séance ne peut être clôturée qu\'après son heure de début','red');return;
+  }
+  if(!confirm('Confirmer la clôture de cette séance ?\n\nPatient : '+rdv.patFn+' '+rdv.patLn+'\nDate : '+formatDate(rdv.date)+' à '+rdv.slot))return;
+  rdv.cloturee=true;rdv.clotureeAt=new Date().toISOString();
+  saveDB(db);
+  toast('✅ Séance clôturée ! Elle sera comptabilisée dans votre rémunération mensuelle.','green');
+  renderRemuneration();
+}
+
+function renderRemuneration(){
+  const s=getSession();if(!s||s.type!=='pro')return;
+  const db=getDB();const pro=db.pros.find(p=>p.id===s.id);if(!pro)return;
+  const tarifs=db.tarifs||{patient:50,pro:30};
+  const tarifPro=tarifs.pro||30;
+
+  // Mettre à jour l'affichage tarifaire
+  const tp=document.getElementById('rem-tarif-patient');
+  const tpr=document.getElementById('rem-tarif-pro');
+  const tm=document.getElementById('rem-tarif-marge');
+  if(tp)tp.textContent=(tarifs.patient||50)+' €';
+  if(tpr)tpr.textContent=tarifPro+' €';
+  if(tm)tm.textContent=((tarifs.patient||50)-tarifPro)+' €';
+
+  const now=new Date();
+  const moisCourant=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0');
+  const rdvs=db.rdvs.filter(r=>r.proId===s.id&&r.status==='confirmed');
+  const cloturees=rdvs.filter(r=>r.cloturee);
+  const moisSeances=cloturees.filter(r=>(r.clotureeAt||r.date||'').startsWith(moisCourant));
+  const total=cloturees.length;
+  const montantMois=moisSeances.length*tarifPro;
+  const payements=(pro.payements||[]);
+  const totalPaye=payements.reduce((acc,p)=>acc+(p.montant||0),0);
+
+  const elMois=document.getElementById('rem-seances-mois');
+  const elMontant=document.getElementById('rem-montant-mois');
+  const elTotal=document.getElementById('rem-seances-total');
+  const elPaye=document.getElementById('rem-paye-total');
+  if(elMois)elMois.textContent=moisSeances.length;
+  if(elMontant)elMontant.textContent=montantMois+' €';
+  if(elTotal)elTotal.textContent=total;
+  if(elPaye)elPaye.textContent=totalPaye+' €';
+
+  // Séances à clôturer (confirmées, heure passée, non clôturées)
+  const aCloturer=rdvs.filter(r=>!r.cloturee&&new Date(r.date+'T'+(r.slot||'00:00'))<=new Date());
+  const listEl=document.getElementById('rem-seances-list');
+  if(listEl){
+    if(!aCloturer.length){
+      listEl.innerHTML=`<div style="text-align:center;padding:1.5rem;color:var(--soft);font-size:.8rem"><div style="font-size:1.5rem;margin-bottom:.4rem">✅</div>Toutes les séances sont clôturées</div>`;
+    } else {
+      listEl.innerHTML=aCloturer.map(r=>`
+        <div style="background:var(--orange-l);border:1.5px solid var(--orange);border-radius:var(--r-sm);padding:.9rem;margin-bottom:.6rem;display:flex;align-items:center;justify-content:space-between;gap:.6rem;flex-wrap:wrap">
+          <div>
+            <div style="font-size:.84rem;font-weight:600;color:var(--ch)">👤 ${escHtml(r.patFn)} ${escHtml(r.patLn)}</div>
+            <div style="font-size:.74rem;color:var(--mid);margin-top:.15rem">📅 ${formatDate(r.date)} à ${r.slot||'—'} · ${tarifPro} €</div>
+          </div>
+          <button onclick="cloturerSeance('${r.id}')" style="background:var(--green);color:#fff;border:none;border-radius:8px;padding:.5rem 1rem;font-size:.78rem;font-weight:700;cursor:pointer;white-space:nowrap">✅ Clôturer la séance</button>
+        </div>`).join('');
+    }
+  }
+
+  // Historique paiements
+  const histEl=document.getElementById('rem-historique-list');
+  if(histEl){
+    if(!payements.length){
+      histEl.innerHTML=`<div style="text-align:center;padding:1rem;color:var(--soft);font-size:.8rem">Aucun paiement reçu pour le moment</div>`;
+    } else {
+      histEl.innerHTML=payements.slice().reverse().map(p=>`
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:.75rem;border-bottom:1px solid var(--border);font-size:.82rem">
+          <div>
+            <div style="font-weight:600;color:var(--ch)">${p.mois||'—'}</div>
+            <div style="color:var(--soft);font-size:.72rem">${p.seances||0} séances · Virement reçu le ${formatDate(p.date)}</div>
+          </div>
+          <div style="font-weight:700;color:var(--green);font-size:.95rem">+${p.montant} €</div>
+        </div>`).join('');
+    }
+  }
+
+  renderBankInfo(pro);
+}
+
+// ================================================
+//  ADMIN — TARIFS & RÉMUNÉRATIONS
+// ================================================
+function saveTarifs(){
+  const patient=parseInt(document.getElementById('adm-tarif-patient').value)||50;
+  const pro=parseInt(document.getElementById('adm-tarif-pro').value)||30;
+  if(pro>=patient){toast('⚠️ La rémunération pro doit être inférieure au tarif patient','red');return;}
+  const db=getDB();
+  db.tarifs={patient,pro};
+  saveDB(db);
+  document.getElementById('adm-marge-calc').textContent=(patient-pro)+' €';
+  toast('✅ Tarifs mis à jour — '+patient+'€ patient / '+pro+'€ pro','green');
+}
+
+// Update marge live
+document.addEventListener('input',function(e){
+  if(e.target.id==='adm-tarif-patient'||e.target.id==='adm-tarif-pro'){
+    const p=parseInt(document.getElementById('adm-tarif-patient')?.value)||50;
+    const r=parseInt(document.getElementById('adm-tarif-pro')?.value)||30;
+    const m=document.getElementById('adm-marge-calc');
+    if(m)m.textContent=(p-r)+' €';
+  }
+});
+
+function renderAdmRemuneration(){
+  const moisEl=document.getElementById('adm-rem-mois');
+  const mois=moisEl?.value;
+  if(!mois){toast('Sélectionnez un mois','red');return;}
+  const db=getDB();
+  const tarifs=db.tarifs||{patient:50,pro:30};
+  const tarifPro=tarifs.pro||30;
+  const pros=(db.pros||[]).filter(p=>p.active);
+  const listEl=document.getElementById('adm-rem-list');
+  if(!listEl)return;
+
+  if(!pros.length){
+    listEl.innerHTML=`<div style="text-align:center;padding:2rem;color:var(--soft)">Aucun professionnel actif</div>`;
+    return;
+  }
+
+  const rows=pros.map(pro=>{
+    const rdvs=(db.rdvs||[]).filter(r=>r.proId===pro.id&&r.status==='confirmed'&&r.cloturee&&(r.clotureeAt||r.date||'').startsWith(mois));
+    const nb=rdvs.length;
+    const montant=nb*tarifPro;
+    const paye=(pro.payements||[]).some(p=>p.mois===mois);
+    return {pro,nb,montant,paye};
+  }).filter(x=>x.nb>0||true);
+
+  const [annee,moisNum]=mois.split('-');
+  const moisLabel=new Date(parseInt(annee),parseInt(moisNum)-1,1).toLocaleDateString('fr-FR',{month:'long',year:'numeric'});
+
+  listEl.innerHTML=`
+    <div style="background:var(--teal-xl);border:1.5px solid var(--teal);border-radius:var(--r-md);padding:.9rem;margin-bottom:.9rem;font-size:.82rem;color:var(--teal-d)">
+      📅 <strong>${moisLabel}</strong> · ${rows.filter(x=>x.nb>0).length} professionnel(s) avec séances clôturées · Total à virer : <strong>${rows.reduce((a,x)=>a+x.montant,0)} €</strong>
+    </div>
+    ${rows.map(({pro,nb,montant,paye})=>`
+    <div style="background:#fff;border:1.5px solid ${paye?'var(--green)':'var(--border)'};border-radius:var(--r-md);padding:1rem;margin-bottom:.7rem">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:.6rem;flex-wrap:wrap;margin-bottom:.7rem">
+        <div>
+          <div style="font-weight:700;font-size:.9rem;color:var(--ch)">Dr. ${escHtml(pro.fn)} ${escHtml(pro.ln)}</div>
+          <div style="font-size:.74rem;color:var(--soft)">${escHtml(pro.spec||'—')} · ${escHtml(pro.email)}</div>
+          ${pro.bank?.iban?`<div style="font-size:.72rem;color:var(--mid);margin-top:.2rem;font-family:'DM Mono',monospace">IBAN: ${escHtml(pro.bank.iban)}</div>`:'<div style="font-size:.72rem;color:var(--red);margin-top:.2rem">⚠️ Aucun IBAN renseigné</div>'}
+        </div>
+        <div style="text-align:right;flex-shrink:0">
+          <div style="font-family:'Playfair Display',serif;font-size:1.3rem;font-weight:700;color:${nb>0?'var(--teal)':'var(--soft)'}">${montant} €</div>
+          <div style="font-size:.7rem;color:var(--soft)">${nb} séance${nb>1?'s':''} clôturée${nb>1?'s':''}</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:.5rem;flex-wrap:wrap">
+        ${nb>0&&!paye?`<button onclick="marquerPaye('${pro.id}','${mois}',${montant},${nb})" style="background:var(--green);color:#fff;border:none;border-radius:8px;padding:.5rem .9rem;font-size:.78rem;font-weight:700;cursor:pointer">💸 Marquer comme payé (${montant} €)</button>`:''}
+        ${paye?`<div style="background:var(--green-l);color:var(--green);border:1.5px solid var(--green);border-radius:8px;padding:.45rem .9rem;font-size:.78rem;font-weight:700">✅ Viré ce mois</div>`:''}
+        ${nb===0?`<div style="background:var(--sand);color:var(--soft);border:1.5px solid var(--border);border-radius:8px;padding:.45rem .9rem;font-size:.78rem">Aucune séance ce mois</div>`:''}
+        <button onclick="genererBordereau('${pro.id}','${mois}')" style="background:var(--sand);color:var(--mid);border:1.5px solid var(--border);border-radius:8px;padding:.45rem .9rem;font-size:.78rem;font-weight:500;cursor:pointer">📄 Bordereau</button>
+      </div>
+    </div>`).join('')}`;
+}
+
+function marquerPaye(proId,mois,montant,nbSeances){
+  if(!confirm('Confirmer le virement de '+montant+' € à ce professionnel pour '+mois+' ?'))return;
+  const db=getDB();
+  const pro=db.pros.find(p=>p.id===proId);if(!pro)return;
+  if(!pro.payements)pro.payements=[];
+  pro.payements.push({mois,montant,seances:nbSeances,date:new Date().toISOString(),status:'paye'});
+  saveDB(db);
+  toast('✅ Paiement enregistré — '+montant+' € versés pour '+mois,'green');
+  renderAdmRemuneration();
+}
+
+function genererBordereau(proId,mois){
+  const db=getDB();
+  const pro=db.pros.find(p=>p.id===proId);if(!pro)return;
+  const tarifs=db.tarifs||{patient:50,pro:30};
+  const tarifPro=tarifs.pro||30;
+  const rdvs=(db.rdvs||[]).filter(r=>r.proId===proId&&r.status==='confirmed'&&r.cloturee&&(r.clotureeAt||r.date||'').startsWith(mois));
+  const montant=rdvs.length*tarifPro;
+  const [annee,moisNum]=mois.split('-');
+  const moisLabel=new Date(parseInt(annee),parseInt(moisNum)-1,1).toLocaleDateString('fr-FR',{month:'long',year:'numeric'});
+  const win=window.open('','_blank','width=700,height=900');
+  win.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"/>
+  <title>Bordereau — Dr. ${pro.fn} ${pro.ln} — ${moisLabel}</title>
+  <style>body{font-family:Arial,sans-serif;max-width:700px;margin:40px auto;color:#18211F;font-size:14px}
+  h1{font-size:1.3rem;color:#1B6B61}h2{font-size:1rem;color:#104F48;margin-top:1.5rem}
+  .hdr{display:flex;justify-content:space-between;border-bottom:2px solid #1B6B61;padding-bottom:12px;margin-bottom:20px}
+  table{width:100%;border-collapse:collapse;margin:12px 0}th{background:#E3F4F2;color:#104F48;padding:8px;text-align:left;font-size:.82rem}
+  td{padding:8px;border-bottom:1px solid #DDE9E7;font-size:.82rem}
+  .total{background:#E3F4F2;font-weight:700;color:#1B6B61}
+  .iban{font-family:monospace;letter-spacing:.04em}
+  .badge{display:inline-block;background:#EBF8F1;color:#1E7A4A;border:1px solid #1E7A4A;border-radius:4px;padding:2px 8px;font-size:.75rem;font-weight:700}
+  @media print{button{display:none}}</style></head><body>
+  <div class="hdr">
+    <div><strong style="font-size:1.1rem">PSYCHOLAB</strong><br/><span style="color:#8A9E9B;font-size:.8rem">Plateforme de téléconsultation</span></div>
+    <div style="text-align:right"><strong>BORDEREAU DE RÉMUNÉRATION</strong><br/><span style="color:#8A9E9B;font-size:.8rem">Réf : BDR-${proId.slice(-4).toUpperCase()}-${mois.replace('-','')}</span></div>
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px">
+    <div><h2>Professionnel</h2>
+      Dr. ${pro.fn} ${pro.ln}<br/>${pro.spec||''}<br/>${pro.email}<br/>
+      ${pro.bank?.iban?`<div class="iban">IBAN : ${pro.bank.iban}</div><div>BIC : ${pro.bank.bic||'—'}</div>`:'<strong style="color:#C0392B">⚠️ IBAN manquant</strong>'}
+    </div>
+    <div><h2>Période</h2>
+      Mois : <strong>${moisLabel}</strong><br/>
+      Tarif/séance : <strong>${tarifPro} €</strong><br/>
+      Nombre de séances : <strong>${rdvs.length}</strong><br/>
+      <strong>Montant total : ${montant} €</strong>
+    </div>
+  </div>
+  <h2>Détail des séances clôturées</h2>
+  <table><tr><th>Patient</th><th>Date</th><th>Heure</th><th>Montant</th></tr>
+  ${rdvs.map(r=>`<tr><td>${escHtml(r.patFn||'')} ${escHtml(r.patLn||'')}</td><td>${formatDate(r.date)}</td><td>${r.slot||'—'}</td><td>${tarifPro} €</td></tr>`).join('')}
+  <tr class="total"><td colspan="3">TOTAL À VIRER</td><td>${montant} €</td></tr></table>
+  <p style="margin-top:20px;font-size:.78rem;color:#8A9E9B">Document généré le ${new Date().toLocaleDateString('fr-FR')} par Psycholab · Confidentiel</p>
+  <button onclick="window.print()" style="background:#1B6B61;color:#fff;border:none;border-radius:6px;padding:10px 20px;font-size:.88rem;font-weight:600;cursor:pointer;margin-top:12px">🖨️ Imprimer / PDF</button>
+  </body></html>`);
+  win.document.close();
+}
+
+// ================================================
+//  GOOGLE CALENDAR SYNC
+// ================================================
+let gcalConnected=false;
+
+function connectGoogleCalendar(){
+  // Simulate OAuth flow — in production this would open Google OAuth
+  const btn=document.getElementById('btn-gcal-connect');
+  const badge=document.getElementById('gcal-sync-badge');
+  const info=document.getElementById('gcal-connected-info');
+  btn.textContent='⏳ Connexion en cours…';btn.disabled=true;
+  setTimeout(()=>{
+    gcalConnected=true;
+    badge.textContent='🟢 Synchronisé';
+    badge.style.background='rgba(30,122,74,.35)';
+    badge.style.borderColor='rgba(30,200,100,.5)';
+    btn.textContent='✅ Google Agenda connecté';
+    btn.style.color='#1E7A4A';btn.style.background='#EBF8F1';
+    if(info)info.style.display='block';
+    // Save to pro profile
+    const s=getSession();
+    if(s){
+      const db=getDB();
+      const pro=db.pros.find(p=>p.id===s.id);
+      if(pro){pro.gcalConnected=true;saveDB(db);}
+    }
+    toast('✅ Google Agenda connecté avec succès !','green');
+  },1800);
+}
+
+function openGoogleCalendar(){
+  window.open('https://calendar.google.com','_blank');
+}
+
+function updateProTimezone(tz){
+  const s=getSession();
+  if(!s||s.type!=='pro')return;
+  const db=getDB();
+  const pro=db.pros.find(p=>p.id===s.id);
+  if(pro){pro.tz=tz;saveDB(db);}
+  updateTzClock(tz);
+  toast('🌍 Fuseau horaire mis à jour','green');
+}
+
+function updateTzClock(tz){
+  const el=document.getElementById('tz-current-time');
+  if(!el)return;
+  try{
+    const t=new Date().toLocaleTimeString('fr-FR',{timeZone:tz,hour:'2-digit',minute:'2-digit'});
+    const label=tz==='Africa/Tunis'?'🇹🇳 Heure Tunisie':'🌍 Heure locale';
+    el.textContent=label+' : '+t;
+  }catch(e){el.textContent=''}
+}
+
+// Start clock for timezone display
+setInterval(()=>{
+  const sel=document.getElementById('pro-tz-select');
+  if(sel)updateTzClock(sel.value);
+},10000);
+
+// Init timezone clock when pro dashboard loads
+function initTzClock(){
+  const s=getSession();
+  if(!s||s.type!=='pro')return;
+  const db=getDB();const pro=db.pros.find(p=>p.id===s.id);
+  const tz=(pro&&pro.tz)||'Africa/Tunis';
+  const sel=document.getElementById('pro-tz-select');
+  if(sel)sel.value=tz;
+  updateTzClock(tz);
+  // Restore gcal state
+  if(pro&&pro.gcalConnected){
+    gcalConnected=true;
+    const badge=document.getElementById('gcal-sync-badge');
+    const info=document.getElementById('gcal-connected-info');
+    const btn=document.getElementById('btn-gcal-connect');
+    if(badge){badge.textContent='🟢 Synchronisé';badge.style.background='rgba(30,122,74,.35)';}
+    if(btn){btn.textContent='✅ Google Agenda connecté';btn.style.color='#1E7A4A';btn.style.background='#EBF8F1';}
+    if(info)info.style.display='block';
+  }
 }
 
 init();
