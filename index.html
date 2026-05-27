@@ -3307,6 +3307,7 @@ async function doSignupPro(){
   db.pros.push(pro);saveDB(db);sbSavePro(pro);
 
   // Email de réception au pro (pas de lien de confirmation — juste accusé de réception)
+  // Email de réception au pro — double envoi EmailJS + Formspree pour fiabilité
   sendEmailNotification({
     _subject:'📋 Votre dossier Psycholab a bien été reçu — Dr. '+fn+' '+ln,
     type:'RECEPTION_DOSSIER_PRO',
@@ -3314,6 +3315,18 @@ async function doSignupPro(){
     email_dest:email,
     message:"Bonjour Dr. "+ln+",\n\nNous avons bien reçu votre dossier de candidature sur Psycholab.\n\nL'équipe Psycholab va examiner votre dossier et vérifier vos informations professionnelles.\n\nVous recevrez un email de validation contenant vos accès professionnels dans un délai de 24 à 48 heures ouvrées.\n\nPour toute question : reservation.psycholab@gmail.com\n\nCordialement,\nL'équipe Psycholab"
   });
+
+  // Envoi direct via Formspree vers l'email du pro (fiabilité maximale)
+  fetch('https://formspree.io/f/xjgzoarv',{method:'POST',
+    headers:{'Content-Type':'application/json','Accept':'application/json'},
+    body:JSON.stringify({
+      _subject:'📋 Votre dossier Psycholab a bien été reçu — Dr. '+fn+' '+ln,
+      _replyto: email,
+      destinataire:'Dr. '+fn+' '+ln,
+      email_pro: email,
+      message:"Bonjour Dr. "+ln+",\n\nNous avons bien reçu votre dossier de candidature sur Psycholab.\n\nL'équipe Psycholab va examiner votre dossier et vérifier vos informations professionnelles.\n\nVous recevrez un email de validation contenant vos accès professionnels dans un délai de 24 à 48 heures ouvrées.\n\nPour toute question : reservation.psycholab@gmail.com\n\nCordialement,\nL'équipe Psycholab"
+    })
+  }).catch(()=>{});
 
   // Notification à l'admin
   fetch('https://formspree.io/f/xjgzoarv',{method:'POST',
@@ -3537,45 +3550,62 @@ function validatePro(proId){
   saveDB(db);
   sbUpdateProStatus(proId,true);
 
-  // -- Email envoyé DIRECTEMENT à l'adresse email du spécialiste --
   const dateValidation=new Date().toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
-  fetch('https://formspree.io/f/xjgzoarv',{
-    method:'POST',
-    headers:{'Content-Type':'application/json','Accept':'application/json'},
-    body:JSON.stringify({
-      _subject:'✅ Votre compte Psycholab Pro est activé -- Bienvenue Dr. '+pro.fn+' '+pro.ln+' !',
-      _replyto:pro.email,
-      type:'ACTIVATION_COMPTE_PRO',
-      // Champ destinataire = email du spécialiste
-      destinataire_email:pro.email,
-      destinataire_nom:'Dr. '+pro.fn+' '+pro.ln,
-      specialite:pro.spec,
-      date_activation:dateValidation,
-      email_connexion:pro.email,
-      lien_connexion:'https://psycholab-conseil.github.io/Psycholab.tn/',
-      message_complet:
-        'Bonjour Dr. '+pro.fn+' '+pro.ln+',\n\n'+
-        '✅ Votre compte professionnel Psycholab a été vérifié et activé avec succès !\n\n'+
-        '📋 Vos informations :\n'+
-        '• Nom : Dr. '+pro.fn+' '+pro.ln+'\n'+
-        '• Spécialité : '+pro.spec+'\n'+
-        '• Email de connexion : '+pro.email+'\n'+
-        '• Date d\'activation : '+dateValidation+'\n\n'+
-        '🚀 Vous pouvez maintenant :\n'+
-        '• Vous connecter sur Psycholab avec votre email et mot de passe\n'+
-        '• Configurer vos disponibilités\n'+
-        '• Recevoir des demandes de rendez-vous de patients\n'+
-        '• Gérer votre profil et vos consultations\n\n'+
-        '🔗 Connexion : https://psycholab-conseil.github.io/Psycholab.tn/\n\n'+
-        'Bienvenue dans la communauté Psycholab !\n\n'+
-        '-- L\'équipe Psycholab\n'+
-        'reservation.psycholab@gmail.com'
-    })
-  }).then(()=>{
-    toast('✅ Compte validé -- Email envoyé à '+pro.email,'green');
-  }).catch(()=>{
-    toast('✅ Compte validé -- Vérifiez la connexion email','green');
-  });
+  const siteUrl='https://psycholab-conseil.github.io';
+
+  // Email de validation envoyé au PRO via EmailJS
+  const htmlBody=`<div style="font-family:Arial,sans-serif;max-width:560px;margin:0 auto;background:#fff;border:1px solid #E8F0EF;border-radius:12px;overflow:hidden">
+    <div style="text-align:center;padding:20px 0 10px;background:linear-gradient(135deg,#1B6B61,#2A8A7E)">
+      <span style="font-family:Georgia,serif;font-size:24px;font-weight:700;color:#fff">Psycho<b>lab</b></span>
+      <div style="font-size:11px;color:rgba(255,255,255,.8);margin-top:3px">Plateforme de téléconsultation · psycholab.tn</div>
+    </div>
+    <div style="padding:24px">
+      <h2 style="color:#1B6B61;font-size:20px;margin-bottom:8px">✅ Votre compte est activé !</h2>
+      <p style="color:#4A6B65;font-size:14px;line-height:1.7">Bonjour <strong>Dr. ${escHtml(pro.fn)} ${escHtml(pro.ln)}</strong>,</p>
+      <p style="color:#4A6B65;font-size:14px;line-height:1.7">Votre dossier a été vérifié et validé par l'équipe Psycholab. Votre compte professionnel est maintenant <strong style="color:#1B6B61">actif</strong>.</p>
+      <div style="background:#E8F4F2;border-left:4px solid #1B6B61;border-radius:6px;padding:14px 16px;margin:16px 0">
+        <div style="font-size:13px;color:#1B6B61;font-weight:700;margin-bottom:8px">📋 Vos informations de compte</div>
+        <div style="font-size:13px;color:#2D4F4B;line-height:1.9">
+          👤 <strong>Nom :</strong> Dr. ${escHtml(pro.fn)} ${escHtml(pro.ln)}<br/>
+          🩺 <strong>Spécialité :</strong> ${escHtml(pro.spec)}<br/>
+          📧 <strong>Email de connexion :</strong> ${escHtml(pro.email)}<br/>
+          📅 <strong>Date d'activation :</strong> ${dateValidation}
+        </div>
+      </div>
+      <div style="background:#F0FDF4;border-left:4px solid #22C55E;border-radius:6px;padding:14px 16px;margin:16px 0">
+        <div style="font-size:13px;color:#166534;font-weight:700;margin-bottom:6px">🚀 Comment vous connecter</div>
+        <div style="font-size:13px;color:#15803D;line-height:1.8">
+          1. Allez sur <a href="${siteUrl}" style="color:#1B6B61;font-weight:700">${siteUrl}</a><br/>
+          2. Cliquez <strong>"Se connecter"</strong> → onglet <strong>"Professionnel"</strong><br/>
+          3. Saisissez votre email : <strong>${escHtml(pro.email)}</strong><br/>
+          4. Cliquez le lien reçu par email pour vous connecter
+        </div>
+      </div>
+      <div style="text-align:center;margin:20px 0">
+        <a href="${siteUrl}" style="background:#1B6B61;color:#fff;padding:14px 32px;border-radius:8px;text-decoration:none;font-weight:700;font-size:15px;display:inline-block">🔗 Accéder à Psycholab →</a>
+      </div>
+      <p style="color:#6B8C87;font-size:13px">Questions ? Contactez-nous : <a href="mailto:reservation.psycholab@gmail.com" style="color:#1B6B61">reservation.psycholab@gmail.com</a></p>
+      <p style="color:#4A6B65;font-size:13px;margin-top:16px">Bienvenue dans la communauté Psycholab !<br/><strong>L'équipe Psycholab</strong></p>
+    </div>
+    <div style="text-align:center;padding:16px;font-size:11px;color:#B0BCBA;border-top:1px solid #E8F0EF">© 2026 Psycholab · <a href="mailto:reservation.psycholab@gmail.com" style="color:#1B6B61">reservation.psycholab@gmail.com</a></div>
+  </div>`;
+
+  // Envoi via EmailJS directement à l'email du pro
+  if(typeof emailjs!=='undefined'){
+    emailjs.send('psycholab_gmail','template_8k4lq99',{
+      to_email: pro.email,
+      to_name: 'Dr. '+pro.fn+' '+pro.ln,
+      subject: '✅ Votre compte Psycholab Pro est activé — Bienvenue Dr. '+pro.fn+' '+pro.ln+' !',
+      message_html: htmlBody,
+      message: 'Votre compte Psycholab Pro est activé. Connectez-vous sur '+siteUrl+' avec votre email '+pro.email,
+      from_name: 'Psycholab',
+      reply_to: 'reservation.psycholab@gmail.com'
+    }).then(()=>{
+      toast('✅ Compte validé — Email envoyé à '+pro.email,'green');
+    }).catch(()=>{
+      toast('✅ Compte validé — Problème envoi email','green');
+    });
+  }
 
   // Notification interne
   addNotif(pro.id,'pro','✅ Compte activé !','Votre compte professionnel Psycholab est maintenant actif. Connectez-vous pour configurer vos disponibilités.');
@@ -4382,11 +4412,94 @@ function addProToGoogleCalendar(rdv){
 //  EMAIL NOTIFICATIONS VIA FORMSPREE
 // ================================================
 function sendEmailNotification(data){
-  fetch('https://formspree.io/f/xjgzoarv',{
-    method:'POST',
-    headers:{'Content-Type':'application/json','Accept':'application/json'},
-    body:JSON.stringify(data)
-  }).catch(e=>console.log('Email notification:',e));
+  // ⚙️ EmailJS — envoi d'emails professionnels au nom de Psycholab
+  // Pour activer : remplacez EMAILJS_SERVICE_ID et EMAILJS_TEMPLATE_ID
+  // par vos vrais IDs depuis emailjs.com → Email Services & Templates
+  const EMAILJS_SERVICE_ID='psycholab_gmail';
+  const EMAILJS_TEMPLATE_ID='template_8k4lq99';
+
+  // Construction du contenu email HTML professionnel
+  const subject=data._subject||'Message de Psycholab';
+  const destinataire=data.destinataire||'';
+  const emailDest=data.email_dest||data.email_patient||data.email_pro||'';
+  const message=data.message||'';
+  const type=data.type||'';
+
+  // Générer le corps HTML selon le type
+  let htmlBody=buildEmailHTML(type, data);
+
+  // Tentative d'envoi via EmailJS
+  if(typeof emailjs!=='undefined' && emailDest && emailDest!==''){
+    emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {
+      to_email: emailDest,
+      to_name: destinataire,
+      subject: subject,
+      message_html: htmlBody,
+      message: message,
+      from_name: 'Psycholab',
+      reply_to: 'reservation.psycholab@gmail.com'
+    }).then(()=>{
+      console.log('✅ Email envoyé via EmailJS à', emailDest);
+    }).catch(err=>{
+      console.warn('EmailJS échoué, fallback Formspree:', err);
+      // Fallback Formspree pour l'admin uniquement
+      if(emailDest==='reservation.psycholab@gmail.com'){
+        fetch('https://formspree.io/f/xjgzoarv',{
+          method:'POST',
+          headers:{'Content-Type':'application/json','Accept':'application/json'},
+          body:JSON.stringify({...data, _subject:subject})
+        }).catch(e=>console.log('Formspree fallback:',e));
+      }
+    });
+  } else {
+    // Fallback Formspree
+    fetch('https://formspree.io/f/xjgzoarv',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','Accept':'application/json'},
+      body:JSON.stringify({...data, _subject:subject})
+    }).catch(e=>console.log('Email notification:',e));
+  }
+}
+
+function buildEmailHTML(type, data){
+  const logo=`<div style="text-align:center;padding:20px 0 10px"><span style="font-family:Georgia,serif;font-size:22px;font-weight:700;color:#1B6B61">Psycho<b>lab</b></span><div style="font-size:11px;color:#8A9E9B;margin-top:3px">Plateforme de téléconsultation · psycholab.tn</div></div>`;
+  const footer=`<div style="text-align:center;padding:16px;font-size:11px;color:#B0BCBA;border-top:1px solid #E8F0EF;margin-top:20px">© 2026 Psycholab · <a href="mailto:reservation.psycholab@gmail.com" style="color:#1B6B61">reservation.psycholab@gmail.com</a></div>`;
+
+  const wrap=(content)=>`<div style="font-family:Arial,sans-serif;max-width:560px;margin:0 auto;background:#fff;border:1px solid #E8F0EF;border-radius:12px;overflow:hidden">${logo}<div style="padding:20px 24px">${content}</div>${footer}</div>`;
+
+  if(type==='RECEPTION_DOSSIER_PRO'){
+    return wrap(`
+      <h2 style="color:#1B6B61;font-size:18px;margin-bottom:8px">📋 Dossier bien reçu</h2>
+      <p style="color:#4A6B65;font-size:14px;line-height:1.6">Bonjour <strong>${data.destinataire||''}</strong>,</p>
+      <p style="color:#4A6B65;font-size:14px;line-height:1.7">Nous avons bien reçu votre dossier de candidature sur <strong>Psycholab</strong>.</p>
+      <div style="background:#E8F4F2;border-left:4px solid #1B6B61;border-radius:6px;padding:14px 16px;margin:16px 0">
+        <div style="font-size:13px;color:#1B6B61;font-weight:700;margin-bottom:6px">Ce qui va se passer maintenant :</div>
+        <div style="font-size:13px;color:#2D4F4B;line-height:1.8">
+          ✅ Dossier transmis à l'équipe Psycholab<br/>
+          🔍 Vérification de vos informations professionnelles<br/>
+          📧 Email de validation avec vos accès sous <strong>24 à 48h ouvrées</strong>
+        </div>
+      </div>
+      <p style="color:#6B8C87;font-size:13px">Une question ? Contactez-nous : <a href="mailto:reservation.psycholab@gmail.com" style="color:#1B6B61">reservation.psycholab@gmail.com</a></p>
+      <p style="color:#4A6B65;font-size:13px;margin-top:16px">Cordialement,<br/><strong>L'équipe Psycholab</strong></p>
+    `);
+  }
+
+  if(type==='MAGIC_LINK'||type==='RAPPEL_30MIN_PATIENT'||type==='RAPPEL_30MIN_PRO'){
+    return wrap(`
+      <h2 style="color:#1B6B61;font-size:18px;margin-bottom:8px">${data._subject||'Message Psycholab'}</h2>
+      <p style="color:#4A6B65;font-size:14px;line-height:1.7">${(data.message||'').replace(/\n/g,'<br/>')}</p>
+      ${data.lien_visio||data.lien_magic?`<div style="text-align:center;margin:20px 0"><a href="${data.lien_visio||data.lien_magic||'#'}" style="background:#1B6B61;color:#fff;padding:12px 28px;border-radius:8px;text-decoration:none;font-weight:700;font-size:14px">🔗 Rejoindre la séance</a></div>`:''}
+      <p style="color:#4A6B65;font-size:13px;margin-top:16px">Cordialement,<br/><strong>L'équipe Psycholab</strong></p>
+    `);
+  }
+
+  // Template générique pour tous les autres types
+  return wrap(`
+    <h2 style="color:#1B6B61;font-size:17px;margin-bottom:8px">${data._subject||'Message de Psycholab'}</h2>
+    <p style="color:#4A6B65;font-size:14px;line-height:1.7">${(data.message||'').replace(/\n/g,'<br/>')}</p>
+    <p style="color:#4A6B65;font-size:13px;margin-top:16px">Cordialement,<br/><strong>L'équipe Psycholab</strong></p>
+  `);
 }
 
 function sendReminderEmails(rdv){
