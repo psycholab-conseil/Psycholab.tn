@@ -3394,10 +3394,11 @@ const RECAPTCHA_SITE_KEY='6Ley9I8sAAAAAKiK6uOMnUlosXY3UCH6VUMWqdZ0';
 const RECAPTCHA_MIN_SCORE=0.5; // Score minimum accepté (0=robot, 1=humain)
 
 // Rate limiting — max tentatives par email par fenêtre de temps
-const RATE_LIMIT_MAX=3;      // max 3 demandes
+const RATE_LIMIT_MAX=10;     // max 10 tentatives (inscription + connexion)
 const RATE_LIMIT_WINDOW=60*60*1000; // par heure (ms)
+const RATE_LIMIT_LOGIN_MAX=5; // max 5 tentatives de connexion uniquement
 
-function checkRateLimit(email){
+function checkRateLimit(email, maxAttempts=RATE_LIMIT_MAX){
   const key='pl_rl_'+btoa(email).replace(/=/g,'');
   const now=Date.now();
   let data=JSON.parse(localStorage.getItem(key)||'{"count":0,"window_start":0}');
@@ -3405,9 +3406,15 @@ function checkRateLimit(email){
   if(now - data.window_start > RATE_LIMIT_WINDOW){
     data={count:0,window_start:now};
   }
-  if(data.count>=RATE_LIMIT_MAX){
+  if(data.count>=maxAttempts){
     const restantMin=Math.ceil((RATE_LIMIT_WINDOW-(now-data.window_start))/60000);
-    return {blocked:true,message:`⛔ Trop de tentatives. Réessayez dans ${restantMin} minute${restantMin>1?'s':''}.`};
+    // Reset automatique si la fenêtre est presque expirée (moins de 2 min)
+    if(restantMin<=2){
+      data={count:0,window_start:now};
+      localStorage.setItem(key,JSON.stringify(data));
+      return {blocked:false};
+    }
+    return {blocked:true,message:`⛔ Trop de tentatives. Réessayez dans ${restantMin} minute${restantMin>1?'s':''}. Si c'est une erreur, videz le cache de votre navigateur.`};
   }
   data.count++;
   localStorage.setItem(key,JSON.stringify(data));
@@ -3417,6 +3424,12 @@ function checkRateLimit(email){
 function resetRateLimit(email){
   const key='pl_rl_'+btoa(email).replace(/=/g,'');
   localStorage.removeItem(key);
+}
+
+function clearAllRateLimits(){
+  // Efface tous les rate limits stockés localement
+  Object.keys(localStorage).filter(k=>k.startsWith('pl_rl_')).forEach(k=>localStorage.removeItem(k));
+  toast('✅ Limites réinitialisées','green');
 }
 
 // Exécute reCAPTCHA v3 et retourne le token (Promise)
@@ -3451,17 +3464,17 @@ function executeRecaptcha(action){
 
 // Vérification complète : reCAPTCHA + rate limit + captcha arithmétique
 async function verifyHuman(email, action='login'){
-  // 1. Rate limiting
-  const rl=checkRateLimit(email);
+  // Rate limiting — plus souple pour l'inscription, plus strict pour la connexion
+  const maxAttempts = action.startsWith('signup') ? RATE_LIMIT_MAX : RATE_LIMIT_LOGIN_MAX;
+  const rl=checkRateLimit(email, maxAttempts);
   if(rl.blocked)return{ok:false,message:rl.message};
 
-  // 2. reCAPTCHA v3
+  // reCAPTCHA v3
   const rc=await executeRecaptcha(action);
   if(rc.score<RECAPTCHA_MIN_SCORE){
     return{ok:false,message:'⛔ Activité suspecte détectée. Veuillez réessayer ou contacter le support.'};
   }
 
-  // 3. Captcha arithmétique (déjà vérifié côté UI avant cet appel)
   return{ok:true};
 }
 
