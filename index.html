@@ -1378,48 +1378,56 @@ body[data-lang="ar"]{font-family:'Segoe UI',Tahoma,'Arabic Typesetting',sans-ser
     <div class="auth-card" style="text-align:center;padding:2.5rem 1.5rem">
 
       <div style="width:90px;height:90px;border-radius:50%;background:linear-gradient(135deg,var(--teal),var(--teal-l));display:flex;align-items:center;justify-content:center;font-size:2.5rem;margin:0 auto 1.3rem;box-shadow:0 8px 32px rgba(27,107,97,.3);animation:popIn .5s cubic-bezier(.175,.885,.32,1.275)">
-        ✅
+        📋
       </div>
 
-      <h2 style="font-family:'Playfair Display',serif;font-size:1.4rem;font-weight:700;color:var(--ch);margin-bottom:.4rem">
-        Dossier envoyé avec succès !
+      <h2 style="font-family:'Playfair Display',serif;font-size:1.4rem;font-weight:700;color:var(--ch);margin-bottom:.5rem">
+        Dossier reçu avec succès !
       </h2>
-      <p style="color:var(--mid);font-size:.85rem;line-height:1.6;margin-bottom:1.2rem">
-        Email de confirmation envoyé à<br/>
+
+      <p style="color:var(--mid);font-size:.86rem;line-height:1.65;margin-bottom:1.3rem">
+        Votre dossier a bien été transmis à l'équipe Psycholab.<br/>
+        Vous serez contacté à l'adresse :<br/>
         <strong style="color:var(--teal-d);font-size:.95rem" id="conf-pro-email-simple">—</strong>
       </p>
 
-      <!-- Alerte email important -->
-      <div style="background:linear-gradient(135deg,#FFF8E1,#FFF3CD);border:2px solid #F59E0B;border-radius:var(--r-md);padding:1rem;margin-bottom:1.2rem;text-align:left">
-        <div style="font-size:.84rem;font-weight:700;color:#92400E;margin-bottom:.3rem">📧 Action requise — Vérifiez votre email</div>
-        <div style="font-size:.78rem;color:#78350F;line-height:1.65">
-          Vous avez reçu un email de confirmation sur l'adresse indiquée.<br/>
-          <strong>Cliquez sur le lien dans cet email</strong> pour activer votre dossier.<br/>
-          <span style="font-size:.72rem;opacity:.8">⏱️ Lien valable 48h · Vérifiez vos spams si besoin</span>
+      <!-- Message principal -->
+      <div style="background:linear-gradient(135deg,var(--teal-xl),#E8F4F2);border:2px solid var(--teal);border-radius:var(--r-md);padding:1.1rem;margin-bottom:1.2rem;text-align:left">
+        <div style="font-size:.85rem;font-weight:700;color:var(--teal-d);margin-bottom:.5rem">📬 Ce qui va se passer maintenant</div>
+        <div style="font-size:.8rem;color:var(--mid);line-height:1.8">
+          L'équipe Psycholab va examiner votre dossier et vérifier vos informations professionnelles.<br/>
+          <strong>Vous recevrez un email de validation</strong> à l'adresse indiquée, contenant vos accès professionnels et les instructions de connexion.<br/>
+          <span style="color:var(--soft);font-size:.73rem">⏱️ Délai de traitement : 24 à 48 heures ouvrées</span>
         </div>
       </div>
 
-      <!-- Étapes claires -->
-      <div style="background:var(--sand);border-radius:var(--r-md);padding:1rem;margin-bottom:1.2rem;text-align:left">
-        <div style="font-size:.8rem;font-weight:700;color:var(--ch);margin-bottom:.75rem">📋 Les 4 étapes de votre validation :</div>
-        <div style="display:flex;flex-direction:column;gap:.6rem">
+      <!-- Étapes -->
+      <div style="background:var(--sand);border-radius:var(--r-md);padding:1rem;margin-bottom:1.3rem;text-align:left">
+        <div style="font-size:.8rem;font-weight:700;color:var(--ch);margin-bottom:.75rem">📋 Les étapes de validation :</div>
+        <div style="display:flex;flex-direction:column;gap:.65rem">
           <div style="display:flex;align-items:center;gap:.7rem">
-            <div style="width:26px;height:26px;border-radius:50%;background:var(--green);color:#fff;display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:700;flex-shrink:0">✓</div>
-            <div style="font-size:.8rem;color:var(--ch)"><strong>Dossier soumis</strong> — fait ✅</div>
+            <div style="width:28px;height:28px;border-radius:50%;background:var(--green);color:#fff;display:flex;align-items:center;justify-content:center;font-size:.75rem;font-weight:700;flex-shrink:0">✓</div>
+            <div style="font-size:.82rem;color:var(--ch)"><strong>Dossier soumis</strong> — fait ✅</div>
           </div>
           <div style="display:flex;align-items:center;gap:.7rem">
-            <div style="width:26px;height:26px;border-radius:50%;background:var(--orange);color:#fff;display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:700;flex-shrink:0">2</div>
-            <div style="font-size:.8rem;color:var(--ch)"><strong>Confirmez votre email</strong> — cliquez le lien reçu</div>
+            <div style="width:28px;height:28px;border-radius:50%;background:var(--teal);color:#fff;display:flex;align-items:center;justify-content:center;font-size:.75rem;font-weight:700;flex-shrink:0">2</div>
+            <div style="font-size:.82rem;color:var(--mid)">L'équipe Psycholab examine votre dossier <span style="color:var(--soft)">(24-48h)</span></div>
           </div>
           <div style="display:flex;align-items:center;gap:.7rem">
-            <div style="width:26px;height:26px;border-radius:50%;background:var(--teal);color:#fff;display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:700;flex-shrink:0">3</div>
-            <div style="font-size:.8rem;color:var(--mid)">Psycholab vérifie votre dossier <span style="color:var(--soft)">(24-48h)</span></div>
+            <div style="width:28px;height:28px;border-radius:50%;background:var(--teal);color:#fff;display:flex;align-items:center;justify-content:center;font-size:.75rem;font-weight:700;flex-shrink:0">3</div>
+            <div style="font-size:.82rem;color:var(--mid)">Vous recevez un <strong>email de validation</strong> avec vos accès</div>
           </div>
           <div style="display:flex;align-items:center;gap:.7rem">
-            <div style="width:26px;height:26px;border-radius:50%;background:var(--border);color:var(--soft);display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:700;flex-shrink:0">4</div>
-            <div style="font-size:.8rem;color:var(--soft)">Votre profil est visible sur la plateforme</div>
+            <div style="width:28px;height:28px;border-radius:50%;background:var(--border);color:var(--soft);display:flex;align-items:center;justify-content:center;font-size:.75rem;font-weight:700;flex-shrink:0">4</div>
+            <div style="font-size:.82rem;color:var(--soft)">Votre profil est activé et visible sur la plateforme</div>
           </div>
         </div>
+      </div>
+
+      <!-- Contact support -->
+      <div style="font-size:.76rem;color:var(--soft);margin-bottom:1.2rem;line-height:1.6">
+        Une question ? Contactez-nous à<br/>
+        <strong style="color:var(--teal-d)">reservation.psycholab@gmail.com</strong>
       </div>
 
       <button class="btn-submit" onclick="goHome()" style="font-size:.92rem;padding:.85rem">
@@ -3289,7 +3297,7 @@ async function doSignupPro(){
   const bankBanque2=document.getElementById('spro-bank-nom-banque')?.value.trim()||'';
   const pro={id,fn,ln,email,tel,spec,rpps:'',diplome:'',exp:'',bio,tags,
     price:38,tz:'Africa/Tunis',consVid,consPres,langFr,langEn,langAr,
-    emailConfirmed:false,active:false,avail:{},
+    emailConfirmed:true,active:false,avail:{},
     notif:document.getElementById('spro-notif').checked,
     photo:proPhotoData||null,
     bank:{nom:bankNom,iban:bankIban,bic:bankBic,banque:bankBanque2},
@@ -3298,39 +3306,35 @@ async function doSignupPro(){
   proPhotoData=null;proRibData=null;
   db.pros.push(pro);saveDB(db);sbSavePro(pro);
 
-  const confirmToken='conf_'+Math.random().toString(36).slice(2)+Date.now().toString(36);
-  const ctokens=JSON.parse(localStorage.getItem('plConfirmTokens')||'{}');
-  ctokens[confirmToken]={id,type:'pro',email,expiry:Date.now()+48*60*60*1000};
-  localStorage.setItem('plConfirmTokens',JSON.stringify(ctokens));
-  const confirmUrl=window.location.href.split('?')[0]+'?confirm='+confirmToken;
-
+  // Email de réception au pro (pas de lien de confirmation — juste accusé de réception)
   sendEmailNotification({
-    _subject:'✅ Confirmez votre inscription Psycholab — Dr. '+fn+' '+ln,
-    type:'CONFIRM_EMAIL_PRO',destinataire:'Dr. '+fn+' '+ln,email_dest:email,
-    lien_confirmation:confirmUrl,
-    message:"Bonjour Dr. "+ln+",\n\nMerci d'avoir soumis votre dossier Psycholab !\n\nÉtape 1 : Confirmez votre email :\n"+confirmUrl+"\n\nÉtape 2 : Dossier examiné sous 24-48h.\n\nL'équipe Psycholab"
+    _subject:'📋 Votre dossier Psycholab a bien été reçu — Dr. '+fn+' '+ln,
+    type:'RECEPTION_DOSSIER_PRO',
+    destinataire:'Dr. '+fn+' '+ln,
+    email_dest:email,
+    message:"Bonjour Dr. "+ln+",\n\nNous avons bien reçu votre dossier de candidature sur Psycholab.\n\nL'équipe Psycholab va examiner votre dossier et vérifier vos informations professionnelles.\n\nVous recevrez un email de validation contenant vos accès professionnels dans un délai de 24 à 48 heures ouvrées.\n\nPour toute question : reservation.psycholab@gmail.com\n\nCordialement,\nL'équipe Psycholab"
   });
 
+  // Notification à l'admin
   fetch('https://formspree.io/f/xjgzoarv',{method:'POST',
     headers:{'Content-Type':'application/json','Accept':'application/json'},
-    body:JSON.stringify({_subject:'🩺 Nouveau dossier Pro — '+fn+' '+ln+' — '+spec,
+    body:JSON.stringify({
+      _subject:'🩺 Nouveau dossier Pro — '+fn+' '+ln+' — '+spec,
       nom:fn+' '+ln,specialite:spec,email,telephone:tel,
       tarif:'38 €/séance (45 min)',biographie:bio,domaines:tags||'--',
       langues:(langFr?'FR ':' ')+(langEn?'EN ':' ')+(langAr?'AR':''),
-      iban:bankIban,bic:bankBic,confirmation_lien:confirmUrl,
+      iban:bankIban,bic:bankBic,
       date:new Date().toLocaleDateString('fr-FR',{day:'numeric',month:'long',year:'numeric'})
     })
   }).catch(()=>{});
 
   if(submitBtnPro){submitBtnPro.disabled=false;submitBtnPro.textContent='Soumettre mon dossier →';}
 
-
-
   const el=document.getElementById('conf-pro-email-simple');
   if(el)el.textContent=email;
   showView('v-success-pro');
   window.scrollTo(0,0);
-  toast('✅ Dossier envoyé avec succès ! Vérifiez votre email.','green');
+  toast('✅ Dossier envoyé ! L\'équipe Psycholab vous contactera sous 24-48h.','green');
 }
 function activateProDemo(){
   const db=getDB();
