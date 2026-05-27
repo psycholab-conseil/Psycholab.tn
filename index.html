@@ -1052,12 +1052,7 @@ body[data-lang="ar"]{font-family:'Segoe UI',Tahoma,'Arabic Typesetting',sans-ser
           <div>3. Vous serez connecté automatiquement</div>
           <div style="margin-top:.4rem;color:var(--soft);font-size:.72rem">⏱️ Le lien expire dans 15 minutes · Vérifiez vos spams si besoin</div>
         </div>
-        <!-- Simulateur de lien magique (démo) -->
-        <div style="background:var(--orange-l);border:1.5px solid var(--orange);border-radius:var(--r-md);padding:.85rem;font-size:.78rem;color:var(--orange);margin-bottom:.9rem;text-align:left">
-          <div style="font-weight:700;margin-bottom:.3rem">🛠️ Mode démonstration</div>
-          <div style="color:var(--mid);margin-bottom:.5rem">En production, le lien est envoyé par email. Ici, cliquez pour simuler la réception :</div>
-          <button onclick="simulateMagicLogin()" style="background:var(--orange);color:#fff;border:none;border-radius:8px;padding:.5rem 1rem;font-size:.78rem;font-weight:700;cursor:pointer">🔗 Simuler le clic sur le lien</button>
-        </div>
+
         <button onclick="backToLoginStep1()" style="background:none;border:none;color:var(--soft);font-size:.8rem;cursor:pointer;text-decoration:underline">← Changer d'adresse email</button>
       </div>
 
@@ -1337,19 +1332,40 @@ body[data-lang="ar"]{font-family:'Segoe UI',Tahoma,'Arabic Typesetting',sans-ser
       <div class="success-screen">
         <div class="success-ico">✓</div>
         <h2 class="success-title">Compte créé avec succès !</h2>
-        <p class="success-sub">Bienvenue sur Psycholab. Voici l'email de confirmation qui vous a été envoyé :</p>
-        <div class="email-preview-box">
-          <p class="ep-hdr">📧 Email de confirmation</p>
-          <div class="ep-row"><span class="ep-k">À :</span><span class="ep-v" id="conf-patient-email">—</span></div>
-          <div class="ep-row"><span class="ep-k">Objet :</span><span class="ep-v">✅ Votre compte Psycholab est activé</span></div>
-          <div class="ep-body" id="conf-patient-body">Chargement…</div>
+        <p class="success-sub">Bienvenue sur Psycholab. Un email de confirmation vous a été envoyé à :</p>
+        <div style="background:var(--teal-xl);border:1.5px solid var(--teal);border-radius:var(--r-md);padding:.9rem 1rem;margin-bottom:1.2rem;text-align:center">
+          <strong style="color:var(--teal-d);font-size:.95rem" id="conf-patient-email">—</strong>
         </div>
-        <div class="next-steps">
-          <h4>🚀 Prochaines étapes</h4>
-          <div class="next-step-item"><div class="step-num">1</div><span>Recherchez un spécialiste adapté à votre besoin</span></div>
-          <div class="next-step-item"><div class="step-num">2</div><span>Choisissez un créneau disponible</span></div>
-          <div class="next-step-item"><div class="step-num">3</div><span>Recevez votre confirmation et lien vidéo sécurisé</span></div>
+
+        <!-- Message étapes -->
+        <div style="background:linear-gradient(135deg,#FFF8E1,#FFF3CD);border:2px solid #F59E0B;border-radius:var(--r-md);padding:1rem;margin-bottom:1.2rem;text-align:left">
+          <div style="font-size:.84rem;font-weight:700;color:#92400E;margin-bottom:.4rem">📧 Action requise — Vérifiez votre email</div>
+          <div style="font-size:.78rem;color:#78350F;line-height:1.7">
+            Vous avez reçu un email de confirmation.<br/>
+            <strong>Cliquez sur le lien</strong> pour activer votre compte.<br/>
+            <span style="font-size:.72rem;opacity:.8">⏱️ Lien valable 48h · Vérifiez vos spams si besoin</span>
+          </div>
         </div>
+
+        <div style="background:var(--sand);border-radius:var(--r-md);padding:.9rem;margin-bottom:1.2rem;text-align:left">
+          <div style="font-size:.8rem;font-weight:700;color:var(--ch);margin-bottom:.6rem">📋 Prochaines étapes :</div>
+          <div style="display:flex;flex-direction:column;gap:.5rem">
+            <div style="display:flex;align-items:center;gap:.6rem">
+              <div style="width:24px;height:24px;border-radius:50%;background:var(--green);color:#fff;display:flex;align-items:center;justify-content:center;font-size:.65rem;font-weight:700;flex-shrink:0">✓</div>
+              <span style="font-size:.8rem;color:var(--ch)"><strong>Compte créé</strong> ✅</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:.6rem">
+              <div style="width:24px;height:24px;border-radius:50%;background:var(--orange);color:#fff;display:flex;align-items:center;justify-content:center;font-size:.65rem;font-weight:700;flex-shrink:0">2</div>
+              <span style="font-size:.8rem;color:var(--ch)"><strong>Confirmez votre email</strong> — cliquez le lien reçu</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:.6rem">
+              <div style="width:24px;height:24px;border-radius:50%;background:var(--teal);color:#fff;display:flex;align-items:center;justify-content:center;font-size:.65rem;font-weight:700;flex-shrink:0">3</div>
+              <span style="font-size:.8rem;color:var(--mid)">Trouvez votre spécialiste et prenez RDV</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="ep-body" id="conf-patient-body" style="display:none"></div>
         <button class="btn-submit" onclick="goHome()">🔍 Trouver un spécialiste</button>
       </div>
     </div>
@@ -3163,16 +3179,13 @@ async function doSignupPatient(){
 
   // Afficher page de succès avec instruction email
   document.getElementById('conf-patient-email').textContent=email;
-  // Adapter le message de succès patient
+  // Message de succès patient
   const confBody=document.getElementById('conf-patient-body');
-  if(confBody)confBody.innerHTML=`<div style="font-size:.82rem;line-height:1.7;color:var(--mid)">
+  if(confBody)confBody.innerHTML=`<div style="font-size:.82rem;line-height:1.9;color:var(--mid)">
     <strong>1.</strong> Ouvrez votre boîte email<br/>
     <strong>2.</strong> Cliquez sur le lien de confirmation Psycholab<br/>
     <strong>3.</strong> Votre compte sera activé immédiatement<br/>
     <div style="margin-top:.5rem;font-size:.73rem;color:var(--soft)">⏱️ Lien valable 48h · Vérifiez vos spams si besoin</div>
-    <div style="margin-top:.7rem;background:var(--orange-l);border:1px solid var(--orange);border-radius:8px;padding:.6rem;font-size:.75rem;color:var(--orange)">
-      🛠️ <strong>Mode démo :</strong> <a onclick="simulateEmailConfirm('${confirmToken}')" style="cursor:pointer;font-weight:700;text-decoration:underline">Simuler la confirmation email →</a>
-    </div>
   </div>`;
   showView('v-success-patient');
 }
@@ -3311,17 +3324,7 @@ async function doSignupPro(){
 
   if(submitBtnPro){submitBtnPro.disabled=false;submitBtnPro.textContent='Soumettre mon dossier →';}
 
-  setTimeout(()=>{
-    const ed=document.getElementById('pro-confirm-demo');
-    if(!ed){
-      const dd=document.createElement('div');
-      dd.id='pro-confirm-demo';
-      dd.style.cssText='background:var(--orange-l);border:1px solid var(--orange);border-radius:8px;padding:.7rem;margin:.8rem 1.5rem;font-size:.75rem;color:var(--orange)';
-      dd.innerHTML=`🛠️ <strong>Mode démo :</strong> <a onclick="simulateEmailConfirm('${confirmToken}')" style="cursor:pointer;font-weight:700;text-decoration:underline">Simuler la confirmation email →</a>`;
-      const bb=document.querySelector('#v-success-pro .btn-submit');
-      if(bb)bb.parentNode.insertBefore(dd,bb);
-    }
-  },100);
+
 
   const el=document.getElementById('conf-pro-email-simple');
   if(el)el.textContent=email;
