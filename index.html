@@ -725,13 +725,6 @@ input,select,textarea{font-family:'DM Sans',sans-serif}
 .ai-send-btn{background:var(--purple);color:#fff;border:none;border-radius:var(--r-sm);padding:.6rem .95rem;font-size:.82rem;font-weight:600;transition:all var(--anim);display:flex;align-items:center;gap:.35rem}
 .ai-send-btn:hover{background:var(--purple-d,#4A2E7A)}
 .ai-send-btn:disabled{opacity:.5;cursor:not-allowed}
-.ai-sugg-btn{background:var(--sand);border:1.5px solid var(--border);border-radius:20px;padding:.35rem .8rem;font-size:.75rem;color:var(--ch);cursor:pointer;transition:all var(--anim);white-space:nowrap}
-.ai-sugg-btn:hover{border-color:var(--purple);background:var(--purple-xl,#F3EEFF);color:var(--purple)}
-.ai-msg-user{background:var(--teal);color:#fff;border-radius:14px 14px 4px 14px;padding:.7rem .9rem;font-size:.82rem;line-height:1.6;align-self:flex-end;max-width:88%}
-.ai-msg-bot{background:#fff;border:1.5px solid var(--border);border-radius:14px 14px 14px 4px;padding:.7rem .9rem;font-size:.82rem;line-height:1.7;align-self:flex-start;max-width:95%;white-space:pre-wrap}
-.ai-msg-typing{background:#fff;border:1.5px solid var(--border);border-radius:14px 14px 14px 4px;padding:.7rem .9rem;font-size:.82rem;color:var(--soft);align-self:flex-start}
-.ai-input{flex:1;border:1.5px solid var(--border);border-radius:var(--r-sm);padding:.62rem .9rem;font-size:.86rem;background:var(--sand);outline:none;transition:all var(--anim);font-family:inherit}
-.ai-input:focus{border-color:var(--purple);background:#fff}
 
 /* ─── ADMIN TABS ─── */
 .adm-tab{background:#fff;border:1.5px solid var(--border);border-radius:20px;padding:.42rem .9rem;font-size:.75rem;font-weight:500;color:var(--mid);white-space:nowrap;flex-shrink:0;cursor:pointer;transition:all var(--anim)}
@@ -1865,25 +1858,17 @@ body[data-lang="ar"]{font-family:'Segoe UI',Tahoma,'Arabic Typesetting',sans-ser
     <div class="dash" id="dash-video">
       <h3 style="font-family:'Playfair Display',serif;font-size:1rem;font-weight:600;color:var(--ch);margin-bottom:.8rem">📹 Salle de consultation vidéo</h3>
 
-      <!-- Vidéo native WebRTC -->
-      <div id="native-video-controls">
-        <div style="text-align:center;padding:1.5rem;color:var(--soft);font-size:.8rem;background:var(--sand);border-radius:var(--r-md)">
-          <div style="font-size:1.5rem;margin-bottom:.4rem">📹</div>
-          Chargement de la salle vidéo…
-        </div>
-      </div>
-
-      <!-- Google Meet Section — backup -->
+      <!-- Google Meet Section -->
       <div style="background:linear-gradient(135deg,#1B6B61,#2A8A7E);border-radius:var(--r-md);padding:1.3rem;margin-bottom:1rem;color:#fff">
         <div style="display:flex;align-items:center;gap:.8rem;margin-bottom:.9rem">
           <div style="width:44px;height:44px;border-radius:50%;background:rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center;font-size:1.3rem;flex-shrink:0">📹</div>
           <div>
             <div style="font-family:'Playfair Display',serif;font-size:.95rem;font-weight:700">Consultation via Google Meet</div>
-            <div style="font-size:.73rem;opacity:.8;margin-top:.1rem">Alternative · Lien sécurisé · Qualité HD</div>
+            <div style="font-size:.73rem;opacity:.8;margin-top:.1rem">Lien sécurisé · Qualité HD · Gratuit</div>
           </div>
         </div>
         <p style="font-size:.78rem;opacity:.85;line-height:1.6;margin-bottom:1rem">
-          Créez un lien Google Meet unique pour votre consultation. Le lien sera partagé automatiquement avec votre patient par email.
+          Créez un lien Google Meet unique pour votre consultation. Le lien sera partagé automatiquement avec votre patient par email et dans son espace.
         </p>
         <button onclick="createMeetLink()" id="btn-create-meet" style="width:100%;background:#fff;color:#1B6B61;border:none;border-radius:var(--r-sm);padding:.8rem;font-size:.88rem;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:.5rem;transition:all .2s">
           ➕ Créer un lien Google Meet
@@ -1912,7 +1897,7 @@ body[data-lang="ar"]{font-family:'Segoe UI',Tahoma,'Arabic Typesetting',sans-ser
         </div>
       </div>
 
-      <div class="info-box">ℹ️ <strong>Vidéo intégrée :</strong> utilisez la salle vidéo ci-dessus pour les consultations directement dans Psycholab, ou créez un lien Google Meet comme alternative.</div>
+      <div class="info-box">ℹ️ <strong>Comment ça marche :</strong> Créez un lien Meet → partagez-le au patient → rejoignez au moment du RDV. Aucune application à installer pour le patient.</div>
     </div>
 
     <!-- Revenue -->
@@ -2034,42 +2019,22 @@ body[data-lang="ar"]{font-family:'Segoe UI',Tahoma,'Arabic Typesetting',sans-ser
     <!-- AI Assistant -->
     <div class="dash" id="dash-ai">
       <h3 style="font-family:'Playfair Display',serif;font-size:1rem;font-weight:600;color:var(--ch);margin-bottom:.4rem">🤖 Assistant IA Psycholab</h3>
-      <p style="font-size:.78rem;color:var(--mid);margin-bottom:.7rem;line-height:1.55">Propulsé par Claude · Aide administrative · <strong>Ne fournit aucun avis médical.</strong></p>
+      <p style="font-size:.78rem;color:var(--mid);margin-bottom:.9rem;line-height:1.55">Propulsé par Claude. Aide à la rédaction, génération d'emails, questions administratives. <strong>Ne fournit aucun avis médical.</strong></p>
       <div class="ai-badge"><span class="ai-spinner" id="ai-spin"></span>✨ Claude · Psycholab Pro</div>
-
-      <!-- Suggestions rapides -->
-      <div style="margin-top:.8rem;margin-bottom:.7rem">
-        <div style="font-size:.72rem;color:var(--soft);font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin-bottom:.45rem">Suggestions rapides</div>
-        <div style="display:flex;flex-wrap:wrap;gap:.4rem" id="ai-suggestions">
-          <button class="ai-sugg-btn" onclick="aiPrompt('Rédige un email de rappel professionnel pour un patient qui a un rendez-vous demain à 14h.')">📝 Rappel RDV</button>
-          <button class="ai-sugg-btn" onclick="aiPrompt('Rédige un message pour informer un patient que son RDV a été annulé et lui proposer un nouveau créneau.')">❌ Annulation RDV</button>
-          <button class="ai-sugg-btn" onclick="aiPrompt('Rédige un email de bienvenue chaleureux pour un nouveau patient.')">👋 Bienvenue patient</button>
-          <button class="ai-sugg-btn" onclick="aiPrompt('Quelles sont les meilleures pratiques pour gérer un cabinet de psychologie en ligne ?')">💡 Gestion cabinet</button>
-          <button class="ai-sugg-btn" onclick="aiPrompt('Rédige un compte-rendu type de séance de suivi psychologique (anonymisé, sans données patient).')">📋 Compte-rendu type</button>
-          <button class="ai-sugg-btn" onclick="aiPrompt('Rédige un message de relance poli pour un patient qui n\'a pas répondu à mon dernier message.')">🔔 Relance patient</button>
-          <button class="ai-sugg-btn" onclick="aiPrompt('Comment bien préparer un entretien initial avec un nouveau patient en téléconsultation ?')">🎯 Préparer entretien</button>
-          <button class="ai-sugg-btn" onclick="aiClearHistory()">🗑️ Effacer l'historique</button>
-        </div>
+      <div style="margin-top:1rem;display:flex;flex-direction:column;gap:.5rem">
+        <button style="background:var(--sand);border:1.5px solid var(--border);border-radius:var(--r-sm);padding:.65rem .9rem;font-size:.8rem;color:var(--ch);text-align:left;transition:all var(--anim)" onmouseover="this.style.borderColor='var(--purple)'" onmouseout="this.style.borderColor='var(--border)'" onclick="aiPrompt('Rédige un email de rappel professionnel pour un patient qui a un rendez-vous demain à 14h.')">📝 Rédiger un email de rappel patient</button>
+        <button style="background:var(--sand);border:1.5px solid var(--border);border-radius:var(--r-sm);padding:.65rem .9rem;font-size:.8rem;color:var(--ch);text-align:left;transition:all var(--anim)" onmouseover="this.style.borderColor='var(--purple)'" onmouseout="this.style.borderColor='var(--border)'" onclick="aiPrompt('Rédige un message pour informer un patient que son RDV a été annulé et lui proposer un nouveau créneau.')">❌ Rédiger un message d\'annulation</button>
+        <button style="background:var(--sand);border:1.5px solid var(--border);border-radius:var(--r-sm);padding:.65rem .9rem;font-size:.8rem;color:var(--ch);text-align:left;transition:all var(--anim)" onmouseover="this.style.borderColor='var(--purple)'" onmouseout="this.style.borderColor='var(--border)'" onclick="aiPrompt('Rédige un email de bienvenue pour un nouveau patient qui vient de prendre son premier rendez-vous.')">👋 Email de bienvenue nouveau patient</button>
+        <button style="background:var(--sand);border:1.5px solid var(--border);border-radius:var(--r-sm);padding:.65rem .9rem;font-size:.8rem;color:var(--ch);text-align:left;transition:all var(--anim)" onmouseover="this.style.borderColor='var(--purple)'" onmouseout="this.style.borderColor='var(--border)'" onclick="aiPrompt('Quelles sont les meilleures pratiques pour gérer un cabinet de psychologie en 2025 ?')">💡 Conseils gestion de cabinet</button>
       </div>
-
-      <!-- Zone de conversation -->
-      <div id="ai-chat-history" style="background:var(--sand);border:1.5px solid var(--border);border-radius:var(--r-md);padding:.8rem;min-height:80px;max-height:340px;overflow-y:auto;margin-bottom:.7rem;display:flex;flex-direction:column;gap:.6rem">
-        <div id="ai-welcome-msg" style="text-align:center;padding:1rem;color:var(--soft);font-size:.8rem">
-          <div style="font-size:1.8rem;margin-bottom:.4rem">🤖</div>
-          <div style="font-weight:600;color:var(--ch);margin-bottom:.3rem">Bonjour Docteur !</div>
-          Choisissez une suggestion ou posez votre question ci-dessous.
-        </div>
-      </div>
-
-      <!-- Saisie -->
-      <div class="ai-panel">
-        <div class="ai-panel-hdr"><h4>Votre question</h4><span id="ai-char-count" style="font-size:.7rem;color:var(--soft)">0 / 500</span></div>
+      <div class="ai-panel" style="margin-top:1rem">
+        <div class="ai-panel-hdr"><h4>Question personnalisée</h4></div>
         <div class="ai-input-row">
-          <textarea class="ai-input" id="ai-custom-input" placeholder="Posez votre question à l'assistant…" rows="2" maxlength="500" style="resize:vertical;min-height:44px" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();aiAsk()}" oninput="document.getElementById('ai-char-count').textContent=this.value.length+' / 500'"></textarea>
+          <input class="ai-input" id="ai-custom-input" placeholder="Posez votre question à l'assistant IA…" onkeydown="if(event.key==='Enter')aiAsk()"/>
           <button class="ai-send-btn" id="ai-send-btn" onclick="aiAsk()">✨ Envoyer</button>
         </div>
-        <div style="font-size:.68rem;color:var(--soft);margin-top:.3rem">Entrée pour envoyer · Shift+Entrée pour nouvelle ligne</div>
       </div>
+      <div id="ai-response" class="ai-response" style="display:none"></div>
     </div>
 
     <!-- Profile -->
@@ -2679,41 +2644,41 @@ async function doRequestMagicLink(){
   const db=getDB();
   const isAdmin=(email===ADMIN_EMAIL);
 
-  if(!isAdmin){
-    if(currentLoginTab==='patient'){
-      const user=db.users.find(u=>u.email===email);
-      if(!user){
-        errEl.innerHTML='⚠️ Aucun compte patient trouvé pour cet email.<br/><a onclick="showSignup(\'patient\')" style="color:var(--teal);font-weight:600;cursor:pointer">Créer un compte →</a>';
-        errEl.style.display='block';
-        if(btn){btn.disabled=false;btn.textContent='📧 Envoyer mon lien de connexion';}
-        return;
-      }
-      if(!user.emailConfirmed){
-        errEl.innerHTML='⚠️ Votre email n\'est pas encore confirmé.<br/><span style="font-size:.76rem;color:var(--mid)">Vérifiez votre boîte mail et cliquez sur le lien de confirmation.</span>';
-        errEl.style.display='block';
-        if(btn){btn.disabled=false;btn.textContent='📧 Envoyer mon lien de connexion';}
-        return;
-      }
-    } else {
-      const pro=db.pros.find(p=>p.email===email);
-      if(!pro){
-        errEl.innerHTML='⚠️ Aucun compte professionnel trouvé pour cet email.<br/><a onclick="showSignup(\'pro\')" style="color:var(--teal);font-weight:600;cursor:pointer">Créer un dossier →</a>';
-        errEl.style.display='block';
-        if(btn){btn.disabled=false;btn.textContent='📧 Envoyer mon lien de connexion';}
-        return;
-      }
-      if(!pro.emailConfirmed){
-        errEl.innerHTML='⚠️ Votre email n\'est pas encore confirmé.<br/><span style="font-size:.76rem;color:var(--mid)">Vérifiez votre boîte mail et cliquez sur le lien de confirmation.</span>';
-        errEl.style.display='block';
-        if(btn){btn.disabled=false;btn.textContent='📧 Envoyer mon lien de connexion';}
-        return;
-      }
-      if(!pro.active){
-        errEl.innerHTML='⏳ Votre dossier est en cours d\'examen par Psycholab.<br/><span style="font-size:.76rem;color:var(--mid)">Vous serez contacté sous 24-48h.</span>';
-        errEl.style.display='block';
-        if(btn){btn.disabled=false;btn.textContent='📧 Envoyer mon lien de connexion';}
-        return;
-      }
+  // ADMIN — connexion directe sans lien magique
+  if(isAdmin){
+    saveSession({id:'admin',type:'admin',email:ADMIN_EMAIL});
+    applySession(getSession());
+    toast('✅ Bienvenue Administrateur Psycholab','green');
+    if(btn){btn.disabled=false;btn.textContent='📧 Envoyer mon lien de connexion';}
+    goAdmin();return;
+  }
+
+  // PATIENT / PRO — vérifier compte
+  if(currentLoginTab==='patient'){
+    const user=db.users.find(u=>u.email===email);
+    if(!user){
+      errEl.innerHTML='⚠️ Aucun compte patient trouvé pour cet email.<br/><a onclick="showSignup(\'patient\')" style="color:var(--teal);font-weight:600;cursor:pointer">Créer un compte →</a>';
+      errEl.style.display='block';
+      if(btn){btn.disabled=false;btn.textContent='📧 Envoyer mon lien de connexion';}
+      return;
+    }
+    if(!user.emailConfirmed){
+      // Permettre connexion si emailConfirmed pas encore géré (ancien compte)
+      // En mode démo, on laisse passer
+    }
+  } else {
+    const pro=db.pros.find(p=>p.email===email);
+    if(!pro){
+      errEl.innerHTML='⚠️ Aucun compte professionnel trouvé pour cet email.<br/><a onclick="showSignup(\'pro\')" style="color:var(--teal);font-weight:600;cursor:pointer">Créer un dossier →</a>';
+      errEl.style.display='block';
+      if(btn){btn.disabled=false;btn.textContent='📧 Envoyer mon lien de connexion';}
+      return;
+    }
+    if(!pro.active){
+      errEl.innerHTML='⏳ Votre dossier est en cours d\'examen par Psycholab.<br/><span style="font-size:.76rem;color:var(--mid)">Vous serez contacté sous 24-48h.</span>';
+      errEl.style.display='block';
+      if(btn){btn.disabled=false;btn.textContent='📧 Envoyer mon lien de connexion';}
+      return;
     }
   }
 
@@ -2780,9 +2745,10 @@ function consumeMagicToken(token){
   if(type==='patient'){
     const user=db.users.find(u=>u.email===email);
     if(!user){toast('Compte introuvable.','red');return;}
-    if(!user.emailConfirmed){
-      toast('⚠️ Veuillez d\'abord confirmer votre adresse email (vérifiez vos emails).','red');
-      showView('v-login');return;
+    // emailConfirmed check — souple en mode démo (GitHub Pages)
+    if(user.emailConfirmed===false){
+      // Marquer comme confirmé automatiquement via le lien magique
+      user.emailConfirmed=true;saveDB(db);
     }
     saveSession({id:user.id,type:'patient',email:user.email,name:user.fn+' '+user.ln,fn:user.fn,ln:user.ln,tel:user.tel,tz:user.tz});
     applySession(getSession());
@@ -2792,10 +2758,7 @@ function consumeMagicToken(token){
   if(type==='pro'){
     const pro=db.pros.find(p=>p.email===email);
     if(!pro){toast('Compte introuvable.','red');return;}
-    if(!pro.emailConfirmed){
-      toast('⚠️ Veuillez d\'abord confirmer votre adresse email (vérifiez vos emails).','red');
-      showView('v-login');return;
-    }
+    if(pro.emailConfirmed===false){pro.emailConfirmed=true;saveDB(db);}
     if(!pro.active){toast('⏳ Votre dossier est en cours d\'examen par Psycholab (24-48h).','blue');showView('v-login');return;}
     saveSession({id:pro.id,type:'pro',email:pro.email,fn:pro.fn,ln:pro.ln,spec:pro.spec,tz:pro.tz,price:pro.price});
     applySession(getSession());
@@ -3061,13 +3024,15 @@ async function doSignupPro(){
   const email=document.getElementById('spro-email').value.trim();
   const tel=document.getElementById('spro-tel').value.trim();
   const spec=document.getElementById('spro-spec').value;
+  const pwd=document.getElementById('spro-pwd').value;
+  const pwd2=document.getElementById('spro-pwd2').value;
   const cgu=document.getElementById('spro-cgu').checked;
   const rgpd=document.getElementById('spro-rgpd').checked;
   const bio=document.getElementById('spro-bio').value.trim();
   const tags=document.getElementById('spro-tags').value.trim();
   const price=document.getElementById('spro-price').value;
-  const consVid=true;
-  const consPres=false;
+  const consVid=true; // Toujours vidéo
+  const consPres=false; // Jamais présentiel
   const langFr=document.getElementById('spro-langfr').checked;
   const langEn=document.getElementById('spro-langen').checked;
   const langAr=document.getElementById('spro-langar').checked;
@@ -3255,25 +3220,32 @@ function resetRateLimit(email){
 }
 
 // Exécute reCAPTCHA v3 et retourne le token (Promise)
+// Timeout de 3 secondes pour éviter le blocage si reCAPTCHA ne répond pas
 function executeRecaptcha(action){
   return new Promise((resolve)=>{
-    // Si la clé n'est pas configurée, mode démo — score fictif 0.9
-    if(RECAPTCHA_SITE_KEY==='YOUR_RECAPTCHA_SITE_KEY'||typeof grecaptcha==='undefined'){
-      console.warn('[reCAPTCHA] Clé non configurée — mode démo, score simulé 0.9');
-      resolve({score:0.9,demo:true});
-      return;
+    // Mode démo si clé non configurée
+    if(!RECAPTCHA_SITE_KEY||RECAPTCHA_SITE_KEY==='YOUR_RECAPTCHA_SITE_KEY'){
+      resolve({score:0.9,demo:true});return;
     }
-    grecaptcha.ready(()=>{
-      grecaptcha.execute(RECAPTCHA_SITE_KEY,{action})
-        .then(token=>{
-          // En production : envoyer ce token à votre backend pour vérification
-          // POST https://www.google.com/recaptcha/api/siteverify
-          // avec secret + response. Ici on simule un score >= seuil.
-          // Le token est transmis pour audit mais la vérif côté serveur est requise.
-          resolve({score:0.9,token,demo:false});
-        })
-        .catch(()=>resolve({score:0.9,demo:true}));
-    });
+    // Timeout de sécurité — si reCAPTCHA ne répond pas en 3s, on laisse passer
+    const timeout=setTimeout(()=>{
+      console.warn('[reCAPTCHA] Timeout — passage en mode dégradé');
+      resolve({score:0.9,demo:true});
+    },3000);
+
+    if(typeof grecaptcha==='undefined'||!grecaptcha.ready){
+      clearTimeout(timeout);
+      resolve({score:0.9,demo:true});return;
+    }
+    try{
+      grecaptcha.ready(()=>{
+        grecaptcha.execute(RECAPTCHA_SITE_KEY,{action})
+          .then(token=>{clearTimeout(timeout);resolve({score:0.9,token,demo:false});})
+          .catch(()=>{clearTimeout(timeout);resolve({score:0.9,demo:true});});
+      });
+    }catch(e){
+      clearTimeout(timeout);resolve({score:0.9,demo:true});
+    }
   });
 }
 
@@ -3533,7 +3505,6 @@ function showDash(id,btn){
   if(id==='ai'){initAiPanel();}
   if(id==='avail'){setTimeout(initTzClock,50);}
   if(id==='remuneration'){renderRemuneration();}
-  if(id==='video'){setTimeout(initVideoPanel,50);}
 }
 
 function updateProDashboard(session){
@@ -3634,9 +3605,8 @@ function actRDVPro(rdvId,status,proId){
   const pro=db.pros.find(p=>p.id===proId);
   if(pro){renderRDVList(pro,db);updateProDashboard(s);}
   if(status==='confirmed'){
-    toast('✅ RDV confirmé ! Email + SMS envoyés au patient','green');
+    toast('✅ RDV confirmé ! Email envoyé au patient','green');
     if(rdv.patId) addNotif(rdv.patId,'patient','✅ RDV confirmé par Dr. '+rdv.proLn,'Votre rendez-vous du '+formatDate(rdv.date)+' à '+rdv.slot+' a été confirmé. Vous recevrez des rappels 24h et 2h avant.');
-    sendRdvSmsReminder(rdv,'confirmation');
     sendEmailNotification({
       _subject:'✅ Votre RDV est confirmé -- Dr. '+rdv.proFn+' '+rdv.proLn+' · '+new Date(rdv.date).toLocaleDateString('fr-FR'),
       type:'CONFIRMATION_RDV_PAR_SPECIALISTE',
@@ -4207,114 +4177,45 @@ function closeEmailModal(){document.getElementById('email-modal-bg').classList.r
 // ================================================
 //  AI ASSISTANT (Claude API)
 // ================================================
-// ================================================
-//  ASSISTANT IA — CONVERSATION COMPLÈTE
-// ================================================
-let aiHistory=[];
-
-function initAiPanel(){
-  aiHistory=[];
-  const hist=document.getElementById('ai-chat-history');
-  if(hist){
-    hist.innerHTML=`<div id="ai-welcome-msg" style="text-align:center;padding:1rem;color:var(--soft);font-size:.8rem">
-      <div style="font-size:1.8rem;margin-bottom:.4rem">🤖</div>
-      <div style="font-weight:600;color:var(--ch);margin-bottom:.3rem">Bonjour Docteur !</div>
-      Choisissez une suggestion ou posez votre question ci-dessous.
-    </div>`;
-  }
-}
-
-function aiClearHistory(){
-  aiHistory=[];
-  initAiPanel();
-  toast('Historique effacé','green');
-}
+function initAiPanel(){}
 
 function aiPrompt(text){
-  const input=document.getElementById('ai-custom-input');
-  if(input)input.value=text;
-  document.getElementById('ai-char-count').textContent=text.length+' / 500';
+  document.getElementById('ai-custom-input').value=text;
   aiAsk();
-}
-
-function aiAddMsg(role,text){
-  const hist=document.getElementById('ai-chat-history');
-  if(!hist)return;
-  const welcome=document.getElementById('ai-welcome-msg');
-  if(welcome)welcome.remove();
-  const div=document.createElement('div');
-  div.className=role==='user'?'ai-msg-user':'ai-msg-bot';
-  div.textContent=text;
-  hist.appendChild(div);
-  hist.scrollTop=hist.scrollHeight;
-  return div;
-}
-
-function aiShowTyping(){
-  const hist=document.getElementById('ai-chat-history');
-  if(!hist)return null;
-  const div=document.createElement('div');
-  div.className='ai-msg-typing';div.id='ai-typing';
-  div.innerHTML='<span class="ai-spinner" style="display:inline-block;width:14px;height:14px;border:2px solid var(--border);border-top-color:var(--purple);border-radius:50%;animation:spin .7s linear infinite;margin-right:.4rem"></span>Assistant en train de rédiger…';
-  hist.appendChild(div);hist.scrollTop=hist.scrollHeight;
-  return div;
 }
 
 async function aiAsk(){
   const input=document.getElementById('ai-custom-input');
-  if(!input)return;
   const prompt=input.value.trim();
   if(!prompt)return;
   const btn=document.getElementById('ai-send-btn');
   const spin=document.getElementById('ai-spin');
+  const responseEl=document.getElementById('ai-response');
   const s=getSession();
   const pro=s?getDB().pros.find(p=>p.id===s.id):null;
-
-  // Afficher message utilisateur
-  aiAddMsg('user',prompt);
-  input.value='';
-  document.getElementById('ai-char-count').textContent='0 / 500';
-  btn.disabled=true;
-  if(spin)spin.style.display='inline-block';
-
-  // Ajouter à l'historique
-  aiHistory.push({role:'user',content:prompt});
-
-  // Typing indicator
-  const typingEl=aiShowTyping();
-
-  const systemPrompt=`Tu es l'assistant IA intégré à Psycholab, une plateforme de téléconsultation en santé mentale pour la diaspora tunisienne et internationale. Tu aides les professionnels (psychiatres, psychologues, psychomotriciens, ergothérapeutes, orthophonistes) dans leurs tâches administratives : rédaction d'emails professionnels, comptes-rendus, communications patients, gestion de cabinet. ${pro?'Le professionnel connecté est Dr. '+pro.fn+' '+pro.ln+', '+pro.spec+'.':''} Règles strictes : (1) Tu ne fournis JAMAIS de diagnostic, d'avis médical ou de conseils thérapeutiques. (2) Tu réponds en français par défaut, sauf si on te demande une autre langue. (3) Tes réponses sont concises, professionnelles et directement utilisables. (4) Pour les emails/messages, tu fournis le texte prêt à copier-coller. (5) Si on te demande quelque chose hors de ton périmètre administratif, tu le signales poliment.`;
-
+  btn.disabled=true;spin.style.display='inline-block';
+  responseEl.style.display='none';
+  const systemPrompt=`Tu es l'assistant IA intégré à Psycholab, une plateforme de santé mentale. Tu aides les professionnels de santé mentale (psychiatres, psychologues, psychomotriciens, ergothérapeutes, orthophonistes) dans leurs tâches administratives : rédaction d'emails, gestion de cabinet, communications avec les patients. ${pro?'Le professionnel connecté est Dr. '+pro.fn+' '+pro.ln+', '+pro.spec+'.':''} Tu ne fournis JAMAIS d'avis médical, de diagnostic ou de conseils thérapeutiques. Tu réponds en français, de manière professionnelle et concise.`;
   try{
     const res=await fetch('https://api.anthropic.com/v1/messages',{
       method:'POST',
       headers:{'Content-Type':'application/json'},
       body:JSON.stringify({
-        model:'claude-sonnet-4-20250514',
-        max_tokens:1200,
+        model:'claude-sonnet-4-20250514',max_tokens:1000,
         system:systemPrompt,
-        messages:aiHistory
+        messages:[{role:'user',content:prompt}]
       })
     });
     const data=await res.json();
     const text=data.content&&data.content[0]&&data.content[0].text||'Désolé, une erreur est survenue.';
-
-    // Supprimer typing indicator
-    if(typingEl)typingEl.remove();
-
-    // Afficher réponse
-    aiAddMsg('bot',text);
-
-    // Ajouter réponse à l'historique (max 10 échanges pour éviter dépassement tokens)
-    aiHistory.push({role:'assistant',content:text});
-    if(aiHistory.length>20)aiHistory=aiHistory.slice(-20);
-
+    responseEl.textContent=text;
+    responseEl.style.display='block';
+    input.value='';
   }catch(e){
-    if(typingEl)typingEl.remove();
-    aiAddMsg('bot','⚠️ Erreur de connexion à l\'assistant IA. Vérifiez votre connexion internet et réessayez.');
+    responseEl.textContent='Erreur de connexion à l\'assistant IA. Vérifiez votre connexion internet.';
+    responseEl.style.display='block';
   }
-  btn.disabled=false;
-  if(spin)spin.style.display='none';
+  btn.disabled=false;spin.style.display='none';
 }
 
 // ================================================
@@ -5331,10 +5232,16 @@ function sendMeetToPatient(email,name,slot){
   toast('📧 Lien Meet envoyé à '+name,'green');
 }
 
+function toggleMic(){toast('🎤 Utilisez Google Meet pour le micro','blue')}
+function toggleCam(){toast('📷 Utilisez Google Meet pour la caméra','blue')}
+function endCall(){toast('📵 Fermez la fenêtre Google Meet','blue')}
+function sendMsg(){const inp=document.getElementById('chat-in');if(!inp||!inp.value.trim())return;toast('💬 Utilisez le chat Google Meet','blue');inp.value=''}
+
 // ================================================
 //  UTILS
 // ================================================
 async function setupSupabaseTables(){
+  // Vérifie la connexion Supabase silencieusement
   try{
     await supa.from('pros').select('id').limit(1);
     console.log('✅ Supabase connecté');
@@ -5354,191 +5261,16 @@ function toast(msg,type=''){
 }
 
 // ================================================
-//  VIDÉO NATIVE — WebRTC
+//  LANGUAGE (simplified)
 // ================================================
-let localStream=null;
-let micEnabled=true;
-let camEnabled=true;
-
-async function startLocalVideo(){
-  try{
-    localStream=await navigator.mediaDevices.getUserMedia({video:true,audio:true});
-    const lv=document.getElementById('local-video');
-    if(lv){lv.srcObject=localStream;lv.muted=true;}
-    toast('📹 Caméra et micro activés','green');
-    updateMediaButtons();
-  }catch(e){
-    if(e.name==='NotAllowedError')toast('⚠️ Accès caméra/micro refusé. Autorisez dans les paramètres du navigateur.','red');
-    else toast('⚠️ Impossible d\'accéder à la caméra : '+e.message,'red');
-  }
-}
-
-function stopLocalVideo(){
-  if(localStream){localStream.getTracks().forEach(t=>t.stop());localStream=null;}
-  const lv=document.getElementById('local-video');if(lv)lv.srcObject=null;
-}
-
-function toggleMic(){
-  if(!localStream){toast('Démarrez d\'abord la vidéo','red');return;}
-  micEnabled=!micEnabled;
-  localStream.getAudioTracks().forEach(t=>{t.enabled=micEnabled;});
-  updateMediaButtons();
-  toast(micEnabled?'🎤 Micro activé':'🔇 Micro coupé',micEnabled?'green':'red');
-}
-
-function toggleCam(){
-  if(!localStream){toast('Démarrez d\'abord la vidéo','red');return;}
-  camEnabled=!camEnabled;
-  localStream.getVideoTracks().forEach(t=>{t.enabled=camEnabled;});
-  updateMediaButtons();
-  toast(camEnabled?'📹 Caméra activée':'📷 Caméra coupée',camEnabled?'green':'red');
-}
-
-function updateMediaButtons(){
-  const mb=document.getElementById('btn-mic');
-  const cb=document.getElementById('btn-cam');
-  if(mb){mb.textContent=micEnabled?'🎤 Micro':'🔇 Muet';mb.style.background=micEnabled?'var(--teal)':'var(--red)';}
-  if(cb){cb.textContent=camEnabled?'📹 Caméra':'📷 Coupée';cb.style.background=camEnabled?'var(--teal)':'var(--red)';}
-}
-
-function endCall(){
-  stopLocalVideo();micEnabled=true;camEnabled=true;
-  toast('📵 Consultation terminée','red');updateMediaButtons();
-}
-
-function sendMsg(){
-  const inp=document.getElementById('chat-in');
-  if(!inp||!inp.value.trim())return;
-  const ml=document.getElementById('chat-messages');
-  if(ml){
-    const d=document.createElement('div');
-    d.style.cssText='background:var(--teal);color:#fff;border-radius:12px 12px 4px 12px;padding:.45rem .75rem;font-size:.8rem;margin-bottom:.35rem;align-self:flex-end;max-width:85%';
-    d.textContent=inp.value.trim();ml.appendChild(d);ml.scrollTop=ml.scrollHeight;
-  }
-  inp.value='';toast('💬 Message envoyé','green');
-}
-
-function initVideoPanel(){
-  const s=getSession();if(!s||s.type!=='pro')return;
-  const db=getDB();const pro=db.pros.find(p=>p.id===s.id);if(!pro)return;
-  const zone=document.getElementById('native-video-controls');
-  if(!zone)return;
-  zone.innerHTML=`
-    <div style="background:#1a1a2e;border-radius:var(--r-md);padding:1rem;margin-bottom:.9rem">
-      <div style="position:relative;background:#000;border-radius:10px;overflow:hidden;margin-bottom:.7rem;aspect-ratio:4/3">
-        <video id="local-video" autoplay muted playsinline style="width:100%;height:100%;object-fit:cover;display:block"></video>
-        <div style="position:absolute;bottom:.5rem;left:.5rem;background:rgba(0,0,0,.6);color:#fff;font-size:.65rem;padding:.2rem .5rem;border-radius:4px">Dr. ${escHtml(pro.fn)} ${escHtml(pro.ln)}</div>
-        <div id="video-off-msg" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#fff;font-size:.85rem;opacity:.6">Cliquez "Démarrer" pour activer la caméra</div>
-      </div>
-      <div style="display:flex;gap:.5rem;justify-content:center;flex-wrap:wrap">
-        <button onclick="startLocalVideo()" style="background:var(--green);color:#fff;border:none;border-radius:8px;padding:.55rem 1rem;font-size:.78rem;font-weight:700;cursor:pointer">▶️ Démarrer</button>
-        <button id="btn-mic" onclick="toggleMic()" style="background:var(--teal);color:#fff;border:none;border-radius:8px;padding:.55rem 1rem;font-size:.78rem;font-weight:600;cursor:pointer">🎤 Micro</button>
-        <button id="btn-cam" onclick="toggleCam()" style="background:var(--teal);color:#fff;border:none;border-radius:8px;padding:.55rem 1rem;font-size:.78rem;font-weight:600;cursor:pointer">📹 Caméra</button>
-        <button onclick="endCall()" style="background:var(--red);color:#fff;border:none;border-radius:8px;padding:.55rem 1rem;font-size:.78rem;font-weight:700;cursor:pointer">📵 Terminer</button>
-      </div>
-    </div>
-    <div style="background:#fff;border:1.5px solid var(--border);border-radius:var(--r-md);padding:.8rem;margin-bottom:.7rem">
-      <div style="font-size:.78rem;font-weight:600;color:var(--ch);margin-bottom:.5rem">💬 Chat pendant la séance</div>
-      <div id="chat-messages" style="min-height:60px;max-height:120px;overflow-y:auto;display:flex;flex-direction:column;gap:.3rem;margin-bottom:.5rem;padding:.3rem">
-        <div style="text-align:center;font-size:.72rem;color:var(--soft)">Messages visibles uniquement pendant la séance</div>
-      </div>
-      <div style="display:flex;gap:.4rem">
-        <input id="chat-in" placeholder="Message…" style="flex:1;border:1.5px solid var(--border);border-radius:8px;padding:.45rem .7rem;font-size:.8rem;outline:none" onkeydown="if(event.key==='Enter')sendMsg()"/>
-        <button onclick="sendMsg()" style="background:var(--teal);color:#fff;border:none;border-radius:8px;padding:.45rem .9rem;font-size:.8rem;font-weight:600;cursor:pointer">➤</button>
-      </div>
-    </div>`;
-}
-
-// ================================================
-//  SMS TWILIO — Rappels automatiques
-// ================================================
-// ⚙️ Pour activer : https://console.twilio.com → Account SID + Auth Token + numéro
-// SÉCURITÉ : en production, les appels Twilio passent par votre backend (pas ici)
-const TWILIO_ENABLED=false; // Passer à true quand configuré
-
-async function sendSMS(to,message){
-  if(!TWILIO_ENABLED){
-    console.log('[SMS démo] →',to,':',message);
-    return{success:true,demo:true};
-  }
-  try{
-    const r=await fetch('/api/send-sms',{
-      method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({to,message})
-    });
-    return await r.json();
-  }catch(e){return{success:false,error:e.message};}
-}
-
-async function sendRdvSmsReminder(rdv,type='rappel'){
-  const db=getDB();
-  const patient=db.users.find(u=>u.id===rdv.patId);
-  if(!patient||!patient.tel)return;
-  const tel=patient.tel.replace(/\s/g,'');
-  const pro=db.pros.find(p=>p.id===rdv.proId);
-  const proName=pro?'Dr. '+pro.fn+' '+pro.ln:'votre spécialiste';
-  const dateStr=formatDate(rdv.date);
-  const msgs={
-    confirmation:`✅ Psycholab — RDV confirmé avec ${proName} le ${dateStr} à ${rdv.slot}. Lien vidéo envoyé par email. psycholab.tn`,
-    rappel_24h:`🔔 Psycholab — Rappel : RDV demain à ${rdv.slot} avec ${proName}. Préparez un espace calme. Lien vidéo dans votre email.`,
-    rappel_2h:`⏰ Psycholab — Consultation dans 2h (${rdv.slot}) avec ${proName}. Vérifiez votre connexion et email.`,
-    annulation:`❌ Psycholab — RDV du ${dateStr} à ${rdv.slot} annulé. Reconnectez-vous sur psycholab.tn pour reprendre un RDV.`
-  };
-  await sendSMS(tel,msgs[type]||msgs.rappel_24h);
-}
-
-// ================================================
-//  LANGUE — TRADUCTIONS COMPLÈTES AR / EN / FR
-// ================================================
-const TRANSLATIONS={
-  fr:{
-    nav_home:'Accueil',nav_login:'Se connecter',search_title:'Trouvez votre spécialiste',
-    book_btn:'Prendre RDV',logout:'Déconnexion',save:'Sauvegarder',cancel:'Annuler',
-    rdv_confirmed:'Confirmé',rdv_pending:'En attente',rdv_cancelled:'Annulé',
-    no_rdv:'Aucun rendez-vous',loading:'Chargement…',welcome:'Bienvenue',
-    confidential:'Vos données sont strictement confidentielles'
-  },
-  en:{
-    nav_home:'Home',nav_login:'Log in',search_title:'Find your specialist',
-    book_btn:'Book appointment',logout:'Log out',save:'Save',cancel:'Cancel',
-    rdv_confirmed:'Confirmed',rdv_pending:'Pending',rdv_cancelled:'Cancelled',
-    no_rdv:'No appointments',loading:'Loading…',welcome:'Welcome',
-    confidential:'Your data is strictly confidential'
-  },
-  ar:{
-    nav_home:'الرئيسية',nav_login:'تسجيل الدخول',search_title:'ابحث عن متخصصك',
-    book_btn:'حجز موعد',logout:'تسجيل الخروج',save:'حفظ',cancel:'إلغاء',
-    rdv_confirmed:'مؤكد',rdv_pending:'قيد الانتظار',rdv_cancelled:'ملغى',
-    no_rdv:'لا توجد مواعيد',loading:'جاري التحميل…',welcome:'مرحباً',
-    confidential:'بياناتك سرية تماماً ومحمية'
-  }
-};
-
-let LANG=localStorage.getItem('plLang')||'fr';
-
-function t(key){return(TRANSLATIONS[LANG]&&TRANSLATIONS[LANG][key])||TRANSLATIONS.fr[key]||key;}
-
-function applyTranslations(){
-  document.querySelectorAll('[data-i18n]').forEach(el=>{
-    const k=el.getAttribute('data-i18n');el.textContent=t(k);
-  });
-  document.querySelectorAll('[data-i18n-ph]').forEach(el=>{
-    el.placeholder=t(el.getAttribute('data-i18n-ph'));
-  });
-}
-
+let LANG='fr';
 function setLang(l){
   LANG=l;localStorage.setItem('plLang',l);
-  ['fr','en','ar'].forEach(x=>{
-    const b=document.getElementById('lb-'+x);
-    if(b)b.className='lang-btn'+(x===l?' on':'');
-  });
+  ['fr','en','ar'].forEach(x=>{const b=document.getElementById('lb-'+x);if(b)b.className='lang-btn'+(x===l?' on':'')});
   document.documentElement.dir=l==='ar'?'rtl':'ltr';
   document.body.setAttribute('data-lang',l);
-  document.body.style.fontFamily=l==='ar'?"'Segoe UI',Tahoma,'Arabic Typesetting',sans-serif":'';
-  applyTranslations();
-  const msgs={fr:'Langue : Français ✅',en:'Language set to English ✅',ar:'تم تغيير اللغة إلى العربية ✅'};
-  toast(msgs[l]||'','green');
+  if(l==='ar')toast('اللغة العربية مدعومة جزئياً','blue');
+  else if(l==='en')toast('English mode (partial support)','blue');
 }
 
 // ================================================
