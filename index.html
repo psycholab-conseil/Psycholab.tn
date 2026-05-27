@@ -1361,51 +1361,52 @@ body[data-lang="ar"]{font-family:'Segoe UI',Tahoma,'Arabic Typesetting',sans-ser
   <div class="auth-wrap">
     <div class="auth-card" style="text-align:center;padding:2.5rem 1.5rem">
 
-      <!-- Icône succès animée -->
       <div style="width:90px;height:90px;border-radius:50%;background:linear-gradient(135deg,var(--teal),var(--teal-l));display:flex;align-items:center;justify-content:center;font-size:2.5rem;margin:0 auto 1.3rem;box-shadow:0 8px 32px rgba(27,107,97,.3);animation:popIn .5s cubic-bezier(.175,.885,.32,1.275)">
         ✅
       </div>
 
-      <h2 style="font-family:'Playfair Display',serif;font-size:1.5rem;font-weight:700;color:var(--ch);margin-bottom:.5rem">
+      <h2 style="font-family:'Playfair Display',serif;font-size:1.4rem;font-weight:700;color:var(--ch);margin-bottom:.4rem">
         Dossier envoyé avec succès !
       </h2>
-
-      <p style="color:var(--mid);font-size:.9rem;line-height:1.65;margin-bottom:1.5rem">
-        Un email de confirmation a été envoyé à<br/>
-        <strong style="color:var(--teal-d)" id="conf-pro-email-simple">—</strong>
+      <p style="color:var(--mid);font-size:.85rem;line-height:1.6;margin-bottom:1.2rem">
+        Email de confirmation envoyé à<br/>
+        <strong style="color:var(--teal-d);font-size:.95rem" id="conf-pro-email-simple">—</strong>
       </p>
 
-      <!-- Message principal -->
-      <div style="background:var(--teal-xl);border-radius:var(--r-md);padding:1.2rem;margin-bottom:1.5rem;border-left:4px solid var(--teal)">
-        <div style="font-size:.88rem;font-weight:700;color:var(--teal-d);margin-bottom:.4rem">
-          📧 Email envoyé à reservation.psycholab@gmail.com
-        </div>
-        <div style="font-size:.82rem;color:var(--mid);line-height:1.6">
-          Votre dossier est en cours de vérification.<br/>
-          Vous serez contacté sous <strong>24 à 48h</strong>.
-        </div>
-      </div>
-
-      <!-- Étapes simples -->
-      <div style="background:var(--sand);border-radius:var(--r-md);padding:1rem;margin-bottom:1.5rem;text-align:left">
-        <div style="font-size:.78rem;font-weight:700;color:var(--ch);margin-bottom:.7rem">⏳ Que se passe-t-il maintenant ?</div>
-        <div style="display:flex;flex-direction:column;gap:.55rem">
-          <div style="display:flex;align-items:center;gap:.6rem;font-size:.8rem;color:var(--mid)">
-            <div style="width:22px;height:22px;border-radius:50%;background:var(--teal);color:#fff;display:flex;align-items:center;justify-content:center;font-size:.65rem;font-weight:700;flex-shrink:0">1</div>
-            L'équipe Psycholab vérifie votre dossier
-          </div>
-          <div style="display:flex;align-items:center;gap:.6rem;font-size:.8rem;color:var(--mid)">
-            <div style="width:22px;height:22px;border-radius:50%;background:var(--teal);color:#fff;display:flex;align-items:center;justify-content:center;font-size:.65rem;font-weight:700;flex-shrink:0">2</div>
-            Vous recevez un email de validation
-          </div>
-          <div style="display:flex;align-items:center;gap:.6rem;font-size:.8rem;color:var(--mid)">
-            <div style="width:22px;height:22px;border-radius:50%;background:var(--teal);color:#fff;display:flex;align-items:center;justify-content:center;font-size:.65rem;font-weight:700;flex-shrink:0">3</div>
-            Votre profil apparaît sur la plateforme
-          </div>
+      <!-- Alerte email important -->
+      <div style="background:linear-gradient(135deg,#FFF8E1,#FFF3CD);border:2px solid #F59E0B;border-radius:var(--r-md);padding:1rem;margin-bottom:1.2rem;text-align:left">
+        <div style="font-size:.84rem;font-weight:700;color:#92400E;margin-bottom:.3rem">📧 Action requise — Vérifiez votre email</div>
+        <div style="font-size:.78rem;color:#78350F;line-height:1.65">
+          Vous avez reçu un email de confirmation sur l'adresse indiquée.<br/>
+          <strong>Cliquez sur le lien dans cet email</strong> pour activer votre dossier.<br/>
+          <span style="font-size:.72rem;opacity:.8">⏱️ Lien valable 48h · Vérifiez vos spams si besoin</span>
         </div>
       </div>
 
-      <button class="btn-submit" onclick="goHome()" style="font-size:.95rem;padding:.9rem">
+      <!-- Étapes claires -->
+      <div style="background:var(--sand);border-radius:var(--r-md);padding:1rem;margin-bottom:1.2rem;text-align:left">
+        <div style="font-size:.8rem;font-weight:700;color:var(--ch);margin-bottom:.75rem">📋 Les 4 étapes de votre validation :</div>
+        <div style="display:flex;flex-direction:column;gap:.6rem">
+          <div style="display:flex;align-items:center;gap:.7rem">
+            <div style="width:26px;height:26px;border-radius:50%;background:var(--green);color:#fff;display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:700;flex-shrink:0">✓</div>
+            <div style="font-size:.8rem;color:var(--ch)"><strong>Dossier soumis</strong> — fait ✅</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:.7rem">
+            <div style="width:26px;height:26px;border-radius:50%;background:var(--orange);color:#fff;display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:700;flex-shrink:0">2</div>
+            <div style="font-size:.8rem;color:var(--ch)"><strong>Confirmez votre email</strong> — cliquez le lien reçu</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:.7rem">
+            <div style="width:26px;height:26px;border-radius:50%;background:var(--teal);color:#fff;display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:700;flex-shrink:0">3</div>
+            <div style="font-size:.8rem;color:var(--mid)">Psycholab vérifie votre dossier <span style="color:var(--soft)">(24-48h)</span></div>
+          </div>
+          <div style="display:flex;align-items:center;gap:.7rem">
+            <div style="width:26px;height:26px;border-radius:50%;background:var(--border);color:var(--soft);display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:700;flex-shrink:0">4</div>
+            <div style="font-size:.8rem;color:var(--soft)">Votre profil est visible sur la plateforme</div>
+          </div>
+        </div>
+      </div>
+
+      <button class="btn-submit" onclick="goHome()" style="font-size:.92rem;padding:.85rem">
         ← Retour à l'accueil
       </button>
 
@@ -2434,33 +2435,51 @@ const DAYS_FULL=['Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi','Dimanch
 //  INIT
 // ================================================
 function init(){
-  // -- Initialiser la base si elle n'existe pas encore --
-  const existing=localStorage.getItem('psycholab_db');
-  if(!existing){
-    saveDB({users:[],pros:[],rdvs:[],notifs:[],fiches:[],messages:[],factures:[],paiements:[]});
-  } else {
-    // Compléter les collections manquantes sans effacer les données existantes
-    const db=getDB();
-    let changed=false;
-    if(!db.notifs){db.notifs=[];changed=true;}
-    if(!db.fiches){db.fiches=[];changed=true;}
-    if(!db.messages){db.messages=[];changed=true;}
-    if(!db.factures){db.factures=[];changed=true;}
-    if(!db.paiements){db.paiements=[];changed=true;}
-    if(changed)saveDB(db);
+  try{
+    // -- Toujours afficher la page d'accueil au démarrage --
+    const homeView=document.getElementById('v-home');
+    if(homeView){
+      document.querySelectorAll('.view').forEach(v=>v.classList.remove('on'));
+      homeView.classList.add('on');
+    }
+    // -- Initialiser la base si elle n'existe pas encore --
+    const existing=localStorage.getItem('psycholab_db');
+    if(!existing){
+      saveDB({users:[],pros:[],rdvs:[],notifs:[],fiches:[],messages:[],factures:[],paiements:[]});
+    } else {
+      const db=getDB();
+      let changed=false;
+      if(!db.notifs){db.notifs=[];changed=true;}
+      if(!db.fiches){db.fiches=[];changed=true;}
+      if(!db.messages){db.messages=[];changed=true;}
+      if(!db.factures){db.factures=[];changed=true;}
+      if(!db.paiements){db.paiements=[];changed=true;}
+      if(changed)saveDB(db);
+    }
+    const session=getSession();
+    if(session)applySession(session);
+    renderHome();
+    const d=new Date();
+    const dayNames=['Dimanche','Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi'];
+    const el=document.getElementById('pro-date');
+    if(el)el.textContent=`${dayNames[d.getDay()]} ${d.getDate()} ${MONTHS[d.getMonth()]} ${d.getFullYear()}`;
+    // -- Vérifier tokens dans l'URL --
+    checkConfirmTokenOnLoad();
+    checkMagicTokenOnLoad();
+    // -- Initialiser le captcha --
+    refreshCaptcha();
+    // -- Restaurer la langue préférée --
+    const savedLang=localStorage.getItem('plLang');
+    if(savedLang&&savedLang!=='fr')setLang(savedLang);
+  }catch(e){
+    console.error('Init error:',e);
+    // En cas d'erreur critique, afficher quand même la page d'accueil
+    const homeView=document.getElementById('v-home');
+    if(homeView){
+      document.querySelectorAll('.view').forEach(v=>v.classList.remove('on'));
+      homeView.classList.add('on');
+    }
   }
-  const session=getSession();
-  if(session) applySession(session);
-  renderHome();
-  const d=new Date();
-  const dayNames=['Dimanche','Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi'];
-  const el=document.getElementById('pro-date');
-  if(el)el.textContent=`${dayNames[d.getDay()]} ${d.getDate()} ${MONTHS[d.getMonth()]} ${d.getFullYear()}`;
-  // -- Vérifier token magique dans l'URL --
-  checkConfirmTokenOnLoad();
-  checkMagicTokenOnLoad();
-  // -- Initialiser le captcha --
-  refreshCaptcha();
 }
 
 function applySession(session){
@@ -2512,48 +2531,53 @@ function goPatient(){
 //  HOME -- render specialists
 // ================================================
 function renderHome(){
-  const db=getDB();
-  const q=(document.getElementById('q')||{value:''}).value.toLowerCase();
-  const fs=(document.getElementById('fs')||{value:''}).value;
-  const ft=(document.getElementById('ft')||{value:''}).value;
-  let pros=db.pros.filter(p=>p.active);
-  if(q)pros=pros.filter(p=>(p.name||'').toLowerCase().includes(q)||(p.spec||'').toLowerCase().includes(q)||(p.tags||'').toLowerCase().includes(q));
-  if(fs)pros=pros.filter(p=>(p.spec||'').includes(fs));
-  if(ft)pros=pros.filter(p=>ft==='video'?p.consVid:p.consPres);
-  const list=document.getElementById('spec-list');
-  const cnt=document.getElementById('cnt');
-  cnt.textContent=pros.length+' résultat'+(pros.length>1?'s':'');
-  if(!pros.length){
-    list.innerHTML=`<div class="empty-state"><div class="empty-ico">🧠</div><h3 class="empty-title">Aucun spécialiste disponible</h3><p class="empty-sub">Psycholab est en cours de développement.<br/>Les professionnels apparaissent ici après validation.<br/><br/>Vous êtes professionnel de santé mentale ?</p><button class="btn-cta" onclick="showSignup('pro')">🩺 S'inscrire</button></div>`;
-    return;
-  }
-  list.innerHTML='<div class="spec-grid">'+pros.map(p=>{
-    const langs=[p.langFr&&'🇫🇷 FR',p.langAr&&'🇸🇦 AR',p.langEn&&'🇬🇧 EN'].filter(Boolean);
-    const tags=(p.tags||'').split(',').map(t=>t.trim()).filter(Boolean);
-    const photoEl=p.photo
-      ?`<img src="${p.photo}" style="width:52px;height:52px;border-radius:var(--r-sm);object-fit:cover;flex-shrink:0" alt="Dr. ${p.fn} ${p.ln}"/>`
-      :`<div class="av">🩺</div>`;
-    return `<div class="scard" onclick="openSheet('${p.id}')">
-      <div class="card-top">
-        ${photoEl}
-        <div>
-          <div class="c-name">Dr. ${p.fn} ${p.ln}</div>
-          <div class="c-spec">${p.spec}</div>
-          <div class="stars">★★★★★ <span style="color:var(--soft);font-size:.67rem">Nouveau</span></div>
+  try{
+    const db=getDB();
+    const q=(document.getElementById('q')||{value:''}).value.toLowerCase();
+    const fs=(document.getElementById('fs')||{value:''}).value;
+    const ft=(document.getElementById('ft')||{value:''}).value;
+    let pros=db.pros.filter(p=>p.active);
+    if(q)pros=pros.filter(p=>(p.fn||'').toLowerCase().includes(q)||(p.ln||'').toLowerCase().includes(q)||(p.spec||'').toLowerCase().includes(q)||(p.tags||'').toLowerCase().includes(q));
+    if(fs)pros=pros.filter(p=>(p.spec||'').includes(fs));
+    if(ft)pros=pros.filter(p=>ft==='video'?p.consVid:p.consPres);
+    const list=document.getElementById('spec-list');
+    const cnt=document.getElementById('cnt');
+    if(cnt)cnt.textContent=pros.length+' résultat'+(pros.length>1?'s':'');
+    if(!list)return;
+    if(!pros.length){
+      list.innerHTML=`<div class="empty-state"><div class="empty-ico">🧠</div><h3 class="empty-title">Aucun spécialiste disponible</h3><p class="empty-sub">Psycholab est en cours de développement.<br/>Les professionnels apparaissent ici après validation.<br/><br/>Vous êtes professionnel de santé mentale ?</p><button class="btn-cta" onclick="showSignup('pro')">🩺 S'inscrire</button></div>`;
+      return;
+    }
+    list.innerHTML='<div class="spec-grid">'+pros.map(p=>{
+      const langs=[p.langFr&&'🇫🇷 FR',p.langAr&&'🇸🇦 AR',p.langEn&&'🇬🇧 EN'].filter(Boolean);
+      const tags=(p.tags||'').split(',').map(t=>t.trim()).filter(Boolean);
+      const photoEl=p.photo
+        ?`<img src="${p.photo}" style="width:52px;height:52px;border-radius:var(--r-sm);object-fit:cover;flex-shrink:0" alt="Dr. ${escHtml(p.fn)} ${escHtml(p.ln)}"/>`
+        :`<div class="av">🩺</div>`;
+      return `<div class="scard" onclick="openSheet('${p.id}')">
+        <div class="card-top">
+          ${photoEl}
+          <div>
+            <div class="c-name">Dr. ${escHtml(p.fn)} ${escHtml(p.ln)}</div>
+            <div class="c-spec">${escHtml(p.spec)}</div>
+            <div class="stars">★★★★★ <span style="color:var(--soft);font-size:.67rem">Nouveau</span></div>
+          </div>
         </div>
-      </div>
-      <div class="tags">
-        ${tags.slice(0,3).map(t=>`<span class="tag">${t}</span>`).join('')}
-        ${langs.map(l=>`<span class="tag la">${l}</span>`).join('')}
-        <span class="tag vi">📹 Téléconsultation</span>
-      </div>
-      <div class="card-foot">
-        <div class="price">38 €<small>/ 45 min</small></div>
-        <div class="nxt"><span>Fuseau</span><strong>${(p.tz||'').split('/').pop()||'--'}</strong></div>
-      </div>
-      <button class="btn-rdv">Prendre rendez-vous</button>
-    </div>`;
-  }).join('')+'</div>';
+        <div class="tags">
+          ${tags.slice(0,3).map(t=>`<span class="tag">${escHtml(t)}</span>`).join('')}
+          ${langs.map(l=>`<span class="tag la">${l}</span>`).join('')}
+          <span class="tag vi">📹 Téléconsultation</span>
+        </div>
+        <div class="card-foot">
+          <div class="price">38 €<small>/ 45 min</small></div>
+          <div class="nxt"><span>Fuseau</span><strong>${(p.tz||'').split('/').pop()||'--'}</strong></div>
+        </div>
+        <button class="btn-rdv">Prendre rendez-vous</button>
+      </div>`;
+    }).join('')+'</div>';
+  }catch(e){
+    console.error('renderHome error:',e);
+  }
 }
 
 function doFilter(){renderHome()}
@@ -3163,131 +3187,148 @@ async function doSignupPro(){
   const email=document.getElementById('spro-email').value.trim();
   const tel=document.getElementById('spro-tel').value.trim();
   const spec=document.getElementById('spro-spec').value;
-  const pwd=document.getElementById('spro-pwd').value;
-  const pwd2=document.getElementById('spro-pwd2').value;
   const cgu=document.getElementById('spro-cgu').checked;
   const rgpd=document.getElementById('spro-rgpd').checked;
   const bio=document.getElementById('spro-bio').value.trim();
   const tags=document.getElementById('spro-tags').value.trim();
   const price=document.getElementById('spro-price').value;
-  const consVid=true; // Toujours vidéo
-  const consPres=false; // Jamais présentiel
+  const consVid=true; const consPres=false;
   const langFr=document.getElementById('spro-langfr').checked;
   const langEn=document.getElementById('spro-langen').checked;
   const langAr=document.getElementById('spro-langar').checked;
   const errEl=document.getElementById('spro-error');
-  errEl.style.display='none';
-  let hasError=false;
+  errEl.style.display='none';errEl.innerHTML='';
 
-  if(!fn){showFieldError('spro-fn','Le prénom est obligatoire');hasError=true;}
-  if(!ln){showFieldError('spro-ln','Le nom est obligatoire');hasError=true;}
-  if(!email){showFieldError('spro-email','L\'adresse email professionnelle est obligatoire');hasError=true;}
-  else if(!isValidEmail(email)){showFieldError('spro-email','Adresse email invalide (ex: dr.nom@cabinet.com)');hasError=true;}
-  if(!tel){showFieldError('spro-tel','Le numéro de téléphone est obligatoire');hasError=true;}
-  if(!spec){showFieldError('spro-spec','Veuillez sélectionner votre spécialité');hasError=true;}
-  if(!bio||bio.length<20){showFieldError('spro-bio','La biographie est obligatoire (minimum 20 caractères)');hasError=true;}
+  // Collecte de TOUTES les erreurs en une seule passe
+  const errors=[];
+  let firstErrorId=null;
+  function addErr(fieldId,msg){
+    showFieldError(fieldId,msg);
+    errors.push(msg);
+    if(!firstErrorId)firstErrorId=fieldId;
+  }
+
+  if(!fn) addErr('spro-fn','Le prénom est obligatoire');
+  if(!ln) addErr('spro-ln','Le nom est obligatoire');
+  if(!email) addErr('spro-email',"L'adresse email professionnelle est obligatoire");
+  else if(!isValidEmail(email)) addErr('spro-email','Email invalide (ex: dr.nom@cabinet.com)');
+  if(!tel) addErr('spro-tel','Le numéro de téléphone est obligatoire');
+  if(!spec) addErr('spro-spec','Veuillez sélectionner votre spécialité');
+  if(!bio||bio.length<20) addErr('spro-bio','La biographie est obligatoire (min. 20 caractères)');
   if(!langFr&&!langEn&&!langAr){
-    errEl.innerHTML='⚠️ Veuillez sélectionner <strong>au moins une langue</strong> de consultation.';
-    errEl.style.display='block';hasError=true;
+    errors.push('Veuillez sélectionner au moins une langue de consultation');
+    if(!firstErrorId)firstErrorId='spro-langfr';
   }
-  if(!cgu||!rgpd){
-    errEl.innerHTML='⚠️ Vous devez accepter les <strong>Conditions Générales</strong> et le <strong>RGPD</strong> pour continuer.';
-    errEl.style.display='block';hasError=true;
-  }
+  const bankNom=document.getElementById('spro-bank-nom')?.value.trim()||'';
+  const bankIban=document.getElementById('spro-bank-iban')?.value.trim().replace(/\s/g,'')||'';
+  const bankBic=document.getElementById('spro-bank-bic')?.value.trim()||'';
+  if(!bankNom) addErr('spro-bank-nom','Le titulaire du compte bancaire est obligatoire');
+  if(!bankIban) addErr('spro-bank-iban',"L'IBAN est obligatoire pour recevoir vos paiements");
+  if(!bankBic) addErr('spro-bank-bic','Le BIC/SWIFT est obligatoire');
+  if(!cgu){errors.push('Vous devez accepter les Conditions Générales');if(!firstErrorId)firstErrorId='spro-cgu';}
+  if(!rgpd){errors.push('Vous devez accepter la politique RGPD');if(!firstErrorId)firstErrorId='spro-rgpd';}
   const contrat=document.getElementById('spro-contrat')?.checked;
-  if(!contrat){
-    errEl.innerHTML='⚠️ Vous devez accepter le <strong>Contrat de collaboration Psycholab</strong> pour continuer.';
-    errEl.style.display='block';hasError=true;
-  }
-  const bankNom=document.getElementById('spro-bank-nom')?.value.trim();
-  const bankIban=document.getElementById('spro-bank-iban')?.value.trim().replace(/\s/g,'');
-  const bankBic=document.getElementById('spro-bank-bic')?.value.trim();
-  if(!bankNom){errEl.innerHTML='⚠️ Le titulaire du compte bancaire est obligatoire.';errEl.style.display='block';hasError=true;}
-  if(!bankIban){errEl.innerHTML='⚠️ L\'IBAN est obligatoire pour recevoir vos paiements.';errEl.style.display='block';hasError=true;}
-  if(!bankBic){errEl.innerHTML='⚠️ Le BIC/SWIFT est obligatoire.';errEl.style.display='block';hasError=true;}
-  if(hasError)return;
+  if(!contrat){errors.push('Vous devez accepter le Contrat de collaboration Psycholab');if(!firstErrorId)firstErrorId='spro-contrat';}
 
-  // reCAPTCHA v3 + rate limiting
+  // Afficher TOUTES les erreurs + scroll vers la première
+  if(errors.length>0){
+    errEl.innerHTML=`
+      <div style="font-weight:700;margin-bottom:.5rem;font-size:.84rem;color:var(--red)">
+        ⚠️ ${errors.length} champ${errors.length>1?'s':''} manquant${errors.length>1?'s':''} :
+      </div>
+      <ul style="padding-left:1.2rem;margin:0;line-height:2">
+        ${errors.map(e=>`<li style="font-size:.78rem">${e}</li>`).join('')}
+      </ul>`;
+    errEl.style.display='block';
+    // Scroll vers le premier champ en erreur
+    const firstField=firstErrorId?document.getElementById(firstErrorId):errEl;
+    if(firstField)firstField.scrollIntoView({behavior:'smooth',block:'center'});
+    // Bouton clignote en rouge
+    const submitBtn=document.querySelector('#v-signup-pro .btn-submit');
+    if(submitBtn){
+      submitBtn.style.background='var(--red)';
+      setTimeout(()=>{submitBtn.style.background='';},1000);
+    }
+    return;
+  }
+
+  // reCAPTCHA
   const submitBtnPro=document.querySelector('#v-signup-pro .btn-submit');
   if(submitBtnPro){submitBtnPro.disabled=true;submitBtnPro.textContent='🔒 Vérification…';}
   const checkPro=await verifyHuman(email,'signup_pro');
   if(!checkPro.ok){
-    errEl.textContent=checkPro.message;errEl.style.display='block';
+    errEl.innerHTML='<div style="font-weight:700">⛔ '+checkPro.message+'</div>';
+    errEl.style.display='block';errEl.scrollIntoView({behavior:'smooth',block:'center'});
     if(submitBtnPro){submitBtnPro.disabled=false;submitBtnPro.textContent='Soumettre mon dossier →';}
     return;
   }
-  if(submitBtnPro){submitBtnPro.disabled=false;submitBtnPro.textContent='Soumettre mon dossier →';}
+  if(submitBtnPro)submitBtnPro.textContent='📧 Envoi en cours…';
 
   const db=getDB();
   if(db.pros.find(p=>p.email===email)||db.users.find(u=>u.email===email)){
-    showFieldError('spro-email','Cette adresse email est déjà utilisée sur Psycholab');return;
+    showFieldError('spro-email','Cette adresse email est déjà utilisée sur Psycholab');
+    document.getElementById('spro-email').scrollIntoView({behavior:'smooth',block:'center'});
+    if(submitBtnPro){submitBtnPro.disabled=false;submitBtnPro.textContent='Soumettre mon dossier →';}
+    return;
   }
-  const id='pro_'+Date.now();
-  const bankNom2=bankNom;
-  const bankIban2=bankIban;
-  const bankBic2=bankBic;
-  const bankBanque2=document.getElementById('spro-bank-nom-banque')?.value.trim();
-  // Compte pro : emailConfirmed false jusqu'au clic du lien, active false jusqu'à validation admin
-  const pro={id,fn,ln,email,tel,spec,rpps:'',diplome:'',exp:'',bio,tags,price:price?parseInt(price):null,tz:'Africa/Tunis',consVid,consPres,langFr,langEn,langAr,emailConfirmed:false,active:false,avail:{},notif:document.getElementById('spro-notif').checked,photo:proPhotoData||null,bank:{nom:bankNom2,iban:bankIban2,bic:bankBic2,banque:bankBanque2},rib:proRibData||null,contratSigne:true,contratDate:new Date().toISOString(),createdAt:new Date().toISOString()};
-  proPhotoData=null;proRibData=null;
-  db.pros.push(pro);
-  saveDB(db);
-  sbSavePro(pro);
 
-  // Générer token de confirmation email
+  const id='pro_'+Date.now();
+  const bankBanque2=document.getElementById('spro-bank-nom-banque')?.value.trim()||'';
+  const pro={id,fn,ln,email,tel,spec,rpps:'',diplome:'',exp:'',bio,tags,
+    price:38,tz:'Africa/Tunis',consVid,consPres,langFr,langEn,langAr,
+    emailConfirmed:false,active:false,avail:{},
+    notif:document.getElementById('spro-notif').checked,
+    photo:proPhotoData||null,
+    bank:{nom:bankNom,iban:bankIban,bic:bankBic,banque:bankBanque2},
+    rib:proRibData||null,contratSigne:true,contratDate:new Date().toISOString(),
+    createdAt:new Date().toISOString()};
+  proPhotoData=null;proRibData=null;
+  db.pros.push(pro);saveDB(db);sbSavePro(pro);
+
   const confirmToken='conf_'+Math.random().toString(36).slice(2)+Date.now().toString(36);
-  const tokens=JSON.parse(localStorage.getItem('plConfirmTokens')||'{}');
-  tokens[confirmToken]={id,type:'pro',email,expiry:Date.now()+48*60*60*1000};
-  localStorage.setItem('plConfirmTokens',JSON.stringify(tokens));
+  const ctokens=JSON.parse(localStorage.getItem('plConfirmTokens')||'{}');
+  ctokens[confirmToken]={id,type:'pro',email,expiry:Date.now()+48*60*60*1000};
+  localStorage.setItem('plConfirmTokens',JSON.stringify(ctokens));
   const confirmUrl=window.location.href.split('?')[0]+'?confirm='+confirmToken;
 
-  // Envoyer email de confirmation au pro
   sendEmailNotification({
     _subject:'✅ Confirmez votre inscription Psycholab — Dr. '+fn+' '+ln,
-    type:'CONFIRM_EMAIL_PRO',
-    destinataire:'Dr. '+fn+' '+ln,
-    email_dest:email,
+    type:'CONFIRM_EMAIL_PRO',destinataire:'Dr. '+fn+' '+ln,email_dest:email,
     lien_confirmation:confirmUrl,
-    message:'Bonjour Dr. '+ln+',\n\nMerci d\'avoir soumis votre dossier sur Psycholab !\n\nÉtape 1 — Confirmez votre adresse email en cliquant ici :\n'+confirmUrl+'\n\nÉtape 2 — L\'équipe Psycholab examinera votre dossier sous 24-48h.\n\nUne fois validé, vous pourrez vous connecter à tout moment avec votre adresse email — aucun mot de passe.\n\nL\'équipe Psycholab'
+    message:"Bonjour Dr. "+ln+",\n\nMerci d'avoir soumis votre dossier Psycholab !\n\nÉtape 1 : Confirmez votre email :\n"+confirmUrl+"\n\nÉtape 2 : Dossier examiné sous 24-48h.\n\nL'équipe Psycholab"
   });
 
-  // Envoyer notification admin
-  const btn=document.querySelector('#v-signup-pro .btn-submit');
-  if(btn){btn.disabled=true;btn.textContent='📧 Envoi en cours…';}
-  fetch('https://formspree.io/f/xjgzoarv',{
-    method:'POST',
+  fetch('https://formspree.io/f/xjgzoarv',{method:'POST',
     headers:{'Content-Type':'application/json','Accept':'application/json'},
-    body:JSON.stringify({
-      _subject:'🩺 Nouveau dossier Pro — '+fn+' '+ln+' — '+spec,
-      nom:fn+' '+ln,specialite:spec,email:email,telephone:tel,
-      tarif:price?price+'€':'Non communiqué',biographie:bio,
-      domaines:tags||'--',langues:(langFr?'FR ':' ')+(langEn?'EN ':' ')+(langAr?'AR':''),
-      confirmation_lien:confirmUrl,
+    body:JSON.stringify({_subject:'🩺 Nouveau dossier Pro — '+fn+' '+ln+' — '+spec,
+      nom:fn+' '+ln,specialite:spec,email,telephone:tel,
+      tarif:'38 €/séance (45 min)',biographie:bio,domaines:tags||'--',
+      langues:(langFr?'FR ':' ')+(langEn?'EN ':' ')+(langAr?'AR':''),
+      iban:bankIban,bic:bankBic,confirmation_lien:confirmUrl,
       date:new Date().toLocaleDateString('fr-FR',{day:'numeric',month:'long',year:'numeric'})
     })
-  }).then(()=>{}).catch(()=>{});
+  }).catch(()=>{});
 
-  if(btn){btn.disabled=false;btn.textContent='Soumettre mon dossier →';}
+  if(submitBtnPro){submitBtnPro.disabled=false;submitBtnPro.textContent='Soumettre mon dossier →';}
 
-  // Adapter page succès pro
-  document.getElementById('conf-pro-email-simple').textContent=email;
-  const proSuccessBox=document.querySelector('#v-success-pro .auth-card div[style*="teal-xl"]');
-  // Ajouter bouton démo confirmation
   setTimeout(()=>{
-    const existDemo=document.getElementById('pro-confirm-demo');
-    if(!existDemo){
-      const demoDiv=document.createElement('div');
-      demoDiv.id='pro-confirm-demo';
-      demoDiv.style.cssText='background:var(--orange-l);border:1px solid var(--orange);border-radius:8px;padding:.7rem;margin:.8rem 1.5rem;font-size:.75rem;color:var(--orange)';
-      demoDiv.innerHTML=`🛠️ <strong>Mode démo :</strong> <a onclick="simulateEmailConfirm('${confirmToken}')" style="cursor:pointer;font-weight:700;text-decoration:underline">Simuler la confirmation email →</a>`;
-      const backBtn=document.querySelector('#v-success-pro .btn-submit');
-      if(backBtn)backBtn.parentNode.insertBefore(demoDiv,backBtn);
+    const ed=document.getElementById('pro-confirm-demo');
+    if(!ed){
+      const dd=document.createElement('div');
+      dd.id='pro-confirm-demo';
+      dd.style.cssText='background:var(--orange-l);border:1px solid var(--orange);border-radius:8px;padding:.7rem;margin:.8rem 1.5rem;font-size:.75rem;color:var(--orange)';
+      dd.innerHTML=`🛠️ <strong>Mode démo :</strong> <a onclick="simulateEmailConfirm('${confirmToken}')" style="cursor:pointer;font-weight:700;text-decoration:underline">Simuler la confirmation email →</a>`;
+      const bb=document.querySelector('#v-success-pro .btn-submit');
+      if(bb)bb.parentNode.insertBefore(dd,bb);
     }
   },100);
-  showView('v-success-pro');
-  toast('✅ Dossier envoyé ! Vérifiez votre email pour confirmer.','green');
-}
 
+  const el=document.getElementById('conf-pro-email-simple');
+  if(el)el.textContent=email;
+  showView('v-success-pro');
+  window.scrollTo(0,0);
+  toast('✅ Dossier envoyé avec succès ! Vérifiez votre email.','green');
+}
 function activateProDemo(){
   const db=getDB();
   const pro=db.pros[db.pros.length-1];
