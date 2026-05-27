@@ -2801,17 +2801,15 @@ async function doRequestMagicLink(){
     }
   }
 
-  // Générer et stocker le token magique (valable 15 min)
-  magicToken='ml_'+Math.random().toString(36).slice(2)+Date.now().toString(36);
+  // Générer le lien magique avec données encodées dans l'URL
+  // Fonctionne même depuis un autre appareil/navigateur
   magicLoginEmail=email;
   magicLoginType=currentLoginTab;
-  const expiry=Date.now()+15*60*1000;
-  const tokens=JSON.parse(localStorage.getItem('plMagicTokens')||'{}');
-  tokens[magicToken]={email,type:isAdmin?'admin':currentLoginTab,expiry};
-  localStorage.setItem('plMagicTokens',JSON.stringify(tokens));
+  const linkType=isAdmin?'admin':currentLoginTab;
+  const magicUrl=generateMagicLink(email, linkType);
+  magicToken=magicUrl.split('?magic=')[1]||'';
 
   // Envoyer l'email (EmailJS)
-  const magicUrl=window.location.href.split('?')[0]+'?magic='+magicToken;
   sendEmailNotification({
     _subject:'🔗 Votre lien de connexion Psycholab',
     type:'MAGIC_LINK',
@@ -2838,27 +2836,87 @@ function simulateMagicLogin(){
   consumeMagicToken(magicToken);
 }
 
-function consumeMagicToken(token){
+// ================================================
+//  MAGIC LINK — Données encodées dans l'URL
+// ================================================
+function generateMagicLink(email, type){
+  // Le token contient l'email et le type encodés en base64
+  // Ainsi le lien fonctionne même depuis un autre appareil/navigateur
+  const payload={
+    email,
+    type,
+    expiry: Date.now()+15*60*1000, // 15 minutes
+    nonce: Math.random().toString(36).slice(2)+Date.now().toString(36)
+  };
+  const token='ml_'+btoa(JSON.stringify(payload)).replace(/=/g,'').replace(/\+/g,'-').replace(/\//g,'_');
+
+  // Stocker aussi en localStorage comme backup
   const tokens=JSON.parse(localStorage.getItem('plMagicTokens')||'{}');
-  const entry=tokens[token];
-  if(!entry){toast('Lien invalide ou déjà utilisé.','red');showView('v-login');return;}
-  if(Date.now()>entry.expiry){
-    delete tokens[token];localStorage.setItem('plMagicTokens',JSON.stringify(tokens));
-    toast('⏱️ Lien expiré. Veuillez en demander un nouveau.','red');
+  tokens[token]={email,type,expiry:payload.expiry};
+  localStorage.setItem('plMagicTokens',JSON.stringify(tokens));
+
+  const baseUrl=window.location.href.split('?')[0];
+  return baseUrl+'?magic='+token;
+}
+
+function consumeMagicToken(token){
+  if(!token){showView('v-login');return;}
+
+  let email='', type='', expiry=0;
+
+  // Essayer de décoder depuis l'URL (nouveau système)
+  if(token.startsWith('ml_')){
+    try{
+      // Nettoyer le token — certains clients email encodent les caractères spéciaux
+      const cleanToken=token.slice(3)
+        .replace(/%2B/g,'+').replace(/%2F/g,'/')  // URL decode
+        .replace(/-/g,'+').replace(/_/g,'/')       // URL-safe base64 → standard
+        .replace(/\s/g,'');                         // Supprimer espaces éventuels
+      // Ajouter padding si nécessaire
+      const pad=cleanToken.length%4;
+      const padded=pad?cleanToken+'='.repeat(4-pad):cleanToken;
+      const payload=JSON.parse(atob(padded));
+      email=payload.email||'';
+      type=payload.type||'';
+      expiry=payload.expiry||0;
+    }catch(e){
+      console.error('Token decode error:', e);
+      // Fallback: chercher dans localStorage
+      const tokens=JSON.parse(localStorage.getItem('plMagicTokens')||'{}');
+      const entry=tokens[token];
+      if(!entry){
+        toast('⚠️ Lien invalide ou expiré. Demandez un nouveau lien de connexion.','red');
+        showView('v-login');return;
+      }
+      email=entry.email;type=entry.type;expiry=entry.expiry;
+    }
+  } else {
+    // Ancien format localStorage
+    const tokens=JSON.parse(localStorage.getItem('plMagicTokens')||'{}');
+    const entry=tokens[token];
+    if(!entry){
+      toast('Lien invalide ou expiré. Demandez un nouveau lien.','red');
+      showView('v-login');return;
+    }
+    email=entry.email;type=entry.type;expiry=entry.expiry;
+  }
+
+  // Vérifier expiration
+  if(Date.now()>expiry){
+    toast('⏱️ Lien expiré (15 min). Demandez un nouveau lien de connexion.','red');
     showView('v-login');backToLoginStep1();return;
   }
-  // Consommer le token (usage unique)
+
+  // Supprimer du localStorage (usage unique)
+  const tokens=JSON.parse(localStorage.getItem('plMagicTokens')||'{}');
   delete tokens[token];
   localStorage.setItem('plMagicTokens',JSON.stringify(tokens));
 
-  const email=entry.email;
-  const type=entry.type;
   const db=getDB();
 
   if(type==='admin'||email===ADMIN_EMAIL){
     saveSession({id:'admin',type:'admin',email:ADMIN_EMAIL});
     applySession(getSession());
-    // Alerte sécurité
     const now=new Date();
     sendEmailNotification({
       _subject:'🔐 Alerte sécurité — Connexion admin Psycholab le '+now.toLocaleDateString('fr-FR')+' à '+now.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'}),
@@ -2869,19 +2927,15 @@ function consumeMagicToken(token){
       heure_connexion:now.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit',second:'2-digit'}),
       navigateur:navigator.userAgent.substring(0,80),
       plateforme:navigator.platform||'Inconnu',
-      message:'⚠️ Connexion admin via lien magique le '+now.toLocaleDateString('fr-FR')+' à '+now.toLocaleTimeString('fr-FR')+'\n\nSi ce n\'est pas vous, sécurisez votre compte immédiatement.'
+      message:'⚠️ Connexion admin via lien magique le '+now.toLocaleDateString('fr-FR')+' à '+now.toLocaleTimeString('fr-FR')
     });
     toast('✅ Bienvenue Administrateur Psycholab','green');
     goAdmin();return;
   }
   if(type==='patient'){
     const user=db.users.find(u=>u.email===email);
-    if(!user){toast('Compte introuvable.','red');return;}
-    // emailConfirmed check — souple en mode démo (GitHub Pages)
-    if(user.emailConfirmed===false){
-      // Marquer comme confirmé automatiquement via le lien magique
-      user.emailConfirmed=true;saveDB(db);
-    }
+    if(!user){toast('Compte introuvable. Vérifiez votre email.','red');showView('v-login');return;}
+    if(user.emailConfirmed===false){user.emailConfirmed=true;saveDB(db);}
     saveSession({id:user.id,type:'patient',email:user.email,name:user.fn+' '+user.ln,fn:user.fn,ln:user.ln,tel:user.tel,tz:user.tz});
     applySession(getSession());
     toast('✅ Bienvenue '+user.fn+' !','green');
@@ -2889,9 +2943,9 @@ function consumeMagicToken(token){
   }
   if(type==='pro'){
     const pro=db.pros.find(p=>p.email===email);
-    if(!pro){toast('Compte introuvable.','red');return;}
+    if(!pro){toast('Compte introuvable. Vérifiez votre email.','red');showView('v-login');return;}
     if(pro.emailConfirmed===false){pro.emailConfirmed=true;saveDB(db);}
-    if(!pro.active){toast('⏳ Votre dossier est en cours d\'examen par Psycholab (24-48h).','blue');showView('v-login');return;}
+    if(!pro.active){toast('⏳ Votre dossier est en cours d\'examen (24-48h).','blue');showView('v-login');return;}
     saveSession({id:pro.id,type:'pro',email:pro.email,fn:pro.fn,ln:pro.ln,spec:pro.spec,tz:pro.tz,price:pro.price});
     applySession(getSession());
     toast('✅ Bienvenue Dr. '+pro.ln+' !','green');
@@ -2901,12 +2955,30 @@ function consumeMagicToken(token){
 
 // Vérifier le token magique au chargement de la page (clic depuis email)
 function checkMagicTokenOnLoad(){
+  // Chercher le token dans les paramètres URL
   const params=new URLSearchParams(window.location.search);
-  const token=params.get('magic');
+  let token=params.get('magic');
+
+  // Fallback : chercher dans le hash (#magic=TOKEN)
+  if(!token && window.location.hash){
+    const hashParams=new URLSearchParams(window.location.hash.replace('#',''));
+    token=hashParams.get('magic');
+  }
+
+  // Fallback : chercher dans l'URL complète (certains clients email encodent différemment)
+  if(!token){
+    const fullUrl=window.location.href;
+    const magicMatch=fullUrl.match(/[?&#]magic=([^&&#\s]+)/);
+    if(magicMatch)token=decodeURIComponent(magicMatch[1]);
+  }
+
   if(token){
-    // Nettoyer l'URL
-    window.history.replaceState({},'',window.location.pathname);
-    consumeMagicToken(token);
+    // Nettoyer l'URL sans recharger
+    try{
+      window.history.replaceState({},'',window.location.pathname);
+    }catch(e){}
+    // Petit délai pour que le DOM soit prêt
+    setTimeout(()=>consumeMagicToken(token), 100);
   }
 }
 
