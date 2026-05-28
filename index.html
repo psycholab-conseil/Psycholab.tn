@@ -2772,25 +2772,43 @@ async function doRequestMagicLink(){
     goAdmin();return;
   }
 
-  // PATIENT / PRO — vérifier compte
+  // PATIENT / PRO — vérifier compte (local + Supabase)
   if(currentLoginTab==='patient'){
     const user=db.users.find(u=>u.email===email);
     if(!user){
-      errEl.innerHTML='⚠️ Aucun compte patient trouvé pour cet email.<br/><a onclick="showSignup(\'patient\')" style="color:var(--teal);font-weight:600;cursor:pointer">Créer un compte →</a>';
-      errEl.style.display='block';
-      if(btn){btn.disabled=false;btn.textContent='📧 Envoyer mon lien de connexion';}
+      // Chercher dans Supabase
+      sbLoadUsers().then(()=>{
+        const db2=getDB();
+        const user2=db2.users.find(u=>u.email===email);
+        if(!user2){
+          errEl.innerHTML='⚠️ Aucun compte patient trouvé pour cet email.<br/><a onclick="showSignup(\'patient\')" style="color:var(--teal);font-weight:600;cursor:pointer">Créer un compte →</a>';
+          errEl.style.display='block';
+          if(btn){btn.disabled=false;btn.textContent='📧 Envoyer mon lien de connexion';}
+        } else {
+          proceedWithMagicLink(email,'patient',btn,errEl);
+        }
+      });
       return;
-    }
-    if(!user.emailConfirmed){
-      // Permettre connexion si emailConfirmed pas encore géré (ancien compte)
-      // En mode démo, on laisse passer
     }
   } else {
     const pro=db.pros.find(p=>p.email===email);
     if(!pro){
-      errEl.innerHTML='⚠️ Aucun compte professionnel trouvé pour cet email.<br/><a onclick="showSignup(\'pro\')" style="color:var(--teal);font-weight:600;cursor:pointer">Créer un dossier →</a>';
-      errEl.style.display='block';
-      if(btn){btn.disabled=false;btn.textContent='📧 Envoyer mon lien de connexion';}
+      // Chercher dans Supabase avant d'afficher l'erreur
+      sbLoadPros().then(()=>{
+        const db2=getDB();
+        const pro2=db2.pros.find(p=>p.email===email);
+        if(!pro2){
+          errEl.innerHTML='⚠️ Aucun compte professionnel trouvé pour cet email.<br/><a onclick="showSignup(\'pro\')" style="color:var(--teal);font-weight:600;cursor:pointer">Créer un dossier →</a>';
+          errEl.style.display='block';
+          if(btn){btn.disabled=false;btn.textContent='📧 Envoyer mon lien de connexion';}
+        } else if(!pro2.active){
+          errEl.innerHTML='⏳ Votre dossier est en cours d\'examen par Psycholab.<br/><span style="font-size:.76rem;color:var(--mid)">Vous serez contacté sous 24-48h.</span>';
+          errEl.style.display='block';
+          if(btn){btn.disabled=false;btn.textContent='📧 Envoyer mon lien de connexion';}
+        } else {
+          proceedWithMagicLink(email,'pro',btn,errEl);
+        }
+      });
       return;
     }
     if(!pro.active){
@@ -2839,13 +2857,46 @@ function simulateMagicLogin(){
 // ================================================
 //  MAGIC LINK — Données encodées dans l'URL
 // ================================================
+function proceedWithMagicLink(email, type, btn, errEl){
+  const magicUrl=generateMagicLink(email, type);
+  const htmlBody=buildEmailHTML('MAGIC_LINK',{
+    _subject:'🔗 Votre lien de connexion Psycholab',
+    lien_magic:magicUrl,
+    lien_visio:magicUrl,
+    message:'Cliquez sur le bouton ci-dessous pour vous connecter à Psycholab.\n\nCe lien est valable 15 minutes.'
+  });
+  if(typeof emailjs!=='undefined'){
+    emailjs.send('psycholab_gmail','template_8k4lq99',{
+      to_email:email,
+      to_name:email,
+      subject:'🔗 Votre lien de connexion Psycholab',
+      message_html:htmlBody,
+      message:'Votre lien de connexion : '+magicUrl,
+      from_name:'Psycholab',
+      reply_to:'reservation.psycholab@gmail.com'
+    }).catch(()=>{});
+  }
+  if(btn){btn.disabled=false;btn.textContent='📧 Envoyer mon lien de connexion';}
+  showLoginStep2(magicUrl);
+}
+
+function showLoginStep2(magicUrl){
+  const step1=document.getElementById('login-step1');
+  const step2=document.getElementById('login-step2');
+  if(step1)step1.style.display='none';
+  if(step2){
+    step2.style.display='block';
+    const linkEl=document.getElementById('demo-magic-link');
+    if(linkEl)linkEl.href=magicUrl;
+  }
+  toast('📧 Lien de connexion envoyé !','green');
+}
+
 function generateMagicLink(email, type){
-  // Le token contient l'email et le type encodés en base64
-  // Ainsi le lien fonctionne même depuis un autre appareil/navigateur
   const payload={
     email,
     type,
-    expiry: Date.now()+15*60*1000, // 15 minutes
+    expiry: Date.now()+15*60*1000,
     nonce: Math.random().toString(36).slice(2)+Date.now().toString(36)
   };
   const token='ml_'+btoa(JSON.stringify(payload)).replace(/=/g,'').replace(/\+/g,'-').replace(/\//g,'_');
@@ -2933,23 +2984,50 @@ function consumeMagicToken(token){
     goAdmin();return;
   }
   if(type==='patient'){
-    const user=db.users.find(u=>u.email===email);
-    if(!user){toast('Compte introuvable. Vérifiez votre email.','red');showView('v-login');return;}
-    if(user.emailConfirmed===false){user.emailConfirmed=true;saveDB(db);}
-    saveSession({id:user.id,type:'patient',email:user.email,name:user.fn+' '+user.ln,fn:user.fn,ln:user.ln,tel:user.tel,tz:user.tz});
-    applySession(getSession());
-    toast('✅ Bienvenue '+user.fn+' !','green');
-    goPatient();return;
+    // Sync depuis Supabase d'abord
+    sbLoadUsers().then(()=>{
+      const db2=getDB();
+      const user=db2.users.find(u=>u.email===email);
+      if(!user){toast('⚠️ Compte introuvable. Vérifiez votre email ou créez un compte.','red');showView('v-login');return;}
+      if(user.emailConfirmed===false){user.emailConfirmed=true;saveDB(db2);}
+      saveSession({id:user.id,type:'patient',email:user.email,name:user.fn+' '+user.ln,fn:user.fn,ln:user.ln,tel:user.tel,tz:user.tz});
+      applySession(getSession());
+      toast('✅ Bienvenue '+user.fn+' !','green');
+      goPatient();
+    }).catch(()=>{
+      const db2=getDB();
+      const user=db2.users.find(u=>u.email===email);
+      if(!user){toast('⚠️ Compte introuvable. Créez un compte.','red');showView('v-login');return;}
+      saveSession({id:user.id,type:'patient',email:user.email,name:user.fn+' '+user.ln,fn:user.fn,ln:user.ln,tel:user.tel,tz:user.tz});
+      applySession(getSession());
+      toast('✅ Bienvenue '+user.fn+' !','green');
+      goPatient();
+    });
+    return;
   }
   if(type==='pro'){
-    const pro=db.pros.find(p=>p.email===email);
-    if(!pro){toast('Compte introuvable. Vérifiez votre email.','red');showView('v-login');return;}
-    if(pro.emailConfirmed===false){pro.emailConfirmed=true;saveDB(db);}
-    if(!pro.active){toast('⏳ Votre dossier est en cours d\'examen (24-48h).','blue');showView('v-login');return;}
-    saveSession({id:pro.id,type:'pro',email:pro.email,fn:pro.fn,ln:pro.ln,spec:pro.spec,tz:pro.tz,price:pro.price});
-    applySession(getSession());
-    toast('✅ Bienvenue Dr. '+pro.ln+' !','green');
-    goPro();return;
+    // Sync depuis Supabase d'abord
+    sbLoadPros().then(()=>{
+      const db2=getDB();
+      const pro=db2.pros.find(p=>p.email===email);
+      if(!pro){toast('⚠️ Compte introuvable. Vérifiez votre email.','red');showView('v-login');return;}
+      if(pro.emailConfirmed===false){pro.emailConfirmed=true;saveDB(db2);}
+      if(!pro.active){toast('⏳ Votre dossier est en cours d\'examen par Psycholab (24-48h).','blue');showView('v-login');return;}
+      saveSession({id:pro.id,type:'pro',email:pro.email,fn:pro.fn,ln:pro.ln,spec:pro.spec,tz:pro.tz,price:pro.price});
+      applySession(getSession());
+      toast('✅ Bienvenue Dr. '+pro.ln+' !','green');
+      goPro();
+    }).catch(()=>{
+      const db2=getDB();
+      const pro=db2.pros.find(p=>p.email===email);
+      if(!pro){toast('⚠️ Compte introuvable.','red');showView('v-login');return;}
+      if(!pro.active){toast('⏳ Dossier en cours d\'examen.','blue');showView('v-login');return;}
+      saveSession({id:pro.id,type:'pro',email:pro.email,fn:pro.fn,ln:pro.ln,spec:pro.spec,tz:pro.tz,price:pro.price});
+      applySession(getSession());
+      toast('✅ Bienvenue Dr. '+pro.ln+' !','green');
+      goPro();
+    });
+    return;
   }
 }
 
