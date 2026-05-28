@@ -261,15 +261,34 @@ async function sbUpdateProStatus(proId,active){
 async function sbLoadPros(){
   try{
     const{data,error}=await supa.from('pros').select('*');
-    if(error){console.error('Supabase load error:',error);return null;}
+    if(error||!data){console.error('Supabase pros error:',error);return null;}
+    // Fusionner avec les données locales
+    const db=getDB();
+    data.forEach(remotePro=>{
+      const idx=db.pros.findIndex(p=>p.id===remotePro.id||p.email===remotePro.email);
+      if(idx>=0){
+        // Mettre à jour mais conserver les données locales plus récentes
+        db.pros[idx]={...db.pros[idx],...remotePro};
+      } else {
+        db.pros.push(remotePro);
+      }
+    });
+    saveDB(db);
     return data;
-  }catch(e){return null;}
+  }catch(e){console.error('sbLoadPros exception:',e);return null;}
 }
 
 async function sbLoadUsers(){
   try{
     const{data,error}=await supa.from('users').select('*');
-    if(error){return null;}
+    if(error||!data){return null;}
+    const db=getDB();
+    data.forEach(remoteUser=>{
+      const idx=db.users.findIndex(u=>u.id===remoteUser.id||u.email===remoteUser.email);
+      if(idx>=0){db.users[idx]={...db.users[idx],...remoteUser};}
+      else{db.users.push(remoteUser);}
+    });
+    saveDB(db);
     return data;
   }catch(e){return null;}
 }
@@ -277,7 +296,14 @@ async function sbLoadUsers(){
 async function sbLoadRdvs(){
   try{
     const{data,error}=await supa.from('rdvs').select('*');
-    if(error){return null;}
+    if(error||!data){return null;}
+    const db=getDB();
+    data.forEach(remoteRdv=>{
+      const idx=db.rdvs.findIndex(r=>r.id===remoteRdv.id);
+      if(idx>=0){db.rdvs[idx]={...db.rdvs[idx],...remoteRdv};}
+      else{db.rdvs.push(remoteRdv);}
+    });
+    saveDB(db);
     return data;
   }catch(e){return null;}
 }
@@ -2498,6 +2524,10 @@ function init(){
     const dayNames=['Dimanche','Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi'];
     const el=document.getElementById('pro-date');
     if(el)el.textContent=`${dayNames[d.getDay()]} ${d.getDate()} ${MONTHS[d.getMonth()]} ${d.getFullYear()}`;
+    // -- Sync Supabase en arrière-plan --
+    Promise.all([sbLoadPros(),sbLoadUsers()]).then(()=>{
+      renderHome(); // Rafraîchir après sync
+    }).catch(()=>{});
     // -- Vérifier tokens dans l'URL --
     checkConfirmTokenOnLoad();
     checkMagicTokenOnLoad();
@@ -3017,21 +3047,54 @@ function consumeMagicToken(token){
     return;
   }
   if(type==='pro'){
-    // Sync depuis Supabase d'abord
+    // Afficher un message de chargement
+    toast('🔄 Connexion en cours…','blue');
+    // Sync depuis Supabase en priorité
     sbLoadPros().then(()=>{
       const db2=getDB();
       const pro=db2.pros.find(p=>p.email===email);
-      if(!pro){toast('⚠️ Compte introuvable. Vérifiez votre email.','red');showView('v-login');return;}
+      if(!pro){
+        // Dernière tentative — chercher par email uniquement dans Supabase
+        supa.from('pros').select('*').eq('email',email).single()
+          .then(({data:proData,error})=>{
+            if(error||!proData){
+              toast('⚠️ Compte introuvable. Contactez Psycholab à reservation.psycholab@gmail.com','red');
+              showView('v-login');return;
+            }
+            // Sauvegarder localement
+            const db3=getDB();
+            db3.pros.push(proData);saveDB(db3);
+            if(!proData.active){
+              toast('⏳ Votre dossier est en cours d\'examen par Psycholab (24-48h).','blue');
+              showView('v-login');return;
+            }
+            saveSession({id:proData.id,type:'pro',email:proData.email,fn:proData.fn,ln:proData.ln,spec:proData.spec,tz:proData.tz,price:proData.price});
+            applySession(getSession());
+            toast('✅ Bienvenue Dr. '+proData.ln+' !','green');
+            goPro();
+          }).catch(()=>{
+            toast('⚠️ Erreur de connexion. Vérifiez votre connexion internet.','red');
+            showView('v-login');
+          });
+        return;
+      }
       if(pro.emailConfirmed===false){pro.emailConfirmed=true;saveDB(db2);}
-      if(!pro.active){toast('⏳ Votre dossier est en cours d\'examen par Psycholab (24-48h).','blue');showView('v-login');return;}
+      if(!pro.active){
+        toast('⏳ Votre dossier est en cours d\'examen par Psycholab (24-48h).','blue');
+        showView('v-login');return;
+      }
       saveSession({id:pro.id,type:'pro',email:pro.email,fn:pro.fn,ln:pro.ln,spec:pro.spec,tz:pro.tz,price:pro.price});
       applySession(getSession());
       toast('✅ Bienvenue Dr. '+pro.ln+' !','green');
       goPro();
     }).catch(()=>{
+      // Fallback localStorage uniquement
       const db2=getDB();
       const pro=db2.pros.find(p=>p.email===email);
-      if(!pro){toast('⚠️ Compte introuvable.','red');showView('v-login');return;}
+      if(!pro){
+        toast('⚠️ Compte introuvable. Vérifiez votre connexion internet et réessayez.','red');
+        showView('v-login');return;
+      }
       if(!pro.active){toast('⏳ Dossier en cours d\'examen.','blue');showView('v-login');return;}
       saveSession({id:pro.id,type:'pro',email:pro.email,fn:pro.fn,ln:pro.ln,spec:pro.spec,tz:pro.tz,price:pro.price});
       applySession(getSession());
