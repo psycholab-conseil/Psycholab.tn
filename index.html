@@ -5376,8 +5376,67 @@ function showAdminProProfile(proId){
       ${rdvsContestes.map(r=>`<div style="color:var(--mid)">• ${formatDate(r.date)} — ${escHtml(r.patFn||'')} ${escHtml(r.patLn||'')} — ${escHtml(r.disputeMotif||'—')}</div>`).join('')}
     </div>`:''}
 
+    <!-- AGENDA COMPLET -->
+    <div style="font-size:.8rem;font-weight:700;color:var(--ch);margin-bottom:.6rem">📅 Agenda — Tous les rendez-vous</div>
+
+    ${(()=>{
+      const all=rdvs.sort((a,b)=>new Date(a.date)-new Date(b.date));
+      const aVenir=all.filter(r=>new Date(r.date+'T'+(r.slot||'00:00'))>=new Date()&&r.status!=='cancelled');
+      const passes=all.filter(r=>new Date(r.date+'T'+(r.slot||'00:00'))<new Date()||r.status==='cancelled');
+
+      const statusBadge=(r)=>{
+        if(r.status==='cancelled') return '<span style="background:#FFF5F5;color:var(--red);font-size:.62rem;font-weight:700;padding:.18rem .5rem;border-radius:20px">❌ Annulé</span>';
+        if(r.validationStatus==='validated') return '<span style="background:var(--green-l);color:var(--green);font-size:.62rem;font-weight:700;padding:.18rem .5rem;border-radius:20px">✅ Validé</span>';
+        if(r.validationStatus==='pending_patient') return '<span style="background:var(--teal-xl);color:var(--teal-d);font-size:.62rem;font-weight:700;padding:.18rem .5rem;border-radius:20px">⏳ En attente</span>';
+        if(r.validationStatus==='disputed') return '<span style="background:#FFF5F5;color:var(--red);font-size:.62rem;font-weight:700;padding:.18rem .5rem;border-radius:20px">⚠️ Contesté</span>';
+        if(r.status==='confirmed') return '<span style="background:var(--green-l);color:var(--green);font-size:.62rem;font-weight:700;padding:.18rem .5rem;border-radius:20px">✅ Confirmé</span>';
+        return '<span style="background:var(--orange-l);color:var(--orange);font-size:.62rem;font-weight:700;padding:.18rem .5rem;border-radius:20px">⏳ En attente</span>';
+      };
+
+      const rdvCard=(r,upcoming)=>`
+        <div style="background:${upcoming?'#fff':'var(--sand)'};border:1.5px solid ${upcoming?'var(--teal)':'var(--border)'};border-radius:10px;padding:.8rem;margin-bottom:.5rem;${upcoming?'border-left:4px solid var(--teal)':''}">
+          <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:.5rem;flex-wrap:wrap">
+            <div style="flex:1">
+              <div style="font-size:.82rem;font-weight:700;color:var(--ch)">
+                ${upcoming?'🔜':'📋'} ${formatDate(r.date)} à ${r.slot||'—'}
+              </div>
+              <div style="font-size:.74rem;color:var(--mid);margin-top:.2rem">
+                👤 ${escHtml(r.patFn||'—')} ${escHtml(r.patLn||'')}
+                ${r.patEmail?'<br/>📧 '+escHtml(r.patEmail):''}
+              </div>
+              <div style="font-size:.7rem;color:var(--soft);margin-top:.15rem">
+                ${r.type==='video'?'📹 Téléconsultation':'🏥 Présentiel'} · 45 min · 38€
+              </div>
+            </div>
+            <div style="text-align:right;flex-shrink:0">
+              ${statusBadge(r)}
+              ${r.validationStatus==='validated'?'<div style="font-size:.65rem;color:var(--green);margin-top:.2rem">💶 38€ comptabilisé</div>':''}
+            </div>
+          </div>
+        </div>`;
+
+      let html='';
+
+      if(aVenir.length){
+        html+=`<div style="font-size:.75rem;font-weight:700;color:var(--teal-d);margin-bottom:.4rem;text-transform:uppercase;letter-spacing:.05em">🔜 À venir (${aVenir.length})</div>`;
+        html+=aVenir.map(r=>rdvCard(r,true)).join('');
+      } else {
+        html+=`<div style="background:var(--sand);border-radius:8px;padding:.75rem;font-size:.78rem;color:var(--soft);text-align:center;margin-bottom:.7rem">Aucun RDV à venir</div>`;
+      }
+
+      if(passes.length){
+        html+=`<div style="font-size:.75rem;font-weight:700;color:var(--soft);margin:.7rem 0 .4rem;text-transform:uppercase;letter-spacing:.05em">📋 Historique (${passes.length})</div>`;
+        html+=passes.slice(0,5).map(r=>rdvCard(r,false)).join('');
+        if(passes.length>5){
+          html+=`<div style="text-align:center;font-size:.72rem;color:var(--soft);padding:.4rem">... et ${passes.length-5} RDV supplémentaires</div>`;
+        }
+      }
+
+      return html||'<div style="text-align:center;padding:1rem;color:var(--soft);font-size:.78rem">Aucun rendez-vous enregistré</div>';
+    })()}
+
     <!-- Boutons admin -->
-    <div style="display:flex;gap:.5rem;flex-wrap:wrap;margin-top:.5rem">
+    <div style="display:flex;gap:.5rem;flex-wrap:wrap;margin-top:.8rem">
       <button onclick="envoyerEmailPro('${p.id}')" style="flex:1;background:var(--teal);color:#fff;border:none;border-radius:10px;padding:.65rem;font-size:.78rem;font-weight:700;cursor:pointer">📧 Contacter</button>
       <button onclick="deactivatePro('${p.id}');document.getElementById('adm-pro-modal').style.display='none'" style="flex:1;background:var(--red-l);color:var(--red);border:1.5px solid var(--red);border-radius:10px;padding:.62rem;font-size:.78rem;font-weight:600;cursor:pointer">🚫 Désactiver</button>
     </div>
