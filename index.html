@@ -5376,6 +5376,88 @@ function showAdminProProfile(proId){
       ${rdvsContestes.map(r=>`<div style="color:var(--mid)">• ${formatDate(r.date)} — ${escHtml(r.patFn||'')} ${escHtml(r.patLn||'')} — ${escHtml(r.disputeMotif||'—')}</div>`).join('')}
     </div>`:''}
 
+    <!-- PATIENTS DU PRO -->
+    <div style="font-size:.8rem;font-weight:700;color:var(--ch);margin-bottom:.6rem;margin-top:.5rem">👥 Patients & Consultations</div>
+    ${(()=>{
+      // Grouper les RDV par patient
+      const patMap={};
+      rdvs.forEach(r=>{
+        if(!r.patId)return;
+        if(!patMap[r.patId]){
+          patMap[r.patId]={
+            id:r.patId,fn:r.patFn||'—',ln:r.patLn||'—',
+            email:r.patEmail||'—',rdvs:[]
+          };
+        }
+        patMap[r.patId].rdvs.push(r);
+      });
+      const patients=Object.values(patMap);
+      if(!patients.length) return '<div style="text-align:center;padding:1rem;color:var(--soft);font-size:.78rem;background:var(--sand);border-radius:8px">Aucun patient enregistré</div>';
+
+      return patients.map(pat=>{
+        const patRdvs=pat.rdvs.sort((a,b)=>new Date(b.date)-new Date(a.date));
+        const nbTotal=patRdvs.length;
+        const nbValidees=patRdvs.filter(r=>r.validationStatus==='validated').length;
+        const nbAVenir=patRdvs.filter(r=>new Date(r.date+'T'+(r.slot||'00:00'))>=new Date()&&r.status!=='cancelled').length;
+
+        // Chercher les factures de ce patient pour ce pro
+        const factures=(db.factures||[]).filter(f=>f.patId===pat.id&&patRdvs.find(r=>r.id===f.rdvId));
+
+        return `
+        <div style="background:#fff;border:1.5px solid var(--border);border-radius:12px;padding:1rem;margin-bottom:.75rem;border-left:4px solid var(--blue)">
+
+          <!-- En-tête patient -->
+          <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:.5rem;margin-bottom:.7rem;flex-wrap:wrap">
+            <div>
+              <div style="font-size:.88rem;font-weight:700;color:var(--ch)">👤 ${escHtml(pat.fn)} ${escHtml(pat.ln)}</div>
+              <div style="font-size:.72rem;color:var(--mid);margin-top:.15rem">📧 ${escHtml(pat.email)}</div>
+              <div style="font-size:.7rem;color:var(--soft);margin-top:.1rem">
+                Réf : ${escHtml(pat.id?.slice(-8)||'—')}
+              </div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:.2rem;align-items:flex-end">
+              <span style="background:var(--blue-l);color:var(--blue);font-size:.62rem;font-weight:700;padding:.2rem .55rem;border-radius:20px">${nbTotal} RDV</span>
+              <span style="background:var(--green-l);color:var(--green);font-size:.62rem;font-weight:700;padding:.2rem .55rem;border-radius:20px">${nbValidees} validée(s)</span>
+              ${nbAVenir>0?`<span style="background:var(--orange-l);color:var(--orange);font-size:.62rem;font-weight:700;padding:.2rem .55rem;border-radius:20px">${nbAVenir} à venir</span>`:''}
+            </div>
+          </div>
+
+          <!-- RDV du patient -->
+          <div style="font-size:.72rem;color:var(--soft);font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin-bottom:.4rem">Rendez-vous</div>
+          ${patRdvs.slice(0,4).map(r=>{
+            const factureRdv=(db.factures||[]).find(f=>f.rdvId===r.id);
+            const isAVenir=new Date(r.date+'T'+(r.slot||'00:00'))>=new Date();
+            const statusColor=r.validationStatus==='validated'?'var(--green)':r.status==='cancelled'?'var(--red)':isAVenir?'var(--teal)':'var(--orange)';
+            const statusLabel=r.validationStatus==='validated'?'✅ Validé':r.status==='cancelled'?'❌ Annulé':isAVenir?'🔜 À venir':'⏳ En attente';
+            return `
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:.5rem .7rem;background:var(--sand);border-radius:8px;margin-bottom:.3rem;gap:.5rem;flex-wrap:wrap">
+              <div>
+                <div style="font-size:.76rem;font-weight:600;color:var(--ch)">${formatDate(r.date)} à ${r.slot||'—'}</div>
+                <div style="font-size:.68rem;color:var(--soft)">${r.type==='video'?'📹':'🏥'} 45 min · 38€</div>
+              </div>
+              <div style="display:flex;gap:.3rem;align-items:center;flex-wrap:wrap">
+                <span style="background:${statusColor}20;color:${statusColor};font-size:.62rem;font-weight:700;padding:.15rem .45rem;border-radius:10px">${statusLabel}</span>
+                <span style="background:${factureRdv?'var(--green-l)':'var(--orange-l)'};color:${factureRdv?'var(--green)':'var(--orange)'};font-size:.62rem;font-weight:700;padding:.15rem .45rem;border-radius:10px">${factureRdv?'🧾 Facturée':'🧾 Non facturée'}</span>
+              </div>
+            </div>`;
+          }).join('')}
+          ${patRdvs.length>4?`<div style="text-align:center;font-size:.7rem;color:var(--soft);padding:.3rem">... et ${patRdvs.length-4} RDV supplémentaires</div>`:''}
+
+          <!-- Factures -->
+          ${factures.length>0?`
+          <div style="font-size:.72rem;color:var(--soft);font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin:.6rem 0 .3rem">Factures émises</div>
+          ${factures.map(f=>`
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:.4rem .7rem;background:var(--green-l);border-radius:8px;margin-bottom:.25rem;font-size:.73rem">
+              <span style="color:var(--green);font-weight:600">🧾 ${escHtml(f.numero)}</span>
+              <span style="color:var(--ch)">38,00 € · ${formatDate(f.createdAt)}</span>
+            </div>`).join('')}`:''}
+
+          <!-- Bouton modifier coordonnées -->
+          <button onclick="modifierCoordPatient('${pat.id}')" style="width:100%;margin-top:.6rem;background:var(--sand);color:var(--ch);border:1.5px solid var(--border);border-radius:8px;padding:.5rem;font-size:.75rem;font-weight:600;cursor:pointer">✏️ Modifier les coordonnées</button>
+        </div>`;
+      }).join('');
+    })()}
+
     <!-- AGENDA COMPLET -->
     <div style="font-size:.8rem;font-weight:700;color:var(--ch);margin-bottom:.6rem">📅 Agenda — Tous les rendez-vous</div>
 
@@ -5445,6 +5527,35 @@ function showAdminProProfile(proId){
   const modal=document.getElementById('adm-pro-modal');
   modal.style.display='flex';
   modal.scrollTop=0;
+}
+
+function modifierCoordPatient(patId){
+  const db=getDB();
+  const user=db.users.find(u=>u.id===patId);
+  if(!user){toast('Patient introuvable','red');return;}
+
+  const nouveauPrenom=prompt('Prénom :', user.fn||'');
+  if(nouveauPrenom===null)return;
+  const nouveauNom=prompt('Nom :', user.ln||'');
+  if(nouveauNom===null)return;
+  const nouveauTel=prompt('Téléphone :', user.tel||'');
+  if(nouveauTel===null)return;
+  const nouvelEmail=prompt('Email :', user.email||'');
+  if(nouvelEmail===null)return;
+
+  if(nouveauPrenom.trim()) user.fn=nouveauPrenom.trim();
+  if(nouveauNom.trim()) user.ln=nouveauNom.trim();
+  user.tel=nouveauTel.trim();
+  if(nouvelEmail.trim()&&nouvelEmail.includes('@')) user.email=nouvelEmail.trim();
+
+  // Mettre à jour aussi dans les RDV
+  db.rdvs.forEach(r=>{
+    if(r.patId===patId){
+      r.patFn=user.fn;r.patLn=user.ln;r.patEmail=user.email;
+    }
+  });
+  saveDB(db);
+  toast('✅ Coordonnées du patient mises à jour','green');
 }
 
 function envoyerEmailPro(proId){
