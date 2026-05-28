@@ -2112,6 +2112,17 @@ body[data-lang="ar"]{font-family:'Segoe UI',Tahoma,'Arabic Typesetting',sans-ser
   </div>
 </div>
 
+<!-- ══ MODAL PROFIL COMPLET PRO (ADMIN) ══ -->
+<div id="adm-pro-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:1000;align-items:flex-start;justify-content:center;padding:.5rem;overflow-y:auto">
+  <div style="background:#fff;border-radius:var(--r-lg);padding:1.2rem;max-width:480px;width:100%;margin:1rem auto;box-shadow:0 20px 60px rgba(0,0,0,.3)">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem">
+      <h3 style="font-family:'Playfair Display',serif;font-size:1rem;font-weight:700;color:var(--ch)">👁️ Profil complet du professionnel</h3>
+      <button onclick="document.getElementById('adm-pro-modal').style.display='none'" style="background:var(--sand);border:none;border-radius:50%;width:32px;height:32px;font-size:1rem;cursor:pointer">✕</button>
+    </div>
+    <div id="adm-pro-modal-content"></div>
+  </div>
+</div>
+
 <!-- ══ BOOKING SHEET ══ -->
 <div class="bsheet-bg" id="bsheet-bg" onclick="if(event.target===this)closeBSheet()">
   <div class="bsheet">
@@ -3659,63 +3670,6 @@ function goAdmin(){
   renderAdmPaiements();
 }
 
-function renderAdminPanel(){
-  const db=getDB();
-  const pending=db.pros.filter(p=>!p.active);
-  const active=db.pros.filter(p=>p.active);
-  document.getElementById('adm-stat-pending').textContent=pending.length;
-  document.getElementById('adm-stat-active').textContent=active.length;
-
-  // Pending list
-  const pendEl=document.getElementById('adm-pending-list');
-  if(!pending.length){
-    pendEl.innerHTML=`<div class="empty-state"><div class="empty-ico">✅</div><h3 class="empty-title">Aucun dossier en attente</h3><p class="empty-sub">Tous les dossiers ont été traités.</p></div>`;
-  } else {
-    pendEl.innerHTML=pending.map(p=>`
-      <div style="background:#fff;border:1.5px solid var(--border);border-radius:14px;padding:1rem;margin-bottom:.75rem;border-left:4px solid var(--orange)">
-        <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:.7rem;gap:.5rem">
-          <div>
-            <div style="font-family:'Playfair Display',serif;font-size:.95rem;font-weight:700;color:var(--ch)">Dr. ${escHtml(p.fn)} ${escHtml(p.ln)}</div>
-            <div style="font-size:.72rem;color:var(--teal);font-weight:700;text-transform:uppercase;letter-spacing:.04em;margin-top:.1rem">${escHtml(p.spec)}</div>
-          </div>
-          <span style="background:var(--orange-l);color:var(--orange);font-size:.65rem;font-weight:700;padding:.22rem .6rem;border-radius:20px;flex-shrink:0">⏳ En attente</span>
-        </div>
-        <div style="font-size:.78rem;color:var(--mid);line-height:1.8;background:var(--sand);border-radius:10px;padding:.75rem;margin-bottom:.75rem">
-          📧 <strong>${escHtml(p.email)}</strong><br/>
-          📞 ${escHtml(p.tel||'--')}<br/>
-          🏥 N° RPPS : <strong>${escHtml(p.rpps)}</strong><br/>
-          🎓 ${escHtml(p.diplome)}<br/>
-          ⏱️ ${escHtml(p.exp)} ans d'expérience<br/>
-          💰 ${p.price?p.price+'€/séance':'Tarif non communiqué'}<br/>
-          📝 ${escHtml((p.bio||'').substring(0,120))}${(p.bio||'').length>120?'…':''}<br/>
-          📅 Inscrit le : ${formatDate(p.createdAt)}
-        </div>
-        <div style="display:flex;gap:.5rem;flex-wrap:wrap">
-          <button onclick="validatePro('${p.id}')" style="flex:1;background:var(--green);color:#fff;border:none;border-radius:10px;padding:.72rem;font-size:.84rem;font-weight:700;cursor:pointer;transition:all .2s">✅ Valider le compte</button>
-          <button onclick="rejectPro('${p.id}')" style="flex:1;background:var(--red-l);color:var(--red);border:1.5px solid var(--red);border-radius:10px;padding:.7rem;font-size:.84rem;font-weight:600;cursor:pointer;transition:all .2s">❌ Refuser</button>
-        </div>
-      </div>`).join('');
-  }
-
-  // Active list
-  const actEl=document.getElementById('adm-active-list');
-  if(!active.length){
-    actEl.innerHTML=`<div style="text-align:center;padding:1.5rem;color:var(--soft);font-size:.82rem">Aucun professionnel actif pour le moment.</div>`;
-  } else {
-    actEl.innerHTML=active.map(p=>`
-      <div style="background:#fff;border:1.5px solid var(--border);border-radius:14px;padding:1rem;margin-bottom:.6rem;border-left:4px solid var(--green);display:flex;align-items:center;justify-content:space-between;gap:.7rem">
-        <div>
-          <div style="font-size:.88rem;font-weight:600;color:var(--ch)">Dr. ${escHtml(p.fn)} ${escHtml(p.ln)}</div>
-          <div style="font-size:.72rem;color:var(--teal);font-weight:600">${escHtml(p.spec)}</div>
-          <div style="font-size:.7rem;color:var(--soft);margin-top:.1rem">${escHtml(p.email)}</div>
-        </div>
-        <div style="display:flex;flex-direction:column;gap:.35rem;align-items:flex-end">
-          <span style="background:var(--green-l);color:var(--green);font-size:.65rem;font-weight:700;padding:.22rem .6rem;border-radius:20px">✅ Actif</span>
-          <button onclick="deactivatePro('${p.id}')" style="background:var(--red-l);color:var(--red);border:1.5px solid var(--red);border-radius:8px;padding:.28rem .65rem;font-size:.68rem;font-weight:600;cursor:pointer">Désactiver</button>
-        </div>
-      </div>`).join('');
-  }
-}
 
 function validatePro(proId){
   const db=getDB();
@@ -5231,22 +5185,228 @@ function renderAdminPanel(){
         </div>
       </div>`).join('');
   }
-  // Active pros
+  // Active pros — fiches enrichies
   const actEl=document.getElementById('adm-active-list');
   if(!actEl)return;
-  if(!active.length){actEl.innerHTML=`<div style="text-align:center;padding:1.5rem;color:var(--soft);font-size:.82rem">Aucun professionnel actif.</div>`;return}
-  actEl.innerHTML=active.map(p=>`
-    <div style="background:#fff;border:1.5px solid var(--border);border-radius:14px;padding:1rem;margin-bottom:.6rem;border-left:4px solid var(--green);display:flex;align-items:center;justify-content:space-between;gap:.7rem">
-      <div>
-        <div style="font-size:.88rem;font-weight:600;color:var(--ch)">Dr. ${escHtml(p.fn)} ${escHtml(p.ln)}</div>
-        <div style="font-size:.72rem;color:var(--teal);font-weight:600">${escHtml(p.spec)}</div>
-        <div style="font-size:.7rem;color:var(--soft)">${escHtml(p.email)}</div>
+  if(!active.length){actEl.innerHTML=`<div style="text-align:center;padding:1.5rem;color:var(--soft);font-size:.82rem">Aucun professionnel actif.</div>`;return;}
+
+  actEl.innerHTML=active.map(p=>{
+    const rdvs=(db.rdvs||[]).filter(r=>r.proId===p.id);
+    const rdvsTotal=rdvs.length;
+    const rdvsValidees=rdvs.filter(r=>r.validationStatus==='validated').length;
+    const rdvsCeMois=rdvs.filter(r=>{
+      const d=new Date(r.date);
+      const now=new Date();
+      return d.getMonth()===now.getMonth()&&d.getFullYear()===now.getFullYear();
+    }).length;
+    const revenus=rdvsValidees*38;
+    const photoEl=p.photo
+      ?`<img src="${p.photo}" style="width:48px;height:48px;border-radius:50%;object-fit:cover;border:2px solid var(--teal)" alt="Photo"/>`
+      :`<div style="width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,var(--teal-xl),var(--teal));display:flex;align-items:center;justify-content:center;font-size:1.3rem;flex-shrink:0">🩺</div>`;
+    const langs=[p.langFr&&'FR',p.langAr&&'AR',p.langEn&&'EN'].filter(Boolean).join(' · ')||'--';
+
+    return `
+    <div style="background:#fff;border:1.5px solid var(--border);border-radius:14px;padding:1rem;margin-bottom:.75rem;border-left:4px solid var(--green)">
+
+      <!-- En-tête -->
+      <div style="display:flex;align-items:flex-start;gap:.75rem;margin-bottom:.75rem">
+        ${photoEl}
+        <div style="flex:1;min-width:0">
+          <div style="font-size:.92rem;font-weight:700;color:var(--ch)">Dr. ${escHtml(p.fn)} ${escHtml(p.ln)}</div>
+          <div style="font-size:.72rem;color:var(--teal);font-weight:700;text-transform:uppercase;letter-spacing:.04em">${escHtml(p.spec)}</div>
+          <div style="font-size:.69rem;color:var(--soft);margin-top:.1rem">${escHtml(p.email)}</div>
+        </div>
+        <span style="background:var(--green-l);color:var(--green);font-size:.62rem;font-weight:700;padding:.2rem .55rem;border-radius:20px;flex-shrink:0">✅ Actif</span>
       </div>
-      <div style="display:flex;flex-direction:column;gap:.35rem;align-items:flex-end">
-        <span style="background:var(--green-l);color:var(--green);font-size:.65rem;font-weight:700;padding:.22rem .6rem;border-radius:20px">✅ Actif</span>
-        <button onclick="deactivatePro('${p.id}')" style="background:var(--red-l);color:var(--red);border:1.5px solid var(--red);border-radius:8px;padding:.28rem .65rem;font-size:.68rem;font-weight:600;cursor:pointer">Désactiver</button>
+
+      <!-- Statistiques rapides -->
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:.4rem;margin-bottom:.75rem">
+        <div style="background:var(--sand);border-radius:8px;padding:.5rem .4rem;text-align:center">
+          <div style="font-size:1rem;font-weight:700;color:var(--teal)">${rdvsTotal}</div>
+          <div style="font-size:.6rem;color:var(--soft)">RDV total</div>
+        </div>
+        <div style="background:var(--sand);border-radius:8px;padding:.5rem .4rem;text-align:center">
+          <div style="font-size:1rem;font-weight:700;color:var(--green)">${rdvsValidees}</div>
+          <div style="font-size:.6rem;color:var(--soft)">Validées</div>
+        </div>
+        <div style="background:var(--sand);border-radius:8px;padding:.5rem .4rem;text-align:center">
+          <div style="font-size:1rem;font-weight:700;color:var(--blue)">${rdvsCeMois}</div>
+          <div style="font-size:.6rem;color:var(--soft)">Ce mois</div>
+        </div>
+        <div style="background:var(--sand);border-radius:8px;padding:.5rem .4rem;text-align:center">
+          <div style="font-size:.88rem;font-weight:700;color:var(--ch)">${revenus}€</div>
+          <div style="font-size:.6rem;color:var(--soft)">Revenus</div>
+        </div>
       </div>
-    </div>`).join('');
+
+      <!-- Infos rapides -->
+      <div style="font-size:.74rem;color:var(--mid);line-height:1.8;background:var(--sand);border-radius:8px;padding:.6rem .8rem;margin-bottom:.7rem">
+        🌍 Langues : <strong>${langs}</strong> · 📅 Activé le : ${formatDate(p.validatedAt||p.createdAt)}<br/>
+        🏦 IBAN : ${p.bank?.iban?`<span style="font-family:monospace">${escHtml(p.bank.iban.slice(0,8))}••••</span>`:'<span style="color:var(--orange)">⚠️ Non renseigné</span>'} · BIC : ${escHtml(p.bank?.bic||'—')}
+      </div>
+
+      <!-- Boutons actions -->
+      <div style="display:flex;gap:.4rem;flex-wrap:wrap">
+        <button onclick="showAdminProProfile('${p.id}')" style="flex:2;background:linear-gradient(135deg,var(--teal-d),var(--teal));color:#fff;border:none;border-radius:10px;padding:.6rem;font-size:.78rem;font-weight:700;cursor:pointer">👁️ Profil complet & Stats</button>
+        <button onclick="deactivatePro('${p.id}')" style="flex:1;background:var(--red-l);color:var(--red);border:1.5px solid var(--red);border-radius:10px;padding:.58rem .5rem;font-size:.74rem;font-weight:600;cursor:pointer">🚫 Désactiver</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function showAdminProProfile(proId){
+  const db=getDB();
+  const p=db.pros.find(x=>x.id===proId);
+  if(!p)return;
+
+  const rdvs=(db.rdvs||[]).filter(r=>r.proId===proId);
+  const rdvsTotal=rdvs.length;
+  const rdvsValidees=rdvs.filter(r=>r.validationStatus==='validated');
+  const rdvsEnAttente=rdvs.filter(r=>r.validationStatus==='pending_patient');
+  const rdvsContestes=rdvs.filter(r=>r.validationStatus==='disputed');
+  const rdvsAVenir=rdvs.filter(r=>new Date(r.date)>=new Date()&&r.status!=='cancelled');
+
+  // Stats par mois (3 derniers mois)
+  const now=new Date();
+  const statsParMois=[-2,-1,0].map(offset=>{
+    const d=new Date(now.getFullYear(),now.getMonth()+offset,1);
+    const moisStr=d.toLocaleDateString('fr-FR',{month:'long',year:'numeric'});
+    const count=rdvsValidees.filter(r=>{
+      const rd=new Date(r.date);
+      return rd.getMonth()===d.getMonth()&&rd.getFullYear()===d.getFullYear();
+    }).length;
+    return {mois:moisStr,count,revenus:count*38};
+  });
+
+  const totalRevenus=rdvsValidees.length*38;
+  const payements=(p.payements||[]);
+  const totalPaye=payements.reduce((a,x)=>a+(x.montant||0),0);
+  const soldeRestant=totalRevenus-totalPaye;
+
+  const photoEl=p.photo
+    ?`<img src="${p.photo}" style="width:80px;height:80px;border-radius:50%;object-fit:cover;border:3px solid var(--teal)" alt="Photo"/>`
+    :`<div style="width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,var(--teal-xl),var(--teal));display:flex;align-items:center;justify-content:center;font-size:2rem;margin:0 auto">🩺</div>`;
+  const langs=[p.langFr&&'🇫🇷 Français',p.langAr&&'🇸🇦 Arabe',p.langEn&&'🇬🇧 Anglais'].filter(Boolean).join(', ')||'Non renseigné';
+
+  document.getElementById('adm-pro-modal-content').innerHTML=`
+
+    <!-- Photo + identité -->
+    <div style="text-align:center;margin-bottom:1rem;padding-bottom:1rem;border-bottom:1px solid var(--border)">
+      ${photoEl}
+      <div style="font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:700;color:var(--ch);margin-top:.6rem">Dr. ${escHtml(p.fn)} ${escHtml(p.ln)}</div>
+      <div style="font-size:.78rem;color:var(--teal);font-weight:700;text-transform:uppercase">${escHtml(p.spec)}</div>
+      <div style="font-size:.72rem;color:var(--soft);margin-top:.2rem">${escHtml(p.email)} · ${escHtml(p.tel||'—')}</div>
+      <div style="margin-top:.5rem">
+        <span style="background:var(--green-l);color:var(--green);font-size:.65rem;font-weight:700;padding:.2rem .6rem;border-radius:20px">✅ Actif depuis le ${formatDate(p.validatedAt||p.createdAt)}</span>
+      </div>
+    </div>
+
+    <!-- Stats globales -->
+    <div style="font-size:.8rem;font-weight:700;color:var(--ch);margin-bottom:.6rem">📊 Statistiques globales</div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:.5rem;margin-bottom:1rem">
+      <div style="background:linear-gradient(135deg,var(--teal-xl),#E8F4F2);border-radius:10px;padding:.75rem;text-align:center">
+        <div style="font-size:1.3rem;font-weight:700;color:var(--teal)">${rdvsTotal}</div>
+        <div style="font-size:.62rem;color:var(--soft)">RDV total</div>
+      </div>
+      <div style="background:linear-gradient(135deg,#F0FDF4,#DCFCE7);border-radius:10px;padding:.75rem;text-align:center">
+        <div style="font-size:1.3rem;font-weight:700;color:var(--green)">${rdvsValidees.length}</div>
+        <div style="font-size:.62rem;color:var(--soft)">Séances validées</div>
+      </div>
+      <div style="background:linear-gradient(135deg,#FFF7ED,#FEF3C7);border-radius:10px;padding:.75rem;text-align:center">
+        <div style="font-size:1.3rem;font-weight:700;color:var(--orange)">${rdvsAVenir.length}</div>
+        <div style="font-size:.62rem;color:var(--soft)">RDV à venir</div>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:.5rem;margin-bottom:1rem">
+      <div style="background:var(--sand);border-radius:10px;padding:.75rem;text-align:center">
+        <div style="font-size:1.1rem;font-weight:700;color:var(--ch)">${totalRevenus}€</div>
+        <div style="font-size:.62rem;color:var(--soft)">Revenus totaux</div>
+      </div>
+      <div style="background:var(--sand);border-radius:10px;padding:.75rem;text-align:center">
+        <div style="font-size:1.1rem;font-weight:700;color:var(--green)">${totalPaye}€</div>
+        <div style="font-size:.62rem;color:var(--soft)">Déjà payé</div>
+      </div>
+      <div style="background:var(--sand);border-radius:10px;padding:.75rem;text-align:center">
+        <div style="font-size:1.1rem;font-weight:700;color:${soldeRestant>0?'var(--orange)':'var(--green)'}">${soldeRestant}€</div>
+        <div style="font-size:.62rem;color:var(--soft)">Solde à payer</div>
+      </div>
+    </div>
+
+    <!-- Activité 3 derniers mois -->
+    <div style="font-size:.8rem;font-weight:700;color:var(--ch);margin-bottom:.6rem">📅 Activité récente</div>
+    <div style="display:flex;flex-direction:column;gap:.4rem;margin-bottom:1rem">
+      ${statsParMois.map(s=>`
+        <div style="display:flex;align-items:center;justify-content:space-between;background:var(--sand);border-radius:8px;padding:.55rem .8rem;font-size:.78rem">
+          <span style="color:var(--mid);text-transform:capitalize">${s.mois}</span>
+          <div style="display:flex;gap:.8rem;align-items:center">
+            <span style="font-weight:700;color:var(--ch)">${s.count} séance${s.count>1?'s':''}</span>
+            <span style="color:var(--teal);font-weight:700">${s.revenus}€</span>
+          </div>
+        </div>`).join('')}
+    </div>
+
+    <!-- Infos pro -->
+    <div style="font-size:.8rem;font-weight:700;color:var(--ch);margin-bottom:.6rem">👤 Informations professionnelles</div>
+    <div style="background:var(--sand);border-radius:10px;padding:.85rem;font-size:.78rem;line-height:2;margin-bottom:1rem">
+      🌍 <strong>Langues :</strong> ${langs}<br/>
+      🎓 <strong>RPPS :</strong> ${escHtml(p.rpps||'Non renseigné')}<br/>
+      📝 <strong>Biographie :</strong> ${escHtml((p.bio||'').substring(0,150))}${p.bio?.length>150?'…':''}<br/>
+      🏷️ <strong>Domaines :</strong> ${escHtml(p.tags||'Non renseigné')}<br/>
+      📅 <strong>Inscrit le :</strong> ${formatDate(p.createdAt)}
+    </div>
+
+    <!-- Coordonnées bancaires -->
+    <div style="font-size:.8rem;font-weight:700;color:var(--ch);margin-bottom:.6rem">🏦 Coordonnées bancaires</div>
+    <div style="background:var(--sand);border-radius:10px;padding:.85rem;font-size:.78rem;line-height:2;margin-bottom:1rem">
+      👤 <strong>Titulaire :</strong> ${escHtml(p.bank?.nom||'—')}<br/>
+      💳 <strong>IBAN :</strong> <span style="font-family:monospace">${escHtml(p.bank?.iban||'Non renseigné')}</span><br/>
+      🔐 <strong>BIC :</strong> ${escHtml(p.bank?.bic||'—')}<br/>
+      🏛️ <strong>Banque :</strong> ${escHtml(p.bank?.banque||'—')}
+    </div>
+
+    <!-- Séances en cours -->
+    ${rdvsEnAttente.length>0?`
+    <div style="background:var(--teal-xl);border:1.5px solid var(--teal);border-radius:10px;padding:.85rem;font-size:.78rem;margin-bottom:1rem">
+      <div style="font-weight:700;color:var(--teal-d);margin-bottom:.4rem">⏳ ${rdvsEnAttente.length} séance(s) en attente de confirmation patient</div>
+    </div>`:''}
+
+    ${rdvsContestes.length>0?`
+    <div style="background:#FFF5F5;border:1.5px solid var(--red);border-radius:10px;padding:.85rem;font-size:.78rem;margin-bottom:1rem">
+      <div style="font-weight:700;color:var(--red);margin-bottom:.4rem">⚠️ ${rdvsContestes.length} séance(s) contestée(s)</div>
+      ${rdvsContestes.map(r=>`<div style="color:var(--mid)">• ${formatDate(r.date)} — ${escHtml(r.patFn||'')} ${escHtml(r.patLn||'')} — ${escHtml(r.disputeMotif||'—')}</div>`).join('')}
+    </div>`:''}
+
+    <!-- Boutons admin -->
+    <div style="display:flex;gap:.5rem;flex-wrap:wrap;margin-top:.5rem">
+      <button onclick="envoyerEmailPro('${p.id}')" style="flex:1;background:var(--teal);color:#fff;border:none;border-radius:10px;padding:.65rem;font-size:.78rem;font-weight:700;cursor:pointer">📧 Contacter</button>
+      <button onclick="deactivatePro('${p.id}');document.getElementById('adm-pro-modal').style.display='none'" style="flex:1;background:var(--red-l);color:var(--red);border:1.5px solid var(--red);border-radius:10px;padding:.62rem;font-size:.78rem;font-weight:600;cursor:pointer">🚫 Désactiver</button>
+    </div>
+  `;
+
+  const modal=document.getElementById('adm-pro-modal');
+  modal.style.display='flex';
+  modal.scrollTop=0;
+}
+
+function envoyerEmailPro(proId){
+  const db=getDB();
+  const p=db.pros.find(x=>x.id===proId);
+  if(!p)return;
+  const sujet=prompt('Sujet du message :','Message de Psycholab');
+  if(!sujet)return;
+  const message=prompt('Contenu du message :');
+  if(!message)return;
+  if(typeof emailjs!=='undefined'){
+    emailjs.send('psycholab_gmail','template_8k4lq99',{
+      to_email:p.email,
+      to_name:'Dr. '+p.fn+' '+p.ln,
+      subject:sujet,
+      message_html:`<div style="font-family:Arial,sans-serif;padding:20px"><p>Bonjour Dr. ${escHtml(p.ln)},</p><p>${message.replace(/\n/g,'<br/>')}</p><p>Cordialement,<br/><strong>L'équipe Psycholab</strong></p></div>`,
+      message:message,
+      from_name:'Psycholab',
+      reply_to:'reservation.psycholab@gmail.com'
+    }).then(()=>toast('✅ Email envoyé à Dr. '+p.ln,'green')).catch(()=>toast('⚠️ Erreur envoi email','red'));
+  }
 }
 
 function renderAdmPaiements(){
