@@ -214,41 +214,59 @@ const supa=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 // -- Fonctions Supabase --
 async function sbSavePro(pro){
   try{
-    const{error}=await supa.from('pros').upsert([{
-      id:pro.id,fn:pro.fn,ln:pro.ln,email:pro.email,tel:pro.tel,
-      spec:pro.spec,rpps:pro.rpps,diplome:pro.diplome,exp:pro.exp,
-      bio:pro.bio,tags:pro.tags,price:pro.price,tz:pro.tz,
-      cons_vid:pro.consVid,cons_pres:pro.consPres,
-      lang_fr:pro.langFr,lang_en:pro.langEn,lang_ar:pro.langAr,
-      pwd:pro.pwd,active:pro.active,notif:pro.notif,
-      created_at:pro.createdAt
-    }]);
-    if(error)console.error('Supabase pro save error:',error);
-  }catch(e){console.error('Supabase error:',e);}
+    const payload={
+      id:pro.id,fn:pro.fn,ln:pro.ln,email:pro.email,tel:pro.tel||'',
+      spec:pro.spec,rpps:pro.rpps||'',bio:pro.bio||'',tags:pro.tags||'',
+      price:pro.price||38,tz:pro.tz||'Africa/Tunis',
+      lang_fr:pro.langFr||false,lang_en:pro.langEn||false,lang_ar:pro.langAr||false,
+      active:pro.active||false,notif:pro.notif||false,
+      email_confirmed:pro.emailConfirmed||false,
+      contrat_signe:pro.contratSigne||false,
+      bank_iban:pro.bank?.iban||'',bank_bic:pro.bank?.bic||'',
+      bank_nom:pro.bank?.nom||'',bank_banque:pro.bank?.banque||'',
+      created_at:pro.createdAt||new Date().toISOString()
+    };
+    const{error}=await supa.from('pros').upsert([payload],{onConflict:'id'});
+    if(error){
+      console.warn('Supabase pro save error (non-bloquant):',error.message);
+    } else {
+      console.log('✅ Pro sauvegardé dans Supabase:',pro.email);
+    }
+  }catch(e){console.warn('sbSavePro exception:',e);}
 }
 
 async function sbSaveUser(user){
   try{
-    const{error}=await supa.from('users').upsert([{
+    const payload={
       id:user.id,fn:user.fn,ln:user.ln,email:user.email,
-      tel:user.tel,tz:user.tz,pwd:user.pwd,notif:user.notif,
-      created_at:user.createdAt
-    }]);
-    if(error)console.error('Supabase user save error:',error);
-  }catch(e){console.error('Supabase error:',e);}
+      tel:user.tel||'',tz:user.tz||'Africa/Tunis',
+      notif:user.notif||false,dob:user.dob||'',
+      anon_mode:user.anonMode||'real',
+      email_confirmed:user.emailConfirmed||false,
+      created_at:user.createdAt||new Date().toISOString()
+    };
+    const{error}=await supa.from('users').upsert([payload],{onConflict:'id'});
+    if(error){
+      console.warn('Supabase user save error:',error.message);
+    }
+  }catch(e){console.warn('sbSaveUser exception:',e);}
 }
 
 async function sbSaveRdv(rdv){
   try{
-    const{error}=await supa.from('rdvs').upsert([{
+    const payload={
       id:rdv.id,pro_id:rdv.proId,pro_fn:rdv.proFn,pro_ln:rdv.proLn,
-      spec:rdv.spec,pat_id:rdv.patId,pat_fn:rdv.patFn,pat_ln:rdv.patLn,
+      pro_email:rdv.proEmail||'',spec:rdv.spec,
+      pat_id:rdv.patId,pat_fn:rdv.patFn,pat_ln:rdv.patLn,
       pat_email:rdv.patEmail,date:rdv.date,slot:rdv.slot,
-      type:rdv.type,motif:rdv.motif,status:rdv.status,
-      created_at:rdv.createdAt
-    }]);
-    if(error)console.error('Supabase rdv save error:',error);
-  }catch(e){console.error('Supabase error:',e);}
+      type:rdv.type||'video',motif:rdv.motif||'',
+      status:rdv.status||'pending',
+      validation_status:rdv.validationStatus||null,
+      created_at:rdv.createdAt||new Date().toISOString()
+    };
+    const{error}=await supa.from('rdvs').upsert([payload],{onConflict:'id'});
+    if(error)console.warn('Supabase rdv save error:',error.message);
+  }catch(e){console.warn('sbSaveRdv exception:',e);}
 }
 
 async function sbUpdateProStatus(proId,active){
@@ -261,21 +279,30 @@ async function sbUpdateProStatus(proId,active){
 async function sbLoadPros(){
   try{
     const{data,error}=await supa.from('pros').select('*');
-    if(error||!data){console.error('Supabase pros error:',error);return null;}
-    // Fusionner avec les données locales
+    if(error||!data){console.warn('Supabase pros error:',error?.message);return null;}
     const db=getDB();
-    data.forEach(remotePro=>{
-      const idx=db.pros.findIndex(p=>p.id===remotePro.id||p.email===remotePro.email);
-      if(idx>=0){
-        // Mettre à jour mais conserver les données locales plus récentes
-        db.pros[idx]={...db.pros[idx],...remotePro};
-      } else {
-        db.pros.push(remotePro);
-      }
+    data.forEach(r=>{
+      // Mapper les colonnes Supabase vers notre format JS
+      const pro={
+        id:r.id,fn:r.fn,ln:r.ln,email:r.email,tel:r.tel||'',
+        spec:r.spec,rpps:r.rpps||'',bio:r.bio||'',tags:r.tags||'',
+        price:r.price||38,tz:r.tz||'Africa/Tunis',
+        langFr:r.lang_fr||false,langEn:r.lang_en||false,langAr:r.lang_ar||false,
+        active:r.active||false,notif:r.notif||false,
+        emailConfirmed:r.email_confirmed||true,
+        contratSigne:r.contrat_signe||false,
+        bank:{iban:r.bank_iban||'',bic:r.bank_bic||'',nom:r.bank_nom||'',banque:r.bank_banque||''},
+        createdAt:r.created_at,validatedAt:r.validated_at||null,
+        avail:r.avail||{},photo:r.photo||null
+      };
+      const idx=db.pros.findIndex(p=>p.id===pro.id||p.email===pro.email);
+      if(idx>=0){db.pros[idx]={...db.pros[idx],...pro};}
+      else{db.pros.push(pro);}
     });
     saveDB(db);
+    console.log('✅ Pros synced from Supabase:',data.length);
     return data;
-  }catch(e){console.error('sbLoadPros exception:',e);return null;}
+  }catch(e){console.warn('sbLoadPros exception:',e);return null;}
 }
 
 async function sbLoadUsers(){
@@ -283,10 +310,18 @@ async function sbLoadUsers(){
     const{data,error}=await supa.from('users').select('*');
     if(error||!data){return null;}
     const db=getDB();
-    data.forEach(remoteUser=>{
-      const idx=db.users.findIndex(u=>u.id===remoteUser.id||u.email===remoteUser.email);
-      if(idx>=0){db.users[idx]={...db.users[idx],...remoteUser};}
-      else{db.users.push(remoteUser);}
+    data.forEach(r=>{
+      const user={
+        id:r.id,fn:r.fn,ln:r.ln,email:r.email,tel:r.tel||'',
+        tz:r.tz||'Africa/Tunis',notif:r.notif||false,
+        dob:r.dob||'',anonMode:r.anon_mode||'real',
+        emailConfirmed:r.email_confirmed||true,
+        createdAt:r.created_at,photo:r.photo||null,
+        credit:r.credit||0,absenceCount:r.absence_count||0
+      };
+      const idx=db.users.findIndex(u=>u.id===user.id||u.email===user.email);
+      if(idx>=0){db.users[idx]={...db.users[idx],...user};}
+      else{db.users.push(user);}
     });
     saveDB(db);
     return data;
@@ -298,10 +333,19 @@ async function sbLoadRdvs(){
     const{data,error}=await supa.from('rdvs').select('*');
     if(error||!data){return null;}
     const db=getDB();
-    data.forEach(remoteRdv=>{
-      const idx=db.rdvs.findIndex(r=>r.id===remoteRdv.id);
-      if(idx>=0){db.rdvs[idx]={...db.rdvs[idx],...remoteRdv};}
-      else{db.rdvs.push(remoteRdv);}
+    data.forEach(r=>{
+      const rdv={
+        id:r.id,proId:r.pro_id,proFn:r.pro_fn,proLn:r.pro_ln,
+        proEmail:r.pro_email||'',spec:r.spec,
+        patId:r.pat_id,patFn:r.pat_fn,patLn:r.pat_ln,patEmail:r.pat_email,
+        date:r.date,slot:r.slot,type:r.type||'video',
+        motif:r.motif||'',status:r.status||'pending',
+        validationStatus:r.validation_status||null,
+        createdAt:r.created_at
+      };
+      const idx=db.rdvs.findIndex(x=>x.id===rdv.id);
+      if(idx>=0){db.rdvs[idx]={...db.rdvs[idx],...rdv};}
+      else{db.rdvs.push(rdv);}
     });
     saveDB(db);
     return data;
