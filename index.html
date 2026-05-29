@@ -2340,7 +2340,10 @@ body[data-lang="ar"]{font-family:'Segoe UI',Tahoma,'Arabic Typesetting',sans-ser
 
     <!-- Tab: Dossiers Pro -->
     <div class="adm-pane on" id="adm-pros">
-      <h3 style="font-family:'Playfair Display',serif;font-size:.95rem;font-weight:700;color:var(--ch);margin-bottom:.8rem">⏳ Dossiers professionnels en attente</h3>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.8rem;gap:.5rem;flex-wrap:wrap">
+        <h3 style="font-family:'Playfair Display',serif;font-size:.95rem;font-weight:700;color:var(--ch)">⏳ Dossiers professionnels en attente</h3>
+        <button onclick="syncAndRefreshAdmin()" style="background:var(--teal);color:#fff;border:none;border-radius:8px;padding:.4rem .85rem;font-size:.75rem;font-weight:600;cursor:pointer">🔄 Actualiser</button>
+      </div>
       <div id="adm-pending-list"></div>
     </div>
 
@@ -3771,8 +3774,24 @@ function showRecaptchaNotice(){
   if(card)card.appendChild(div);
 }
 
-function goAdmin(){
+async function syncAndRefreshAdmin(){
+  const pendEl=document.getElementById('adm-pending-list');
+  if(pendEl)pendEl.innerHTML='<div style="text-align:center;padding:1.5rem;color:var(--soft);font-size:.82rem">⏳ Synchronisation en cours…</div>';
+  try{await Promise.all([sbLoadPros(),sbLoadUsers(),sbLoadRdvs()]);}catch(e){console.warn(e);}
+  renderAdminPanel();
+  renderAdmPaiements();
+  toast('✅ Données synchronisées depuis Supabase','green');
+}
+
+async function goAdmin(){
   showView('v-admin');
+  // Sync depuis Supabase avant d'afficher le panel admin
+  // pour récupérer les nouvelles inscriptions faites depuis d'autres appareils
+  const pendEl=document.getElementById('adm-pending-list');
+  if(pendEl)pendEl.innerHTML=`<div style="text-align:center;padding:1.5rem;color:var(--soft);font-size:.82rem">⏳ Synchronisation en cours…</div>`;
+  try{
+    await Promise.all([sbLoadPros(),sbLoadUsers(),sbLoadRdvs()]);
+  }catch(e){console.warn('Sync Supabase goAdmin:',e);}
   renderAdminPanel();
   renderAdmPaiements();
 }
@@ -5231,7 +5250,12 @@ function showAdmTab(id,btn){
   if(id==='paiements')renderAdmPaiements();
   if(id==='rdvs-admin')renderAdmRdvs();
   if(id==='patients-admin')renderAdmPatients();
-  if(id==='pros-actifs')renderAdminPanel();
+  if(id==='pros-actifs'){
+    // Resync depuis Supabase pour capturer les nouvelles inscriptions
+    const pendEl=document.getElementById('adm-pending-list');
+    if(pendEl)pendEl.innerHTML=`<div style="text-align:center;padding:1.5rem;color:var(--soft);font-size:.82rem">⏳ Synchronisation en cours…</div>`;
+    Promise.all([sbLoadPros(),sbLoadUsers()]).then(()=>renderAdminPanel()).catch(()=>renderAdminPanel());
+  }
   if(id==='remuneration-admin'){
     // Init month picker to current month
     const moisEl=document.getElementById('adm-rem-mois');
