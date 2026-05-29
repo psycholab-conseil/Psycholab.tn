@@ -2345,6 +2345,34 @@ body[data-lang="ar"]{font-family:'Segoe UI',Tahoma,'Arabic Typesetting',sans-ser
         <button onclick="syncAndRefreshAdmin()" style="background:var(--teal);color:#fff;border:none;border-radius:8px;padding:.4rem .85rem;font-size:.75rem;font-weight:600;cursor:pointer">🔄 Actualiser</button>
       </div>
       <div id="adm-pending-list"></div>
+
+      <!-- Ajout manuel d'un pro (depuis email Formspree) -->
+      <div style="margin-top:1.2rem;background:var(--blue-l);border:1.5px solid var(--blue);border-radius:14px;padding:1rem">
+        <div style="font-size:.82rem;font-weight:700;color:var(--blue);margin-bottom:.6rem">➕ Ajouter un pro manuellement (depuis l'email reçu)</div>
+        <div style="display:grid;gap:.5rem">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem">
+            <input id="adm-manual-fn" placeholder="Prénom" style="border:1.5px solid var(--border);border-radius:8px;padding:.5rem .7rem;font-size:.8rem;background:#fff;outline:none;font-family:inherit"/>
+            <input id="adm-manual-ln" placeholder="Nom" style="border:1.5px solid var(--border);border-radius:8px;padding:.5rem .7rem;font-size:.8rem;background:#fff;outline:none;font-family:inherit"/>
+          </div>
+          <input id="adm-manual-email" placeholder="Email professionnel" type="email" style="border:1.5px solid var(--border);border-radius:8px;padding:.5rem .7rem;font-size:.8rem;background:#fff;outline:none;font-family:inherit"/>
+          <input id="adm-manual-tel" placeholder="Téléphone (ex: 27054204)" style="border:1.5px solid var(--border);border-radius:8px;padding:.5rem .7rem;font-size:.8rem;background:#fff;outline:none;font-family:inherit"/>
+          <select id="adm-manual-spec" style="border:1.5px solid var(--border);border-radius:8px;padding:.5rem .7rem;font-size:.8rem;background:#fff;outline:none;font-family:inherit;color:var(--ch)">
+            <option value="">— Spécialité —</option>
+            <option>Psychologue clinicien</option>
+            <option>Psychiatre</option>
+            <option>Neuropsychologue</option>
+            <option>Psychothérapeute</option>
+            <option>Psychomotricien</option>
+            <option>Ergothérapeute</option>
+            <option>Orthophoniste</option>
+            <option>Thérapeute EMDR</option>
+            <option>Thérapeute TCC</option>
+          </select>
+          <input id="adm-manual-iban" placeholder="IBAN (optionnel)" style="border:1.5px solid var(--border);border-radius:8px;padding:.5rem .7rem;font-size:.8rem;background:#fff;outline:none;font-family:inherit"/>
+          <div id="adm-manual-err" style="display:none;background:var(--red-l);color:var(--red);border-radius:8px;padding:.5rem .7rem;font-size:.78rem;font-weight:600"></div>
+          <button onclick="admAddProManually()" style="background:var(--blue);color:#fff;border:none;border-radius:10px;padding:.65rem;font-size:.82rem;font-weight:700;cursor:pointer;width:100%">➕ Créer le dossier en attente</button>
+        </div>
+      </div>
     </div>
 
     <!-- Tab: Paiements -->
@@ -3575,7 +3603,39 @@ async function doSignupPro(){
     rib:proRibData||null,contratSigne:true,contratDate:new Date().toISOString(),
     createdAt:new Date().toISOString()};
   proPhotoData=null;proRibData=null;
-  db.pros.push(pro);saveDB(db);sbSavePro(pro);
+  db.pros.push(pro);saveDB(db);
+  // Attendre la sauvegarde Supabase — critique pour la visibilité admin
+  try{
+    const sbResult=await supa.from('pros').upsert([{
+      id:pro.id,fn:pro.fn,ln:pro.ln,email:pro.email,tel:pro.tel||'',
+      spec:pro.spec,rpps:pro.rpps||'',bio:pro.bio||'',tags:pro.tags||'',
+      price:pro.price||38,tz:pro.tz||'Africa/Tunis',
+      lang_fr:pro.langFr||false,lang_en:pro.langEn||false,lang_ar:pro.langAr||false,
+      active:false,notif:pro.notif||false,
+      email_confirmed:true,contrat_signe:true,
+      bank_iban:pro.bank?.iban||'',bank_bic:pro.bank?.bic||'',
+      bank_nom:pro.bank?.nom||'',bank_banque:pro.bank?.banque||'',
+      created_at:pro.createdAt
+    }],{onConflict:'id'});
+    if(sbResult.error){
+      console.error('❌ Supabase save FAILED:',sbResult.error.message);
+      // Fallback: sauvegarder en localStorage (déjà fait) et notifier admin par email
+      fetch('https://formspree.io/f/xjgzoarv',{method:'POST',
+        headers:{'Content-Type':'application/json','Accept':'application/json'},
+        body:JSON.stringify({
+          _subject:'⚠️ FALLBACK — Dossier Pro NON sauvegardé en DB — '+fn+' '+ln,
+          message:'ATTENTION: La sauvegarde Supabase a échoué pour ce pro. Erreur: '+sbResult.error.message,
+          nom:fn+' '+ln,specialite:spec,email,telephone:tel,
+          tarif:'38 €/séance (45 min)',biographie:bio,
+          iban:bankIban,bic:bankBic,
+          pro_id:pro.id,
+          action_requise:'Ajouter manuellement via le panel admin → bouton "Ajouter un pro manuellement"'
+        })
+      }).catch(()=>{});
+    }else{
+      console.log('✅ Pro sauvegardé Supabase:',pro.email);
+    }
+  }catch(sbErr){console.error('sbSavePro critical:',sbErr);}
 
   // Email accusé de réception → envoyé UNIQUEMENT au pro via EmailJS
   if(typeof emailjs!=='undefined'){
@@ -3772,6 +3832,62 @@ function showRecaptchaNotice(){
   div.innerHTML='🔒 Ce site est protégé par Google reCAPTCHA.<br/><a href="https://policies.google.com/privacy" target="_blank" style="color:var(--teal)">Politique de confidentialité</a> · <a href="https://policies.google.com/terms" target="_blank" style="color:var(--teal)">Conditions d\'utilisation</a>';
   const card=document.querySelector('#v-login .auth-card');
   if(card)card.appendChild(div);
+}
+
+async function admAddProManually(){
+  const fn=(document.getElementById('adm-manual-fn')?.value||'').trim();
+  const ln=(document.getElementById('adm-manual-ln')?.value||'').trim();
+  const email=(document.getElementById('adm-manual-email')?.value||'').trim();
+  const tel=(document.getElementById('adm-manual-tel')?.value||'').trim();
+  const spec=document.getElementById('adm-manual-spec')?.value||'';
+  const iban=(document.getElementById('adm-manual-iban')?.value||'').trim().replace(/\s/g,'');
+  const errEl=document.getElementById('adm-manual-err');
+  errEl.style.display='none';
+
+  if(!fn||!ln){errEl.textContent='⚠️ Prénom et nom obligatoires';errEl.style.display='block';return;}
+  if(!email||!email.includes('@')){errEl.textContent='⚠️ Email invalide';errEl.style.display='block';return;}
+  if(!spec){errEl.textContent='⚠️ Spécialité obligatoire';errEl.style.display='block';return;}
+
+  const db=getDB();
+  if(db.pros.find(p=>p.email===email)){
+    errEl.textContent='⚠️ Ce professionnel existe déjà (email déjà enregistré)';errEl.style.display='block';return;
+  }
+
+  const id='pro_'+Date.now();
+  const pro={
+    id,fn,ln,email,tel,spec,rpps:'',diplome:'',exp:'',bio:'',tags:'',
+    price:38,tz:'Africa/Tunis',consVid:true,consPres:false,
+    langFr:true,langEn:false,langAr:false,
+    emailConfirmed:true,active:false,avail:{},notif:false,
+    photo:null,bank:{nom:'',iban,bic:'',banque:''},
+    rib:null,contratSigne:true,contratDate:new Date().toISOString(),
+    createdAt:new Date().toISOString(),
+    addedManuallyByAdmin:true
+  };
+
+  db.pros.push(pro);saveDB(db);
+
+  // Sauvegarder dans Supabase
+  try{
+    const{error}=await supa.from('pros').upsert([{
+      id:pro.id,fn,ln,email,tel,spec,rpps:'',bio:'',tags:'',
+      price:38,tz:'Africa/Tunis',lang_fr:true,lang_en:false,lang_ar:false,
+      active:false,notif:false,email_confirmed:true,contrat_signe:true,
+      bank_iban:iban,bank_bic:'',bank_nom:'',bank_banque:'',
+      created_at:pro.createdAt
+    }],{onConflict:'id'});
+    if(error){console.warn('Supabase manual add warning:',error.message);}
+    else{console.log('✅ Pro ajouté manuellement dans Supabase:',email);}
+  }catch(e){console.warn('Supabase manual add exception:',e);}
+
+  // Vider le formulaire
+  ['adm-manual-fn','adm-manual-ln','adm-manual-email','adm-manual-tel','adm-manual-iban'].forEach(id=>{
+    const el=document.getElementById(id);if(el)el.value='';
+  });
+  const selSpec=document.getElementById('adm-manual-spec');if(selSpec)selSpec.value='';
+
+  toast('✅ Dossier de Dr. '+fn+' '+ln+' créé — en attente de validation','green');
+  renderAdminPanel();
 }
 
 async function syncAndRefreshAdmin(){
