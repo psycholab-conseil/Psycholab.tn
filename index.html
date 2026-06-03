@@ -4942,7 +4942,49 @@ function getSpecDetails(spec){
   return SPEC_DETAILS["default"];
 }
 
+// Modal d'inscription rapide (pour blocages mid-page)
+function showSignupWall(){
+  // Supprimer ancienne instance
+  const old=document.getElementById('signup-wall-modal');
+  if(old)old.remove();
+
+  const m=document.createElement('div');
+  m.id='signup-wall-modal';
+  m.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:1200;display:flex;align-items:center;justify-content:center;padding:1rem;backdrop-filter:blur(6px)';
+  m.innerHTML=`
+    <div style="background:#fff;border-radius:22px;padding:1.8rem 1.5rem;max-width:360px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.25);text-align:center">
+      <div style="font-size:2.4rem;margin-bottom:.6rem">🔒</div>
+      <div style="font-family:'Playfair Display',serif;font-size:1.15rem;font-weight:700;color:#1B3A35;margin-bottom:.5rem">Accès réservé aux membres</div>
+      <div style="font-size:.82rem;color:#6B8C87;line-height:1.6;margin-bottom:1.3rem">
+        Pour voir les profils complets et prendre rendez-vous avec un spécialiste tunisien certifié, créez votre compte gratuit.
+      </div>
+      <button onclick="document.getElementById('signup-wall-modal').remove();showSignup('patient')"
+        style="background:linear-gradient(135deg,#1B6B61,#2A8A7E);color:#fff;border:none;border-radius:13px;padding:.9rem;font-size:.92rem;font-weight:800;cursor:pointer;width:100%;margin-bottom:.6rem;box-shadow:0 4px 16px rgba(27,107,97,.35)">
+        👤 Créer mon compte — Gratuit
+      </button>
+      <button onclick="document.getElementById('signup-wall-modal').remove();showLogin()"
+        style="background:transparent;color:#1B6B61;border:1.5px solid #1B6B61;border-radius:13px;padding:.75rem;font-size:.85rem;font-weight:600;cursor:pointer;width:100%;margin-bottom:.9rem">
+        🔐 J'ai déjà un compte
+      </button>
+      <div style="font-size:.68rem;color:#B0C8C4">✅ Gratuit · ✅ 2 minutes · 🔒 100% confidentiel</div>
+      <button onclick="document.getElementById('signup-wall-modal').remove()"
+        style="margin-top:.8rem;background:none;border:none;color:#9BB5B0;font-size:.75rem;cursor:pointer;text-decoration:underline">
+        Fermer
+      </button>
+    </div>`;
+  // Clic extérieur ferme
+  m.addEventListener('click',e=>{if(e.target===m)m.remove();});
+  document.body.appendChild(m);
+}
+
 function openProProfile(proId){
+  // Vérifier si l'utilisateur est connecté
+  const session=getSession();
+  if(!session || (session.type!=='patient' && session.type!=='pro' && session.type!=='admin')){
+    // Afficher modal d'inscription au lieu du profil
+    showSignupWall();
+    return;
+  }
   const db=getDB();
   const pro=db.pros.find(p=>p.id===proId);
   if(!pro) return;
