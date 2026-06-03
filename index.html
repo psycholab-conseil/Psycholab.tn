@@ -271,8 +271,32 @@ async function sbSaveRdv(rdv){
 
 async function sbUpdateProStatus(proId,active){
   try{
-    const{error}=await supa.from('pros').update({active}).eq('id',proId);
-    if(error)console.error('Supabase update error:',error);
+    // D'abord tenter un update
+    const{error,data}=await supa.from('pros').update({active,validated_at:active?new Date().toISOString():null}).eq('id',proId).select();
+    if(error){console.error('Supabase update error:',error);return;}
+    // Si aucune ligne mise à jour (pro pas encore dans Supabase), faire un upsert complet
+    if(!data||data.length===0){
+      const db=getDB();
+      const pro=db.pros.find(p=>p.id===proId);
+      if(pro){
+        const{error:e2}=await supa.from('pros').upsert([{
+          id:pro.id,fn:pro.fn,ln:pro.ln,email:pro.email,tel:pro.tel||'',
+          spec:pro.spec,rpps:pro.rpps||'',bio:pro.bio||'',tags:pro.tags||'',
+          price:pro.price||38,tz:pro.tz||'Africa/Tunis',
+          lang_fr:pro.langFr||true,lang_en:pro.langEn||false,lang_ar:pro.langAr||false,
+          active:active,notif:pro.notif||false,
+          email_confirmed:true,contrat_signe:true,
+          bank_iban:pro.bank?.iban||'',bank_bic:pro.bank?.bic||'',
+          bank_nom:pro.bank?.nom||'',bank_banque:pro.bank?.banque||'',
+          validated_at:active?new Date().toISOString():null,
+          created_at:pro.createdAt||new Date().toISOString()
+        }],{onConflict:'id'});
+        if(e2)console.error('Supabase upsert error:',e2.message);
+        else console.log('✅ Pro upserted dans Supabase avec active='+active);
+      }
+    }else{
+      console.log('✅ Pro Supabase mis à jour active='+active);
+    }
   }catch(e){console.error('Supabase error:',e);}
 }
 
@@ -3952,14 +3976,14 @@ async function goAdmin(){
 }
 
 
-function validatePro(proId){
+async function validatePro(proId){
   const db=getDB();
   const pro=db.pros.find(p=>p.id===proId);
   if(!pro)return;
   pro.active=true;
   pro.validatedAt=new Date().toISOString();
   saveDB(db);
-  sbUpdateProStatus(proId,true);
+  await sbUpdateProStatus(proId,true);
 
   const dateValidation=new Date().toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
   const siteUrl='https://psycholab-conseil.github.io/Psycholab.tn';
