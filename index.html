@@ -922,9 +922,18 @@ body[data-lang="ar"]{font-family:'Segoe UI',Tahoma,'Arabic Typesetting',sans-ser
       <div class="trust-item">📹 100% en ligne</div>
       <div class="trust-item">🌍 Monde entier</div>
     </div>
+    <!-- CTA inscription visiteur -->
+    <div style="position:relative;z-index:1;margin-bottom:.5rem">
+      <button class="hero-btn-p" onclick="showSignup('patient')" style="font-size:.95rem;font-weight:700;padding:.9rem 2rem;border-radius:12px;box-shadow:0 6px 24px rgba(0,0,0,.22);display:inline-flex;align-items:center;gap:.5rem">
+        👤 Créer mon compte gratuit
+      </button>
+    </div>
+    <div style="position:relative;z-index:1;font-size:.72rem;color:rgba(255,255,255,.65);margin-bottom:1.1rem">
+      Inscription gratuite · 2 minutes · Aucune carte bancaire requise
+    </div>
     <div class="hero-btns">
-      <button class="hero-btn-p" onclick="scrollToSearch()">🔍 Trouver un spécialiste</button>
-      <button class="hero-btn-s" onclick="showSignup('pro')">🩺 Je suis spécialiste tunisien</button>
+      <button class="hero-btn-s" onclick="showLogin()" style="font-size:.82rem">🔐 Déjà inscrit ? Se connecter</button>
+      <button class="hero-btn-s" onclick="showSignup('pro')" style="font-size:.82rem">🩺 Je suis spécialiste</button>
     </div>
   </div>
 
@@ -2710,6 +2719,97 @@ function goPatient(){
 function renderHome(){
   try{
     const db=getDB();
+    const session=getSession();
+    const list=document.getElementById('spec-list');
+    const cnt=document.getElementById('cnt');
+    const searchWrap=document.querySelector('.search-wrap');
+
+    // ── MUR D'INSCRIPTION si non connecté ──
+    if(!session || (session.type!=='patient' && session.type!=='pro' && session.type!=='admin')){
+      if(cnt)cnt.style.display='none';
+      if(searchWrap)searchWrap.style.display='none';
+      if(!list)return;
+      const db2=getDB();
+      const nb=db2.pros.filter(p=>p.active).length;
+      list.innerHTML=`
+        <div style="padding:0 0 1.5rem">
+          <!-- Teaser flou -->
+          <div style="position:relative;border-radius:16px;overflow:hidden;margin-bottom:1.5rem">
+            <div style="filter:blur(6px);pointer-events:none;opacity:.45">
+              <div style="display:flex;flex-direction:column;gap:.9rem;padding:.5rem 0">
+                ${[1,2,3].map(()=>`<div style="background:#fff;border-radius:16px;padding:1.1rem;border:1.5px solid #E8F0EF">
+                  <div style="display:flex;gap:.8rem;align-items:center;margin-bottom:.8rem">
+                    <div style="width:52px;height:52px;border-radius:10px;background:linear-gradient(135deg,#d0ebe8,#a8d5d0)"></div>
+                    <div style="flex:1">
+                      <div style="height:14px;background:#E0EDEB;border-radius:6px;width:60%;margin-bottom:.4rem"></div>
+                      <div style="height:10px;background:#E0EDEB;border-radius:6px;width:40%"></div>
+                    </div>
+                  </div>
+                  <div style="display:flex;gap:.4rem;margin-bottom:.7rem">
+                    <div style="height:24px;width:110px;background:#E8F0EF;border-radius:20px"></div>
+                    <div style="height:24px;width:50px;background:#E8F0EF;border-radius:20px"></div>
+                  </div>
+                  <div style="height:40px;background:linear-gradient(135deg,#1B6B61,#2A8A7E);border-radius:10px;opacity:.3"></div>
+                </div>`).join('')}
+              </div>
+            </div>
+            <!-- Overlay inscription -->
+            <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:1.5rem;text-align:center">
+              <div style="background:#fff;border-radius:20px;padding:1.6rem 1.4rem;box-shadow:0 12px 40px rgba(0,0,0,.18);max-width:340px;width:100%">
+                <div style="font-size:2rem;margin-bottom:.5rem">🔒</div>
+                <div style="font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:700;color:#1B3A35;margin-bottom:.4rem">Accès réservé aux membres</div>
+                <div style="font-size:.8rem;color:#6B8C87;line-height:1.55;margin-bottom:1.1rem">
+                  <strong style="color:#1B6B61">${nb} spécialiste${nb>1?'s':''} certifié${nb>1?'s':''}</strong> disponible${nb>1?'s':''} sur Psycholab.<br/>
+                  Créez un compte gratuit pour accéder aux profils et prendre rendez-vous.
+                </div>
+                <button onclick="showSignup('patient')" style="background:linear-gradient(135deg,#1B6B61,#2A8A7E);color:#fff;border:none;border-radius:12px;padding:.85rem;font-size:.9rem;font-weight:700;cursor:pointer;width:100%;margin-bottom:.55rem;box-shadow:0 4px 16px rgba(27,107,97,.35)">
+                  👤 Créer mon compte gratuit
+                </button>
+                <button onclick="showLogin()" style="background:transparent;color:#1B6B61;border:1.5px solid #1B6B61;border-radius:12px;padding:.75rem;font-size:.85rem;font-weight:600;cursor:pointer;width:100%;margin-bottom:.8rem">
+                  🔐 J'ai déjà un compte
+                </button>
+                <div style="font-size:.68rem;color:#9BB5B0;line-height:1.6">
+                  ✅ Gratuit · ✅ 2 minutes · ✅ Aucune carte bancaire<br/>
+                  🔒 Vos données restent confidentielles (RGPD)
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Pourquoi s'inscrire -->
+          <div style="background:#fff;border-radius:16px;padding:1.2rem;border:1.5px solid #E8F0EF;margin-bottom:1rem">
+            <div style="font-size:.72rem;font-weight:700;color:#1B6B61;text-transform:uppercase;letter-spacing:.08em;margin-bottom:.8rem">✨ Pourquoi créer un compte ?</div>
+            <div style="display:flex;flex-direction:column;gap:.6rem">
+              <div style="display:flex;align-items:flex-start;gap:.7rem">
+                <span style="font-size:1.1rem;flex-shrink:0">🔍</span>
+                <div><strong style="font-size:.82rem;color:#1B3A35">Accès aux profils complets</strong><br/><span style="font-size:.76rem;color:#6B8C87">Spécialité, actes, tarifs et disponibilités de chaque professionnel</span></div>
+              </div>
+              <div style="display:flex;align-items:flex-start;gap:.7rem">
+                <span style="font-size:1.1rem;flex-shrink:0">📅</span>
+                <div><strong style="font-size:.82rem;color:#1B3A35">Prise de RDV en ligne</strong><br/><span style="font-size:.76rem;color:#6B8C87">Choisissez votre créneau et recevez vos rappels par email</span></div>
+              </div>
+              <div style="display:flex;align-items:flex-start;gap:.7rem">
+                <span style="font-size:1.1rem;flex-shrink:0">🔒</span>
+                <div><strong style="font-size:.82rem;color:#1B3A35">Espace sécurisé & confidentiel</strong><br/><span style="font-size:.76rem;color:#6B8C87">Vos données ne sont jamais partagées — conformité RGPD</span></div>
+              </div>
+              <div style="display:flex;align-items:flex-start;gap:.7rem">
+                <span style="font-size:1.1rem;flex-shrink:0">🇹🇳</span>
+                <div><strong style="font-size:.82rem;color:#1B3A35">Spécialistes certifiés Ministère de la Santé</strong><br/><span style="font-size:.76rem;color:#6B8C87">Chaque professionnel est vérifié avant d'être visible sur la plateforme</span></div>
+              </div>
+            </div>
+          </div>
+
+          <button onclick="showSignup('patient')" style="background:linear-gradient(135deg,#1B6B61,#2A8A7E);color:#fff;border:none;border-radius:14px;padding:1rem;font-size:.95rem;font-weight:800;cursor:pointer;width:100%;box-shadow:0 4px 20px rgba(27,107,97,.3)">
+            👤 Je m'inscris maintenant — C'est gratuit
+          </button>
+        </div>`;
+      return;
+    }
+
+    // ── Utilisateur connecté : afficher normalement ──
+    if(searchWrap)searchWrap.style.display='';
+    if(cnt)cnt.style.display='';
+
     const q=(document.getElementById('q')||{value:''}).value.toLowerCase();
     const fs=(document.getElementById('fs')||{value:''}).value;
     const ft=(document.getElementById('ft')||{value:''}).value;
@@ -2717,8 +2817,6 @@ function renderHome(){
     if(q)pros=pros.filter(p=>(p.fn||'').toLowerCase().includes(q)||(p.ln||'').toLowerCase().includes(q)||(p.spec||'').toLowerCase().includes(q)||(p.tags||'').toLowerCase().includes(q));
     if(fs)pros=pros.filter(p=>(p.spec||'').includes(fs));
     if(ft)pros=pros.filter(p=>ft==='video'?p.consVid:p.consPres);
-    const list=document.getElementById('spec-list');
-    const cnt=document.getElementById('cnt');
     if(cnt)cnt.textContent=pros.length+' résultat'+(pros.length>1?'s':'');
     if(!list)return;
     if(!pros.length){
