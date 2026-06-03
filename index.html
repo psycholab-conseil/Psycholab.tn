@@ -2340,24 +2340,23 @@ body[data-lang="ar"]{font-family:'Segoe UI',Tahoma,'Arabic Typesetting',sans-ser
 
     <!-- Tab: Dossiers Pro -->
     <div class="adm-pane on" id="adm-pros">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.8rem;gap:.5rem;flex-wrap:wrap">
-        <h3 style="font-family:'Playfair Display',serif;font-size:.95rem;font-weight:700;color:var(--ch)">⏳ Dossiers professionnels en attente</h3>
-        <button onclick="syncAndRefreshAdmin()" style="background:var(--teal);color:#fff;border:none;border-radius:8px;padding:.4rem .85rem;font-size:.75rem;font-weight:600;cursor:pointer">🔄 Actualiser</button>
-      </div>
-      <div id="adm-pending-list"></div>
 
-      <!-- Ajout manuel d'un pro (depuis email Formspree) -->
-      <div style="margin-top:1.2rem;background:var(--blue-l);border:1.5px solid var(--blue);border-radius:14px;padding:1rem">
-        <div style="font-size:.82rem;font-weight:700;color:var(--blue);margin-bottom:.6rem">➕ Ajouter un pro manuellement (depuis l'email reçu)</div>
-        <div style="display:grid;gap:.5rem">
+      <!-- FORMULAIRE AJOUT MANUEL — toujours visible en haut -->
+      <div style="background:linear-gradient(135deg,#1a3a6b,#2255A0);border-radius:14px;padding:1rem;margin-bottom:1rem;color:#fff">
+        <div style="font-size:.88rem;font-weight:700;margin-bottom:.15rem">➕ Ajouter un pro manuellement</div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.85rem;gap:.5rem;flex-wrap:wrap">
+          <div style="font-size:.72rem;opacity:.8">Depuis l'email reçu (Formspree / Gmail)</div>
+          <button onclick="admPrefillOumeima()" style="background:rgba(255,215,0,.25);color:#FFD700;border:1px solid rgba(255,215,0,.4);border-radius:6px;padding:.25rem .65rem;font-size:.7rem;font-weight:700;cursor:pointer">⚡ Pré-remplir Oumeïma</button>
+        </div>
+        <div style="display:grid;gap:.55rem">
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem">
-            <input id="adm-manual-fn" placeholder="Prénom" style="border:1.5px solid var(--border);border-radius:8px;padding:.5rem .7rem;font-size:.8rem;background:#fff;outline:none;font-family:inherit"/>
-            <input id="adm-manual-ln" placeholder="Nom" style="border:1.5px solid var(--border);border-radius:8px;padding:.5rem .7rem;font-size:.8rem;background:#fff;outline:none;font-family:inherit"/>
+            <input id="adm-manual-fn" placeholder="Prénom *" style="border:none;border-radius:8px;padding:.55rem .75rem;font-size:.82rem;background:rgba(255,255,255,.95);outline:none;font-family:inherit;color:#18211F"/>
+            <input id="adm-manual-ln" placeholder="Nom *" style="border:none;border-radius:8px;padding:.55rem .75rem;font-size:.82rem;background:rgba(255,255,255,.95);outline:none;font-family:inherit;color:#18211F"/>
           </div>
-          <input id="adm-manual-email" placeholder="Email professionnel" type="email" style="border:1.5px solid var(--border);border-radius:8px;padding:.5rem .7rem;font-size:.8rem;background:#fff;outline:none;font-family:inherit"/>
-          <input id="adm-manual-tel" placeholder="Téléphone (ex: 27054204)" style="border:1.5px solid var(--border);border-radius:8px;padding:.5rem .7rem;font-size:.8rem;background:#fff;outline:none;font-family:inherit"/>
-          <select id="adm-manual-spec" style="border:1.5px solid var(--border);border-radius:8px;padding:.5rem .7rem;font-size:.8rem;background:#fff;outline:none;font-family:inherit;color:var(--ch)">
-            <option value="">— Spécialité —</option>
+          <input id="adm-manual-email" placeholder="Email professionnel *" type="email" style="border:none;border-radius:8px;padding:.55rem .75rem;font-size:.82rem;background:rgba(255,255,255,.95);outline:none;font-family:inherit;color:#18211F"/>
+          <input id="adm-manual-tel" placeholder="Téléphone (ex: 27054204)" style="border:none;border-radius:8px;padding:.55rem .75rem;font-size:.82rem;background:rgba(255,255,255,.95);outline:none;font-family:inherit;color:#18211F"/>
+          <select id="adm-manual-spec" style="border:none;border-radius:8px;padding:.55rem .75rem;font-size:.82rem;background:rgba(255,255,255,.95);outline:none;font-family:inherit;color:#18211F">
+            <option value="">— Spécialité * —</option>
             <option>Psychologue clinicien</option>
             <option>Psychiatre</option>
             <option>Neuropsychologue</option>
@@ -2368,11 +2367,18 @@ body[data-lang="ar"]{font-family:'Segoe UI',Tahoma,'Arabic Typesetting',sans-ser
             <option>Thérapeute EMDR</option>
             <option>Thérapeute TCC</option>
           </select>
-          <input id="adm-manual-iban" placeholder="IBAN (optionnel)" style="border:1.5px solid var(--border);border-radius:8px;padding:.5rem .7rem;font-size:.8rem;background:#fff;outline:none;font-family:inherit"/>
-          <div id="adm-manual-err" style="display:none;background:var(--red-l);color:var(--red);border-radius:8px;padding:.5rem .7rem;font-size:.78rem;font-weight:600"></div>
-          <button onclick="admAddProManually()" style="background:var(--blue);color:#fff;border:none;border-radius:10px;padding:.65rem;font-size:.82rem;font-weight:700;cursor:pointer;width:100%">➕ Créer le dossier en attente</button>
+          <input id="adm-manual-iban" placeholder="IBAN (optionnel)" style="border:none;border-radius:8px;padding:.55rem .75rem;font-size:.82rem;background:rgba(255,255,255,.95);outline:none;font-family:inherit;color:#18211F"/>
+          <div id="adm-manual-err" style="display:none;background:rgba(255,100,80,.25);color:#ffe0dc;border-radius:8px;padding:.5rem .7rem;font-size:.78rem;font-weight:600;border:1px solid rgba(255,100,80,.4)"></div>
+          <button onclick="admAddProManually()" style="background:#fff;color:#1a3a6b;border:none;border-radius:10px;padding:.7rem;font-size:.85rem;font-weight:800;cursor:pointer;width:100%;letter-spacing:.01em">➕ Créer le dossier en attente</button>
         </div>
       </div>
+
+      <!-- Liste dossiers en attente -->
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.7rem;gap:.5rem">
+        <div style="font-size:.78rem;font-weight:700;color:var(--soft);text-transform:uppercase;letter-spacing:.07em">⏳ Dossiers en attente de validation</div>
+        <button onclick="syncAndRefreshAdmin()" style="background:var(--teal);color:#fff;border:none;border-radius:8px;padding:.35rem .75rem;font-size:.72rem;font-weight:600;cursor:pointer">🔄 Actualiser</button>
+      </div>
+      <div id="adm-pending-list"></div>
     </div>
 
     <!-- Tab: Paiements -->
@@ -3832,6 +3838,39 @@ function showRecaptchaNotice(){
   div.innerHTML='🔒 Ce site est protégé par Google reCAPTCHA.<br/><a href="https://policies.google.com/privacy" target="_blank" style="color:var(--teal)">Politique de confidentialité</a> · <a href="https://policies.google.com/terms" target="_blank" style="color:var(--teal)">Conditions d\'utilisation</a>';
   const card=document.querySelector('#v-login .auth-card');
   if(card)card.appendChild(div);
+}
+
+function admPrefillOumeima(){
+  // Données extraites de l'email Formspree reçu
+  const fn=document.getElementById('adm-manual-fn');
+  const ln=document.getElementById('adm-manual-ln');
+  const email=document.getElementById('adm-manual-email');
+  const tel=document.getElementById('adm-manual-tel');
+  const spec=document.getElementById('adm-manual-spec');
+  const iban=document.getElementById('adm-manual-iban');
+  if(fn)fn.value='Oumeïma';
+  if(ln)ln.value='Belkacem';
+  if(email)email.value='o.friedkacem@gmail.com';
+  if(tel)tel.value='27054204';
+  if(spec){
+    // Chercher Neuropsychologue dans les options
+    for(let i=0;i<spec.options.length;i++){
+      if(spec.options[i].text.toLowerCase().includes('neuropsych')){spec.selectedIndex=i;break;}
+    }
+    if(spec.value===''){spec.options[0].value='';spec.value='';
+      // Ajouter l'option si absente
+      const opt=document.createElement('option');
+      opt.value='Neuropsychologue';opt.text='Neuropsychologue';
+      opt.selected=true;spec.add(opt);
+    }
+  }
+  // Mettre en évidence les champs remplis
+  [fn,ln,email,tel].forEach(el=>{
+    if(el){el.style.background='#fffbe6';el.style.border='2px solid #FFD700';}
+  });
+  toast('⚡ Données d'Oumeïma Belkacem pré-remplies !','green');
+  // Scroll vers le bouton de création
+  document.getElementById('adm-manual-err')?.scrollIntoView({behavior:'smooth',block:'center'});
 }
 
 async function admAddProManually(){
