@@ -2218,6 +2218,13 @@ body[data-lang="ar"]{font-family:'Segoe UI',Tahoma,'Arabic Typesetting',sans-ser
 </div>
 
 <!-- ══ BOOKING SHEET ══ -->
+<!-- MODAL PROFIL PRO PUBLIC -->
+<div id="pro-profile-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:800;overflow-y:auto;backdrop-filter:blur(4px)" onclick="if(event.target===this)closeProProfile()">
+  <div style="background:var(--white);max-width:520px;margin:1rem auto;border-radius:20px;overflow:hidden;box-shadow:0 24px 60px rgba(0,0,0,.2)">
+    <div id="pro-profile-content"></div>
+  </div>
+</div>
+
 <div class="bsheet-bg" id="bsheet-bg" onclick="if(event.target===this)closeBSheet()">
   <div class="bsheet">
     <div class="bsh-hdr">
@@ -2724,7 +2731,7 @@ function renderHome(){
       const photoEl=p.photo
         ?`<img src="${p.photo}" style="width:52px;height:52px;border-radius:var(--r-sm);object-fit:cover;flex-shrink:0" alt="Dr. ${escHtml(p.fn)} ${escHtml(p.ln)}"/>`
         :`<div class="av">🩺</div>`;
-      return `<div class="scard" onclick="openSheet('${p.id}')">
+      return `<div class="scard" onclick="openProProfile('${p.id}')">
         <div class="card-top">
           ${photoEl}
           <div>
@@ -4674,6 +4681,272 @@ function updatePatientDash(session){
 // ================================================
 //  BOOKING SHEET
 // ================================================
+// ================================================
+//  PROFIL PUBLIC DU PROFESSIONNEL
+// ================================================
+
+// Domaines d'intervention & actes par spécialité
+const SPEC_DETAILS = {
+  "Neuropsychologue": {
+    icon: "🧠",
+    description: "Le neuropsychologue évalue et prend en charge les troubles cognitifs liés au fonctionnement cérébral. Il réalise des bilans approfondis et propose des programmes de remédiation personnalisés.",
+    actes: [
+      "📋 Bilan neuropsychologique complet (mémoire, attention, fonctions exécutives)",
+      "🎯 Remédiation cognitive (rééducation des fonctions cognitives altérées)",
+      "🔍 Évaluation des troubles neurodéveloppementaux (TDAH, dyslexie, TSA)",
+      "📊 Suivi post-AVC et traumatismes crâniens",
+      "🧩 Accompagnement des troubles dégénératifs (Alzheimer, démences)",
+      "📝 Bilan de haut potentiel intellectuel (HPI)",
+      "🎓 Évaluation des difficultés d'apprentissage scolaire",
+      "💡 Psychoéducation et conseils aux familles"
+    ],
+    pour_qui: ["Adultes & enfants", "Troubles cognitifs", "Post-AVC", "Difficultés scolaires", "TDAH / TSA", "Bilan HPI"]
+  },
+  "Psychologue clinicien": {
+    icon: "🛋️",
+    description: "Le psychologue clinicien accompagne les personnes en souffrance psychique à travers une approche thérapeutique adaptée. Il utilise des outils validés scientifiquement pour comprendre et traiter les difficultés émotionnelles et comportementales.",
+    actes: [
+      "💬 Psychothérapie individuelle (adultes, adolescents, enfants)",
+      "🧩 Évaluation psychologique et diagnostique",
+      "🌀 Thérapie cognitivo-comportementale (TCC)",
+      "💔 Accompagnement deuil, séparation, dépression",
+      "😰 Gestion des troubles anxieux et phobies",
+      "🔄 Thérapie de soutien en situation de crise",
+      "👨‍👩‍👦 Thérapie familiale et de couple",
+      "🌱 Développement personnel et affirmation de soi"
+    ],
+    pour_qui: ["Tout public", "Anxiété / Dépression", "Traumatismes", "Difficultés relationnelles", "Burn-out", "Développement perso"]
+  },
+  "Psychiatre": {
+    icon: "⚕️",
+    description: "Le psychiatre est un médecin spécialisé en santé mentale. Il peut établir des diagnostics, prescrire des traitements médicamenteux et assurer un suivi thérapeutique global des troubles psychiatriques.",
+    actes: [
+      "🩺 Consultation psychiatrique et diagnostic",
+      "💊 Prescription et suivi des traitements médicamenteux",
+      "🔍 Évaluation des troubles de l'humeur (dépression, bipolarité)",
+      "😰 Prise en charge des troubles anxieux sévères",
+      "🧠 Suivi schizophrénie et troubles psychotiques",
+      "🔄 Évaluation du risque suicidaire et gestion de crise",
+      "💤 Traitement des troubles du sommeil",
+      "🌱 Accompagnement sevrage addictions"
+    ],
+    pour_qui: ["Adultes", "Troubles sévères", "Prescription médicamenteuse", "Suivi au long cours", "Urgences psy", "Addictions"]
+  },
+  "Psychothérapeute TCC": {
+    icon: "🔄",
+    description: "Le thérapeute TCC utilise des techniques cognitives et comportementales validées scientifiquement pour identifier et modifier les pensées et comportements problématiques.",
+    actes: [
+      "🧠 Restructuration cognitive (modifier les pensées négatives)",
+      "😰 Thérapie d'exposition pour les phobies et TOC",
+      "📊 Protocoles TCC pour dépression et anxiété",
+      "🌊 Gestion du stress et des émotions",
+      "💤 Thérapie insomnie (TCC-I)",
+      "🍽️ TCC pour troubles alimentaires",
+      "🔄 Prévention des rechutes",
+      "📋 Journaux comportementaux et exercices pratiques"
+    ],
+    pour_qui: ["Phobies / TOC", "Dépression", "Anxiété", "Insomnie", "Troubles alimentaires", "Stress chronique"]
+  },
+  "Thérapeute EMDR": {
+    icon: "👁️",
+    description: "L'EMDR (Eye Movement Desensitization and Reprocessing) est une thérapie reconnue par l'OMS pour le traitement des traumatismes. Le thérapeute guide le patient dans le retraitement des expériences douloureuses.",
+    actes: [
+      "🎯 Protocole EMDR standard pour traumatismes complexes",
+      "💔 Traitement du deuil compliqué et pertes",
+      "😰 PTSD et état de stress post-traumatique",
+      "👶 EMDR adapté enfants et adolescents",
+      "🔒 Traitement des croyances limitantes",
+      "🌊 Gestion des émotions intenses",
+      "🔄 Retraitement des expériences d'abus",
+      "💪 Renforcement des ressources internes"
+    ],
+    pour_qui: ["Traumatismes", "PTSD", "Deuil", "Abus / violences", "Anxiété sévère", "Enfants & adultes"]
+  },
+  "Psychomotricien": {
+    icon: "🤸",
+    description: "Le psychomotricien travaille sur la relation entre le corps, les émotions et le comportement. Il utilise des médiations corporelles pour améliorer le développement psychomoteur et le bien-être global.",
+    actes: [
+      "🏃 Bilan psychomoteur complet",
+      "✋ Rééducation de la coordination et motricité fine",
+      "🧘 Relaxation thérapeutique et gestion du tonus",
+      "📝 Traitement des troubles de l'écriture (dysgraphie)",
+      "⚖️ Travail sur le schéma corporel et l'image de soi",
+      "🎮 Psychomotricité ludique pour enfants",
+      "👴 Prévention des chutes chez le senior",
+      "🧠 Médiation corps-psyché pour troubles psychiques"
+    ],
+    pour_qui: ["Enfants & adultes", "Troubles du développement", "Dysgraphie", "TDAH", "Seniors", "Anxiété corporelle"]
+  },
+  "Ergothérapeute": {
+    icon: "✋",
+    description: "L'ergothérapeute accompagne les personnes dont les capacités sont limitées par une maladie, un handicap ou un trouble du développement, pour leur permettre d'accomplir les activités de la vie quotidienne.",
+    actes: [
+      "🏠 Évaluation des capacités fonctionnelles",
+      "🎯 Rééducation des activités de la vie quotidienne",
+      "✏️ Prise en charge des troubles graphomoteurs",
+      "🧩 Adaptation de l'environnement de travail/scolaire",
+      "👁️ Bilan et rééducation visuelle (troubles visuospatiaux)",
+      "🔧 Préconisation et formation aux aides techniques",
+      "🤝 Intégration sensorielle",
+      "📚 Accompagnement troubles des apprentissages"
+    ],
+    pour_qui: ["Enfants & adultes", "Handicap moteur", "Troubles cognitifs", "Post-AVC", "Difficultés scolaires", "TSA / TDAH"]
+  },
+  "Orthophoniste": {
+    icon: "🗣️",
+    description: "L'orthophoniste prend en charge les troubles du langage oral et écrit, de la communication, de la voix et de la déglutition.",
+    actes: [
+      "🗣️ Bilan orthophonique complet (langage oral et écrit)",
+      "📖 Rééducation dyslexie, dysorthographie, dyscalculie",
+      "🔤 Troubles du langage oral (retard de parole, bégaiement)",
+      "🧩 Communication Alternative et Améliorée (CAA)",
+      "😋 Rééducation des troubles de la déglutition",
+      "🎵 Thérapie vocale (voix, dysphonie)",
+      "🧠 Suivi aphasie post-AVC",
+      "👶 Stimulation langage précoce"
+    ],
+    pour_qui: ["Enfants & adultes", "Dyslexie", "Troubles du langage", "Post-AVC", "Autisme / TSA", "Bégaiement"]
+  },
+  "Pédopsychiatre": {
+    icon: "👶",
+    description: "Le pédopsychiatre est un médecin spécialiste de la santé mentale de l'enfant et de l'adolescent. Il diagnostique et traite les troubles psychiatriques pédiatriques.",
+    actes: [
+      "🔍 Évaluation et diagnostic des troubles psychiatriques de l'enfant",
+      "🧩 Prise en charge TSA (troubles du spectre autistique)",
+      "💊 Prescription médicamenteuse adaptée à l'enfant",
+      "😰 Traitement anxiété et phobies scolaires",
+      "💔 Accompagnement dépression adolescente",
+      "🔄 Gestion des crises et comportements perturbateurs",
+      "👨‍👩‍👦 Guidance parentale",
+      "🏫 Liaison école-famille-soignant"
+    ],
+    pour_qui: ["Enfants", "Adolescents", "TSA / TDAH", "Phobies scolaires", "Dépression ado", "Guidance parentale"]
+  },
+  "default": {
+    icon: "🩺",
+    description: "Professionnel de santé mentale certifié, accompagne ses patients dans leur parcours de soin avec une approche bienveillante et personnalisée.",
+    actes: [
+      "💬 Consultation et évaluation initiale",
+      "🎯 Accompagnement thérapeutique personnalisé",
+      "🌱 Soutien psychologique et suivi régulier",
+      "📋 Orientation et coordination des soins"
+    ],
+    pour_qui: ["Adultes", "Adolescents", "Enfants", "Couples", "Familles"]
+  }
+};
+
+function getSpecDetails(spec){
+  if(!spec) return SPEC_DETAILS["default"];
+  for(const key of Object.keys(SPEC_DETAILS)){
+    if(key==="default") continue;
+    if(spec.toLowerCase().includes(key.toLowerCase())) return SPEC_DETAILS[key];
+  }
+  return SPEC_DETAILS["default"];
+}
+
+function openProProfile(proId){
+  const db=getDB();
+  const pro=db.pros.find(p=>p.id===proId);
+  if(!pro) return;
+  const det=getSpecDetails(pro.spec);
+  const langs=[pro.langFr&&'🇫🇷 Français',pro.langAr&&'🇸🇦 Arabe',pro.langEn&&'🇬🇧 English'].filter(Boolean);
+  const tags=(pro.tags||'').split(',').map(t=>t.trim()).filter(Boolean);
+  const photoEl=pro.photo
+    ?`<img src="${pro.photo}" style="width:72px;height:72px;border-radius:14px;object-fit:cover;border:3px solid rgba(255,255,255,.3)" alt="Dr. ${escHtml(pro.fn)} ${escHtml(pro.ln)}"/>`
+    :`<div style="width:72px;height:72px;border-radius:14px;background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-size:2rem;border:3px solid rgba(255,255,255,.3)">🩺</div>`;
+
+  document.getElementById('pro-profile-content').innerHTML=`
+    <!-- Header -->
+    <div style="background:linear-gradient(135deg,var(--teal-d),var(--teal));padding:1.4rem 1.2rem 1rem;color:#fff">
+      <div style="display:flex;align-items:center;gap:1rem;margin-bottom:.8rem">
+        ${photoEl}
+        <div style="flex:1">
+          <div style="font-size:1.05rem;font-weight:800;line-height:1.2">Dr. ${escHtml(pro.fn)} ${escHtml(pro.ln)}</div>
+          <div style="font-size:.78rem;font-weight:700;opacity:.9;text-transform:uppercase;letter-spacing:.06em;margin-top:.2rem">${det.icon} ${escHtml(pro.spec)}</div>
+          <div style="display:flex;align-items:center;gap:.3rem;margin-top:.4rem">
+            <span style="color:#FFD700;font-size:.85rem">★★★★★</span>
+            <span style="font-size:.68rem;opacity:.75">Nouveau</span>
+          </div>
+        </div>
+        <button onclick="closeProProfile()" style="background:rgba(255,255,255,.2);border:none;border-radius:50%;width:32px;height:32px;color:#fff;font-size:.9rem;cursor:pointer;flex-shrink:0">✕</button>
+      </div>
+      <!-- Badges -->
+      <div style="display:flex;flex-wrap:wrap;gap:.4rem">
+        <span style="background:rgba(255,255,255,.18);border-radius:20px;padding:.25rem .65rem;font-size:.7rem;font-weight:600">📹 Téléconsultation</span>
+        <span style="background:rgba(255,255,255,.18);border-radius:20px;padding:.25rem .65rem;font-size:.7rem;font-weight:600">⏱️ 45 min</span>
+        <span style="background:#FFD700;color:#1a1a1a;border-radius:20px;padding:.25rem .65rem;font-size:.7rem;font-weight:700">38 €</span>
+        ${langs.map(l=>`<span style="background:rgba(255,255,255,.18);border-radius:20px;padding:.25rem .65rem;font-size:.7rem;font-weight:600">${l}</span>`).join('')}
+      </div>
+    </div>
+
+    <div style="padding:1.1rem 1.2rem;display:flex;flex-direction:column;gap:1rem">
+
+      <!-- Description spécialité -->
+      <div>
+        <div style="font-size:.72rem;font-weight:700;color:var(--teal-d);text-transform:uppercase;letter-spacing:.08em;margin-bottom:.45rem">${det.icon} À propos de cette spécialité</div>
+        <p style="font-size:.82rem;color:var(--ch);line-height:1.65;margin:0">${det.description}</p>
+      </div>
+
+      <!-- Bio perso si renseignée -->
+      ${pro.bio?`<div style="background:var(--sand);border-radius:12px;padding:.85rem 1rem;border-left:3px solid var(--teal)">
+        <div style="font-size:.72rem;font-weight:700;color:var(--teal-d);text-transform:uppercase;letter-spacing:.08em;margin-bottom:.4rem">👤 Présentation personnelle</div>
+        <p style="font-size:.82rem;color:var(--ch);line-height:1.65;margin:0">${escHtml(pro.bio)}</p>
+      </div>`:''}
+
+      <!-- Actes & domaines -->
+      <div>
+        <div style="font-size:.72rem;font-weight:700;color:var(--teal-d);text-transform:uppercase;letter-spacing:.08em;margin-bottom:.55rem">🎯 Actes & domaines d'intervention</div>
+        <div style="display:flex;flex-direction:column;gap:.35rem">
+          ${det.actes.map(a=>`<div style="display:flex;align-items:flex-start;gap:.5rem;font-size:.8rem;color:var(--ch);line-height:1.5">
+            <span style="flex-shrink:0;margin-top:.05rem">${a.split(' ')[0]}</span>
+            <span>${a.split(' ').slice(1).join(' ')}</span>
+          </div>`).join('')}
+        </div>
+      </div>
+
+      <!-- Pour qui -->
+      <div>
+        <div style="font-size:.72rem;font-weight:700;color:var(--teal-d);text-transform:uppercase;letter-spacing:.08em;margin-bottom:.5rem">👥 Pour qui ?</div>
+        <div style="display:flex;flex-wrap:wrap;gap:.35rem">
+          ${det.pour_qui.map(p=>`<span style="background:var(--teal-l,#E8F4F2);color:var(--teal-d);border-radius:20px;padding:.28rem .7rem;font-size:.74rem;font-weight:600">${p}</span>`).join('')}
+        </div>
+      </div>
+
+      <!-- Tags si renseignés -->
+      ${tags.length?`<div>
+        <div style="font-size:.72rem;font-weight:700;color:var(--teal-d);text-transform:uppercase;letter-spacing:.08em;margin-bottom:.5rem">🏷️ Thématiques</div>
+        <div style="display:flex;flex-wrap:wrap;gap:.35rem">
+          ${tags.map(t=>`<span style="background:var(--sand);color:var(--ch);border-radius:20px;padding:.28rem .7rem;font-size:.74rem;font-weight:600;border:1px solid var(--border)">${escHtml(t)}</span>`).join('')}
+        </div>
+      </div>`:''}
+
+      <!-- Infos pratiques -->
+      <div style="background:var(--sand);border-radius:12px;padding:.85rem 1rem">
+        <div style="font-size:.72rem;font-weight:700;color:var(--teal-d);text-transform:uppercase;letter-spacing:.08em;margin-bottom:.55rem">ℹ️ Informations pratiques</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem .8rem">
+          <div style="font-size:.78rem;color:var(--ch)"><span style="color:var(--soft)">💶 Tarif</span><br/><strong>38 € / séance</strong></div>
+          <div style="font-size:.78rem;color:var(--ch)"><span style="color:var(--soft)">⏱️ Durée</span><br/><strong>45 minutes</strong></div>
+          <div style="font-size:.78rem;color:var(--ch)"><span style="color:var(--soft)">📹 Format</span><br/><strong>Vidéo (Google Meet)</strong></div>
+          <div style="font-size:.78rem;color:var(--ch)"><span style="color:var(--soft)">🌍 Fuseau</span><br/><strong>${(pro.tz||'Africa/Tunis').split('/').pop()}</strong></div>
+        </div>
+      </div>
+
+      <!-- CTA Prendre RDV -->
+      <button onclick="closeProProfile();openSheet('${pro.id}')" style="background:var(--teal-d);color:#fff;border:none;border-radius:14px;padding:1rem;font-size:.95rem;font-weight:800;cursor:pointer;width:100%;letter-spacing:.01em;margin-top:.2rem">
+        📅 Prendre rendez-vous avec Dr. ${escHtml(pro.fn)} ${escHtml(pro.ln)}
+      </button>
+      <button onclick="closeProProfile()" style="background:transparent;color:var(--soft);border:1.5px solid var(--border);border-radius:14px;padding:.7rem;font-size:.82rem;font-weight:600;cursor:pointer;width:100%">← Retour aux spécialistes</button>
+    </div>
+  `;
+  document.getElementById('pro-profile-modal').style.display='block';
+  document.body.style.overflow='hidden';
+}
+
+function closeProProfile(){
+  document.getElementById('pro-profile-modal').style.display='none';
+  document.body.style.overflow='';
+}
+
 function openSheet(proId){
   const db=getDB();
   const pro=db.pros.find(p=>p.id===proId);if(!pro)return;
