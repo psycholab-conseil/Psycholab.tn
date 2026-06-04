@@ -321,7 +321,21 @@ async function sbLoadPros(){
         avail:r.avail||{},photo:r.photo||null
       };
       const idx=db.pros.findIndex(p=>p.id===pro.id||p.email===pro.email);
-      if(idx>=0){db.pros[idx]={...db.pros[idx],...pro};}
+      if(idx>=0){
+        const local=db.pros[idx];
+        // Si désactivé localement par l'admin, Supabase ne doit pas le réactiver
+        if(local.deactivatedAt && pro.active===true){
+          // Forcer re-sync vers Supabase (la désactivation n'a pas encore été persistée)
+          supa.from('pros').update({active:false,validated_at:null}).eq('id',pro.id).then(({error})=>{
+            if(error)console.warn('Re-sync deactivation Supabase:',error.message);
+            else console.log('✅ Re-sync désactivation Supabase pour',pro.email);
+          });
+          pro.active=false; // Garder désactivé
+        }
+        db.pros[idx]={...local,...pro};
+        // Préserver le flag deactivatedAt si existant
+        if(local.deactivatedAt) db.pros[idx].deactivatedAt=local.deactivatedAt;
+      }
       else{db.pros.push(pro);}
     });
     saveDB(db);
@@ -4205,39 +4219,57 @@ async function deactivatePro(proId){
   const db=getDB();
   const pro=db.pros.find(p=>p.id===proId);
   if(!pro)return;
-  if(!confirm('Désactiver le compte de Dr. '+pro.fn+' '+pro.ln+' ? Il ne sera plus visible publiquement.'))return;
+  if(!confirm('Désactiver le compte de Dr. '+pro.fn+' '+pro.ln+' ?\nIl ne sera plus visible publiquement.'))return;
+
+  // 1. Désactiver localement IMMÉDIATEMENT
   pro.active=false;
   pro.deactivatedAt=new Date().toISOString();
   saveDB(db);
-  // Sauvegarder dans Supabase AVANT de re-render
-  try{
-    const{data,error}=await supa.from('pros').update({active:false,validated_at:null}).eq('id',proId).select();
-    if(error){
-      console.error('Supabase deactivate error:',error.message);
-      toast('⚠️ Désactivé localement mais erreur Supabase : '+error.message,'red');
-    } else if(!data||data.length===0){
-      // Pro pas dans Supabase, faire upsert
-      await supa.from('pros').upsert([{
-        id:pro.id,fn:pro.fn,ln:pro.ln,email:pro.email,tel:pro.tel||'',
-        spec:pro.spec,rpps:pro.rpps||'',bio:pro.bio||'',tags:pro.tags||'',
-        price:pro.price||38,tz:pro.tz||'Africa/Tunis',
-        lang_fr:pro.langFr||true,lang_en:pro.langEn||false,lang_ar:pro.langAr||false,
-        active:false,notif:pro.notif||false,
-        email_confirmed:true,contrat_signe:true,
-        bank_iban:pro.bank?.iban||'',bank_bic:pro.bank?.bic||'',
-        bank_nom:pro.bank?.nom||'',bank_banque:pro.bank?.banque||'',
-        created_at:pro.createdAt||new Date().toISOString()
-      }],{onConflict:'id'});
-      toast('✅ Compte de Dr. '+pro.fn+' '+pro.ln+' désactivé','');
-    } else {
-      toast('✅ Compte de Dr. '+pro.fn+' '+pro.ln+' désactivé','');
-    }
-  }catch(e){
-    console.error('deactivatePro exception:',e);
-    toast('⚠️ Erreur réseau — désactivé localement seulement','red');
-  }
   renderAdminPanel();
   renderHome();
+  toast('⏳ Désactivation en cours…','');
+
+  // 2. Persister dans Supabase (jusqu'à 3 tentatives)
+  let success=false;
+  for(let attempt=1;attempt<=3;attempt++){
+    try{
+      // Tenter UPDATE d'abord
+      const{data,error}=await supa.from('pros')
+        .update({active:false,validated_at:null})
+        .eq('id',proId)
+        .select('id,active');
+      if(error){console.warn('Attempt '+attempt+' update error:',error.message);}
+      else if(data&&data.length>0&&data[0].active===false){
+        success=true;
+        console.log('✅ Désactivation Supabase confirmée pour',pro.email);
+        break;
+      } else {
+        // UPDATE n'a rien modifié → UPSERT complet
+        const{error:e2}=await supa.from('pros').upsert([{
+          id:pro.id,fn:pro.fn,ln:pro.ln,email:pro.email,tel:pro.tel||'',
+          spec:pro.spec,rpps:pro.rpps||'',bio:pro.bio||'',tags:pro.tags||'',
+          price:pro.price||38,tz:pro.tz||'Africa/Tunis',
+          lang_fr:pro.langFr||true,lang_en:pro.langEn||false,lang_ar:pro.langAr||false,
+          active:false,notif:pro.notif||false,
+          email_confirmed:true,contrat_signe:true,
+          bank_iban:pro.bank?.iban||'',bank_bic:pro.bank?.bic||'',
+          bank_nom:pro.bank?.nom||'',bank_banque:pro.bank?.banque||'',
+          created_at:pro.createdAt||new Date().toISOString()
+        }],{onConflict:'id'});
+        if(!e2){success=true;break;}
+        console.warn('Attempt '+attempt+' upsert error:',e2.message);
+      }
+    }catch(e){console.warn('Attempt '+attempt+' exception:',e);}
+    if(attempt<3)await new Promise(r=>setTimeout(r,1000*attempt));
+  }
+
+  if(success){
+    toast('✅ Dr. '+pro.fn+' '+pro.ln+' désactivé et synchronisé','green');
+  } else {
+    // Stocké localement avec flag - la protection sbLoadPros empêchera la réactivation
+    toast('⚠️ Désactivé localement. Synchronisation Supabase échouée (RLS ?). Le compte reste invisible.','red');
+    console.error('CRITIQUE: Supabase désactivation échouée pour',proId,'— vérifier les RLS policies sur la table pros');
+  }
 }
 
 // ================================================
