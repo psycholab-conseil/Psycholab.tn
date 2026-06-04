@@ -4193,17 +4193,49 @@ function rejectPro(proId){
   }).catch(()=>{});
   db.pros.splice(idx,1);
   saveDB(db);
+  // Supprimer aussi de Supabase
+  supa.from('pros').delete().eq('id',proId).then(({error})=>{
+    if(error)console.warn('rejectPro Supabase delete:',error.message);
+  });
   toast('❌ Dossier refusé et supprimé','red');
   renderAdminPanel();
 }
 
-function deactivatePro(proId){
+async function deactivatePro(proId){
   const db=getDB();
   const pro=db.pros.find(p=>p.id===proId);
   if(!pro)return;
+  if(!confirm('Désactiver le compte de Dr. '+pro.fn+' '+pro.ln+' ? Il ne sera plus visible publiquement.'))return;
   pro.active=false;
+  pro.deactivatedAt=new Date().toISOString();
   saveDB(db);
-  toast('⚠️ Compte désactivé','');
+  // Sauvegarder dans Supabase AVANT de re-render
+  try{
+    const{data,error}=await supa.from('pros').update({active:false,validated_at:null}).eq('id',proId).select();
+    if(error){
+      console.error('Supabase deactivate error:',error.message);
+      toast('⚠️ Désactivé localement mais erreur Supabase : '+error.message,'red');
+    } else if(!data||data.length===0){
+      // Pro pas dans Supabase, faire upsert
+      await supa.from('pros').upsert([{
+        id:pro.id,fn:pro.fn,ln:pro.ln,email:pro.email,tel:pro.tel||'',
+        spec:pro.spec,rpps:pro.rpps||'',bio:pro.bio||'',tags:pro.tags||'',
+        price:pro.price||38,tz:pro.tz||'Africa/Tunis',
+        lang_fr:pro.langFr||true,lang_en:pro.langEn||false,lang_ar:pro.langAr||false,
+        active:false,notif:pro.notif||false,
+        email_confirmed:true,contrat_signe:true,
+        bank_iban:pro.bank?.iban||'',bank_bic:pro.bank?.bic||'',
+        bank_nom:pro.bank?.nom||'',bank_banque:pro.bank?.banque||'',
+        created_at:pro.createdAt||new Date().toISOString()
+      }],{onConflict:'id'});
+      toast('✅ Compte de Dr. '+pro.fn+' '+pro.ln+' désactivé','');
+    } else {
+      toast('✅ Compte de Dr. '+pro.fn+' '+pro.ln+' désactivé','');
+    }
+  }catch(e){
+    console.error('deactivatePro exception:',e);
+    toast('⚠️ Erreur réseau — désactivé localement seulement','red');
+  }
   renderAdminPanel();
   renderHome();
 }
