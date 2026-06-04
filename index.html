@@ -3008,7 +3008,7 @@ function renderHome(){
           </div>
         </div>
         <div class="tags">
-          ${tags.slice(0,3).map(t=>`<span class="tag">${escHtml(t)}</span>`).join('')}
+          ${tags.slice(0,3).map(t=>`<span class="tag" style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:inline-block">${escHtml(t)}</span>`).join('')}
           ${langs.map(l=>`<span class="tag la">${l}</span>`).join('')}
           <span class="tag vi">📹 Téléconsultation</span>
         </div>
@@ -3016,7 +3016,7 @@ function renderHome(){
           <div class="price">38 €<small>/ 45 min</small></div>
           <div class="nxt"><span>Fuseau</span><strong>${(p.tz||'').split('/').pop()||'--'}</strong></div>
         </div>
-        <button class="btn-rdv">Prendre rendez-vous</button>
+        <button class="btn-rdv" onclick="event.stopPropagation();handleProfileRDV('${p.id}')">Prendre rendez-vous</button>
       </div>`;
     }).join('')+'</div>';
   }catch(e){
@@ -5506,17 +5506,24 @@ function toggleProfileSection(btn, sectionId){
 
 function handleProfileRDV(proId){
   const sess=getSession();
-  if(!sess||sess.type!=='patient'){
+  // Si non connecté → mur d'inscription
+  if(!sess){
     closeProProfile();
     setTimeout(showSignupWall,100);
     return;
   }
-  // Fermer le modal immédiatement
+  // Admin et pro peuvent aussi tester le booking
+  if(sess.type!=='patient' && sess.type!=='admin' && sess.type!=='pro'){
+    closeProProfile();
+    setTimeout(showSignupWall,100);
+    return;
+  }
+  // Fermer le modal pro-profile immédiatement
   const pm=document.getElementById('pro-profile-modal');
-  pm.style.display='none';
+  if(pm) pm.style.display='none';
   document.body.style.overflow='';
-  // Ouvrir le booking sheet sur le prochain cycle d'événements
-  setTimeout(()=>openSheet(proId),0);
+  // Ouvrir le booking sur le prochain cycle JS (DOM propre)
+  setTimeout(()=>openSheet(proId),10);
 }
 
 function closeProProfile(){
@@ -5526,9 +5533,14 @@ function closeProProfile(){
 }
 
 function openSheet(proId){
-  // Guard: doit être connecté en tant que patient
+  // Guard: doit être connecté
   const sess=getSession();
-  if(!sess||sess.type!=='patient'){
+  if(!sess){
+    showSignupWall();
+    return;
+  }
+  // Patient, admin et pro peuvent ouvrir le booking
+  if(sess.type!=='patient' && sess.type!=='admin' && sess.type!=='pro'){
     showSignupWall();
     return;
   }
