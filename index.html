@@ -1256,10 +1256,47 @@ body[data-lang="ar"]{font-family:'Segoe UI',Tahoma,'Arabic Typesetting',sans-ser
         </div>
       </div>
 
-      <!-- DATE DE NAISSANCE -->
+      <!-- DATE DE NAISSANCE — 3 selects -->
       <div class="fgroup">
         <label>📅 Date de naissance *</label>
-        <input type="date" id="spat-dob" style="border:1.5px solid var(--border);border-radius:var(--r-sm);padding:.62rem .9rem;font-size:.86rem;background:var(--sand);outline:none;width:100%;transition:all var(--anim)"/>
+        <div style="display:grid;grid-template-columns:1fr 2fr 1.4fr;gap:.4rem">
+          <select id="spat-dob-day" onchange="updateDobHidden()" style="border:1.5px solid var(--border);border-radius:var(--r-sm);padding:.62rem .5rem;font-size:.86rem;background:var(--sand);outline:none;font-family:inherit;color:var(--ch)">
+            <option value="">Jour</option>
+            ${Array.from({length:31},(_,i)=>`<option value="${String(i+1).padStart(2,'0')}">${i+1}</option>`).join('')}
+          </select>
+          <select id="spat-dob-month" onchange="updateDobHidden()" style="border:1.5px solid var(--border);border-radius:var(--r-sm);padding:.62rem .5rem;font-size:.86rem;background:var(--sand);outline:none;font-family:inherit;color:var(--ch)">
+            <option value="">Mois</option>
+            <option value="01">Janvier</option><option value="02">Février</option>
+            <option value="03">Mars</option><option value="04">Avril</option>
+            <option value="05">Mai</option><option value="06">Juin</option>
+            <option value="07">Juillet</option><option value="08">Août</option>
+            <option value="09">Septembre</option><option value="10">Octobre</option>
+            <option value="11">Novembre</option><option value="12">Décembre</option>
+          </select>
+          <select id="spat-dob-year" onchange="updateDobHidden()" style="border:1.5px solid var(--border);border-radius:var(--r-sm);padding:.62rem .5rem;font-size:.86rem;background:var(--sand);outline:none;font-family:inherit;color:var(--ch)">
+            <option value="">Année</option>
+            ${(()=>{const y=new Date().getFullYear();return Array.from({length:100},(_,i)=>y-18-i).map(yr=>`<option value="${yr}">${yr}</option>`).join('');})()}
+          </select>
+        </div>
+        <input type="hidden" id="spat-dob"/>
+      </div>
+
+      <!-- PHOTO PATIENT ou avatar IA -->
+      <div class="fgroup" style="background:linear-gradient(135deg,var(--teal-xl),#E8F4F2);border:1.5px solid var(--teal);border-radius:var(--r-md);padding:1rem">
+        <label style="color:var(--teal-d);font-weight:700;margin-bottom:.6rem;display:block">🖼️ Photo de profil <span style="font-size:.7rem;font-weight:400;color:var(--soft)">(optionnel)</span></label>
+        <div style="display:flex;align-items:center;gap:.9rem">
+          <div id="spat-photo-preview" style="width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,#c8e6e4,#a0d4d0);display:flex;align-items:center;justify-content:center;font-size:2rem;flex-shrink:0;overflow:hidden;border:3px solid var(--teal)">👤</div>
+          <div style="flex:1;display:flex;flex-direction:column;gap:.4rem">
+            <button type="button" onclick="document.getElementById('spat-photo-input').click()" style="background:#fff;border:1.5px solid var(--teal);border-radius:8px;padding:.5rem .8rem;font-size:.78rem;font-weight:700;color:var(--teal-d);cursor:pointer;text-align:left">
+              📷 Charger ma photo
+            </button>
+            <button type="button" onclick="generateAIAvatar()" id="btn-ai-avatar" style="background:linear-gradient(135deg,#6B4EFF,#9B6BFF);border:none;border-radius:8px;padding:.5rem .8rem;font-size:.78rem;font-weight:700;color:#fff;cursor:pointer;text-align:left">
+              ✨ Générer un avatar IA
+            </button>
+          </div>
+        </div>
+        <input type="file" id="spat-photo-input" accept="image/*" style="display:none" onchange="handlePatPhotoUpload(this)"/>
+        <div id="spat-photo-status" style="display:none;margin-top:.5rem;background:var(--green);color:#fff;border-radius:8px;padding:.4rem .7rem;font-size:.76rem;font-weight:700">✅ Photo chargée !</div>
       </div>
 
       <div class="fgroup"><label>Email * <span style="font-size:.7rem;color:var(--soft);font-weight:400">(pour recevoir vos confirmations de RDV)</span></label><input type="email" id="spat-email" placeholder="votre@email.com"/></div>
@@ -2335,8 +2372,8 @@ body[data-lang="ar"]{font-family:'Segoe UI',Tahoma,'Arabic Typesetting',sans-ser
 
 <!-- ══ BOOKING SHEET ══ -->
 <!-- MODAL PROFIL PRO PUBLIC -->
-<div id="pro-profile-modal" style="visibility:hidden;opacity:0;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:800;overflow-y:auto;transition:opacity .2s" onclick="if(event.target===this)closeProProfile()">
-  <div style="background:var(--white);max-width:520px;margin:1rem auto;border-radius:20px;overflow:hidden;box-shadow:0 24px 60px rgba(0,0,0,.2)">
+<div id="pro-profile-modal" style="visibility:hidden;opacity:0;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:900;overflow-y:auto;transition:opacity .2s;-webkit-overflow-scrolling:touch" onclick="if(event.target===this)closeProProfile()">
+  <div style="background:var(--white);max-width:520px;margin:1rem auto;border-radius:20px;overflow:hidden;box-shadow:0 24px 60px rgba(0,0,0,.2);will-change:transform;transform:translateZ(0)">
     <div id="pro-profile-content"></div>
   </div>
 </div>
@@ -3496,6 +3533,53 @@ function doLogin(){doRequestMagicLink();}
 // ================================================
 let patPhotoData=null;
 
+// Avatars IA prédéfinis (géométriques, pas de visages réels)
+const AI_AVATARS=[
+  'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" viewBox="0 0 80 80"><circle cx="40" cy="40" r="40" fill="%231B6B61"/><circle cx="40" cy="32" r="14" fill="%23fff" opacity=".9"/><ellipse cx="40" cy="65" rx="22" ry="16" fill="%23fff" opacity=".9"/></svg>',
+  'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" viewBox="0 0 80 80"><circle cx="40" cy="40" r="40" fill="%23764BA2"/><circle cx="40" cy="32" r="14" fill="%23fff" opacity=".9"/><ellipse cx="40" cy="65" rx="22" ry="16" fill="%23fff" opacity=".9"/></svg>',
+  'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" viewBox="0 0 80 80"><circle cx="40" cy="40" r="40" fill="%23E8722A"/><circle cx="40" cy="32" r="14" fill="%23fff" opacity=".9"/><ellipse cx="40" cy="65" rx="22" ry="16" fill="%23fff" opacity=".9"/></svg>',
+  'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" viewBox="0 0 80 80"><circle cx="40" cy="40" r="40" fill="%232A6496"/><circle cx="40" cy="32" r="14" fill="%23fff" opacity=".9"/><ellipse cx="40" cy="65" rx="22" ry="16" fill="%23fff" opacity=".9"/></svg>',
+  'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" viewBox="0 0 80 80"><circle cx="40" cy="40" r="40" fill="%23C0392B"/><circle cx="40" cy="32" r="14" fill="%23fff" opacity=".9"/><ellipse cx="40" cy="65" rx="22" ry="16" fill="%23fff" opacity=".9"/></svg>',
+  'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" viewBox="0 0 80 80"><circle cx="40" cy="40" r="40" fill="%23117A65"/><circle cx="40" cy="32" r="14" fill="%23fff" opacity=".9"/><ellipse cx="40" cy="65" rx="22" ry="16" fill="%23fff" opacity=".9"/></svg>',
+];
+let aiAvatarIdx=0;
+let spatPhotoData=null;
+
+function generateAIAvatar(){
+  // Montrer une galerie d'avatars à choisir
+  const existing=document.getElementById('ai-avatar-picker');
+  if(existing){existing.remove();return;}
+  const wrap=document.createElement('div');
+  wrap.id='ai-avatar-picker';
+  wrap.style.cssText='margin-top:.6rem;background:#fff;border-radius:12px;padding:.7rem;border:1.5px solid var(--teal)';
+  wrap.innerHTML='<div style="font-size:.72rem;font-weight:700;color:var(--teal-d);margin-bottom:.5rem">✨ Choisissez votre avatar :</div>'
+    +'<div style="display:flex;gap:.5rem;flex-wrap:wrap">'
+    +AI_AVATARS.map((av,i)=>`<img src="${av}" onclick="selectAIAvatar(${i})" style="width:48px;height:48px;border-radius:50%;cursor:pointer;border:2px solid transparent;transition:all .2s" onmouseover="this.style.border='2px solid var(--teal)'" onmouseout="this.style.border='2px solid transparent'" />`).join('')
+    +'</div>';
+  const photoSection=document.getElementById('spat-photo-preview').closest('.fgroup');
+  photoSection.appendChild(wrap);
+}
+
+function selectAIAvatar(idx){
+  const av=AI_AVATARS[idx];
+  spatPhotoData={data:av,name:'avatar_ia.svg',isAI:true};
+  const preview=document.getElementById('spat-photo-preview');
+  if(preview){preview.innerHTML='';const img=document.createElement('img');img.src=av;img.style.cssText='width:100%;height:100%;object-fit:cover;';preview.appendChild(img);}
+  const status=document.getElementById('spat-photo-status');
+  if(status){status.style.display='block';status.textContent='✅ Avatar IA sélectionné !';}
+  const picker=document.getElementById('ai-avatar-picker');
+  if(picker)picker.remove();
+  toast('✅ Avatar IA sélectionné','green');
+}
+
+function updateDobHidden(){
+  const d=document.getElementById('spat-dob-day')?.value;
+  const m=document.getElementById('spat-dob-month')?.value;
+  const y=document.getElementById('spat-dob-year')?.value;
+  const hidden=document.getElementById('spat-dob');
+  if(hidden) hidden.value=(d&&m&&y)?(y+'-'+m+'-'+d):'';
+}
+
 function handlePatPhotoUpload(input){
   const file=input.files[0];
   if(!file)return;
@@ -3503,8 +3587,11 @@ function handlePatPhotoUpload(input){
   const reader=new FileReader();
   reader.onload=e=>{
     patPhotoData=e.target.result;
+    spatPhotoData={data:e.target.result,name:file.name,isAI:false};
     const preview=document.getElementById('spat-photo-preview');
-    if(preview)preview.innerHTML=`<img src="${patPhotoData}" style="width:64px;height:64px;border-radius:50%;object-fit:cover;" alt="Photo"/>`;
+    if(preview)preview.innerHTML=`<img src="${patPhotoData}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;" alt="Photo"/>`;
+    const status=document.getElementById('spat-photo-status');
+    if(status){status.style.display='block';status.textContent='✅ Photo chargée avec succès !';}
     toast('📸 Photo chargée !','green');
   };
   reader.readAsDataURL(file);
@@ -3734,8 +3821,14 @@ async function doSignupPatient(){
   if(submitBtn){submitBtn.disabled=false;submitBtn.textContent='Créer mon compte →';}
 
   const db=getDB();
-  if(db.users.find(u=>u.email===email)||db.pros.find(p=>p.email===email)){
-    showFieldError('spat-email','Cette adresse email est déjà utilisée sur Psycholab');return;
+  // Bloquer si email déjà utilisé par un PATIENT existant
+  if(db.users.find(u=>u.email===email)){
+    showFieldError('spat-email','Cette adresse email est déjà associée à un compte patient. Connectez-vous via le lien magique.');return;
+  }
+  // Bloquer si email utilisé par un pro ACTIF (pas par un pro inactif/désactivé)
+  const existingProForPat=db.pros.find(p=>p.email===email);
+  if(existingProForPat&&existingProForPat.active===true){
+    showFieldError('spat-email','Cette adresse email est utilisée par un compte professionnel actif.');return;
   }
 
   const id='pat_'+Date.now();
@@ -5354,7 +5447,7 @@ function openProProfile(proId){
       </div>
 
       <!-- CTA Prendre RDV -->
-      <button onclick="closeProProfile();(getSession()&&getSession().type==='patient'?openSheet('${pro.id}'):showSignupWall())" style="background:var(--teal-d);color:#fff;border:none;border-radius:14px;padding:1rem;font-size:.95rem;font-weight:800;cursor:pointer;width:100%;letter-spacing:.01em;margin-top:.2rem">
+      <button onclick="handleProfileRDV('${pro.id}')" style="background:var(--teal-d);color:#fff;border:none;border-radius:14px;padding:1rem;font-size:.95rem;font-weight:800;cursor:pointer;width:100%;letter-spacing:.01em;margin-top:.2rem">
         📅 Prendre rendez-vous avec ${getProTitle(pro.spec)}${escHtml(pro.fn)} ${escHtml(pro.ln)}
       </button>
       <button onclick="closeProProfile()" style="background:transparent;color:var(--soft);border:1.5px solid var(--border);border-radius:14px;padding:.7rem;font-size:.82rem;font-weight:600;cursor:pointer;width:100%">← Retour aux spécialistes</button>
@@ -5393,11 +5486,33 @@ function toggleProfileSection(btn, sectionId){
   document.body.style.overflow='hidden';
 }
 
-function closeProProfile(){
+function handleProfileRDV(proId){
+  const sess=getSession();
+  if(!sess||sess.type!=='patient'){
+    closeProProfile();
+    setTimeout(showSignupWall,200);
+    return;
+  }
+  // Fermer le profil INSTANTANÉMENT puis ouvrir RDV
   const pm=document.getElementById('pro-profile-modal');
+  pm.style.transition='none';
   pm.style.visibility='hidden';
   pm.style.opacity='0';
   document.body.style.overflow='';
+  // Délai minimal pour que le DOM se mette à jour
+  setTimeout(()=>{
+    pm.style.transition='opacity .2s';
+    openSheet(proId);
+  },50);
+}
+
+function closeProProfile(){
+  const pm=document.getElementById('pro-profile-modal');
+  pm.style.transition='none';
+  pm.style.visibility='hidden';
+  pm.style.opacity='0';
+  document.body.style.overflow='';
+  setTimeout(()=>{pm.style.transition='opacity .2s';},300);
 }
 
 function openSheet(proId){
