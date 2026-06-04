@@ -2413,23 +2413,28 @@ body[data-lang="ar"]{font-family:'Segoe UI',Tahoma,'Arabic Typesetting',sans-ser
         <button class="btn-next" onclick="goStep(2)" id="btn-step2" disabled>Continuer →</button>
       </div>
     </div>
-    <!-- Step 2: Patient info -->
+    <!-- Step 2: Patient info — auto-rempli depuis le compte -->
     <div class="step-pane" id="bs-step2">
       <div id="bs-patient-form">
+
+        <!-- Patient connecté : fiche complète en lecture seule -->
         <div id="bs-logged-info" style="display:none">
-          <div class="info-box">✅ Vous êtes connecté. Vos informations sont pré-remplies.</div>
-          <div style="background:var(--sand);border:1.5px solid var(--border);border-radius:var(--r-sm);padding:.85rem;margin-bottom:.9rem">
-            <div id="bs-user-recap" style="font-size:.84rem;line-height:1.8;color:var(--ch)"></div>
+          <div style="background:linear-gradient(135deg,var(--teal-xl),#E8F4F2);border:1.5px solid var(--teal);border-radius:var(--r-md);padding:.9rem 1rem;margin-bottom:.9rem">
+            <div style="font-size:.72rem;font-weight:700;color:var(--teal-d);text-transform:uppercase;letter-spacing:.07em;margin-bottom:.6rem">✅ Vos informations — pré-remplies depuis votre compte</div>
+            <div id="bs-user-recap" style="font-size:.84rem;line-height:2;color:var(--ch)"></div>
           </div>
         </div>
-        <div id="bs-guest-form">
-          <div class="info-box">ℹ️ Créez un compte ou connectez-vous pour recevoir vos rappels email.</div>
+
+        <!-- Visiteur non connecté : formulaire minimal -->
+        <div id="bs-guest-form" style="display:none">
+          <div class="info-box" style="margin-bottom:.9rem">ℹ️ <a onclick="showLogin()" style="color:var(--teal);font-weight:700;cursor:pointer;text-decoration:underline">Connectez-vous</a> pour que vos infos soient pré-remplies automatiquement.</div>
           <div class="fgroup"><label>Prénom *</label><input id="bs-fn" placeholder="Prénom"/></div>
           <div class="fgroup"><label>Nom *</label><input id="bs-ln" placeholder="Nom"/></div>
           <div class="fgroup"><label>Email * (pour la confirmation)</label><input type="email" id="bs-email" placeholder="votre@email.com"/></div>
-          <div class="fgroup"><label>Téléphone</label><input type="tel" id="bs-tel" placeholder="+33 6 …"/></div>
+          <div class="fgroup"><label>Téléphone</label><input type="tel" id="bs-tel" placeholder="+216 / +33 …"/></div>
         </div>
-        <div class="fgroup"><label>Motif de consultation (optionnel)</label><textarea id="bs-motif" placeholder="Décrivez brièvement ce pour quoi vous souhaitez consulter…" style="min-height:70px"></textarea></div>
+
+        <div class="fgroup"><label>Motif de consultation <span style="font-size:.72rem;font-weight:400;color:var(--soft)">(optionnel — confidentiel · chiffres non autorisés)</span></label><textarea id="bs-motif" placeholder="Décrivez brièvement ce pour quoi vous souhaitez consulter…" style="min-height:70px" oninput="this.value=this.value.replace(/[0-9]/g,'')" onkeydown="if(/^[0-9]$/.test(event.key)){event.preventDefault();}" onpaste="setTimeout(()=>{this.value=this.value.replace(/[0-9]/g,'')},0)"></textarea></div>
       </div>
       <div class="bsheet-foot">
         <button class="btn-back" onclick="goStep(1)">← Retour</button>
@@ -4667,7 +4672,7 @@ function renderRDVList(pro,db,filter='all'){
             ${isPaid?'<span style="background:var(--green-l);color:var(--green);font-size:.62rem;font-weight:700;padding:.12rem .4rem;border-radius:20px;margin-left:.3rem">💳 Payé ✓</span>':''}
           </div>
           ${r.motif?`<div style="font-size:.72rem;color:var(--soft);margin-top:.1rem">📝 ${escHtml(r.motif)}</div>`:''}
-          ${r.patEmail?`<div style="font-size:.7rem;color:var(--soft);margin-top:.1rem">📧 ${escHtml(r.patEmail)}</div>`:''}
+          <!-- Email et téléphone patient : CACHÉS au pro, visibles uniquement admin -->
         </div>
         <span style="font-size:.63rem;font-weight:700;padding:.22rem .55rem;border-radius:20px;background:${borderColor}20;color:${borderColor};flex-shrink:0;white-space:nowrap">${statusLabels[r.status]||'⏳'}</span>
       </div>
@@ -5606,10 +5611,42 @@ function fillPatientForm(){
   const s=getSession();
   const loggedDiv=document.getElementById('bs-logged-info');
   const guestDiv=document.getElementById('bs-guest-form');
-  if(s&&s.type==='patient'){
-    loggedDiv.style.display='block';guestDiv.style.display='none';
-    document.getElementById('bs-user-recap').innerHTML=`👤 <strong>${s.fn} ${s.ln}</strong><br/>📧 ${s.email}${s.tel?'<br/>📞 '+s.tel:''}`;
-  } else {loggedDiv.style.display='none';guestDiv.style.display='block';}
+
+  if(s&&(s.type==='patient'||s.type==='admin'||s.type==='pro')){
+    loggedDiv.style.display='block';
+    guestDiv.style.display='none';
+
+    const db=getDB();
+    let fn=s.fn||'',ln=s.ln||'',email=s.email||'',tel=s.tel||'',dob='',photo='',anonMode='real';
+
+    if(s.type==='patient'){
+      const user=db.users.find(u=>u.id===s.id);
+      if(user){fn=user.fn||fn;ln=user.ln||ln;email=user.email||email;tel=user.tel||tel;dob=user.dob||'';photo=user.photo||'';anonMode=user.anonMode||'real';}
+    }
+
+    const photoHtml=photo
+      ?`<img src="${photo}" style="width:44px;height:44px;border-radius:50%;object-fit:cover;vertical-align:middle;margin-right:.5rem;border:2px solid var(--teal)"/>`
+      :`<span style="display:inline-flex;width:44px;height:44px;border-radius:50%;background:var(--teal-xl);align-items:center;justify-content:center;font-size:1.3rem;vertical-align:middle;margin-right:.5rem;flex-shrink:0">👤</span>`;
+    const dobFmt=dob?new Date(dob).toLocaleDateString('fr-FR',{day:'numeric',month:'long',year:'numeric'}):'';
+    const anonBadge=anonMode!=='real'?`<span style="background:#fff3cd;border:1px solid #ffc107;border-radius:8px;padding:.1rem .4rem;font-size:.68rem;color:#856404;margin-left:.3rem">🕵️ anonyme</span>`:'';
+
+    document.getElementById('bs-user-recap').innerHTML=`
+      <div style="display:flex;align-items:center;gap:.7rem;margin-bottom:.7rem">
+        ${photoHtml}
+        <div>
+          <div style="font-size:.9rem;font-weight:700;color:var(--ch)">${escHtml(fn+' '+ln)}${anonBadge}</div>
+          <div style="font-size:.7rem;color:var(--teal-d);font-weight:600;margin-top:.1rem">✓ Compte vérifié</div>
+        </div>
+      </div>
+      <div style="display:grid;gap:.35rem;font-size:.82rem;color:var(--ch)">
+        <div>📧 <strong>${escHtml(email)}</strong></div>
+        ${tel?`<div>📞 <strong>${escHtml(tel)}</strong></div>`:''}
+        ${dobFmt?`<div>🎂 Né(e) le <strong>${dobFmt}</strong></div>`:''}
+      </div>`;
+  } else {
+    loggedDiv.style.display='none';
+    guestDiv.style.display='block';
+  }
 }
 
 function renderCal(){
@@ -6964,8 +7001,10 @@ function renderAdmPatients(){
     const rdvCount=(db.rdvs||[]).filter(r=>r.patId===u.id).length;
     return `<div style="background:#fff;border:1.5px solid var(--border);border-radius:var(--r-md);padding:.9rem;margin-bottom:.6rem;display:flex;align-items:center;justify-content:space-between;gap:.7rem">
       <div>
-        <div style="font-size:.88rem;font-weight:600;color:var(--ch)">${escHtml(u.fn)} ${escHtml(u.ln)}</div>
-        <div style="font-size:.73rem;color:var(--mid)">${escHtml(u.email)}</div>
+        <div style="font-size:.88rem;font-weight:600;color:var(--ch)">${escHtml(u.fn)} ${escHtml(u.ln)}${u.anonMode&&u.anonMode!=='real'?'<span style="font-size:.65rem;background:#fff3cd;color:#856404;border-radius:8px;padding:.1rem .35rem;margin-left:.3rem">🕵️ anonyme</span>':''}</div>
+        <div style="font-size:.73rem;color:var(--mid)">📧 ${escHtml(u.email)}</div>
+        ${u.tel?`<div style="font-size:.73rem;color:var(--mid)">📞 ${escHtml(u.tel)}</div>`:''}
+        ${u.dob?`<div style="font-size:.7rem;color:var(--soft)">🎂 ${new Date(u.dob).toLocaleDateString('fr-FR',{day:'numeric',month:'long',year:'numeric'})}</div>`:''}
         <div style="font-size:.7rem;color:var(--soft);margin-top:.1rem">Inscrit le ${formatDate(u.createdAt)} · ${rdvCount} RDV</div>
       </div>
       <span style="background:var(--blue-l);color:var(--blue);font-size:.65rem;font-weight:700;padding:.22rem .6rem;border-radius:20px;flex-shrink:0">👤 Patient</span>
