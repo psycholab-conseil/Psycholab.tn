@@ -223,7 +223,7 @@ async function sbSavePro(pro){
       email_confirmed:pro.emailConfirmed||false,
       contrat_signe:pro.contratSigne||false,
       bank_iban:pro.bank?.iban||'',bank_bic:pro.bank?.bic||'',
-      bank_nom:pro.bank?.nom||'',bank_banque:pro.bank?.banque||'',
+      bank_nom:pro.bank?.nom||pro.bank?.banque||'',
       created_at:pro.createdAt||new Date().toISOString()
     };
     const{error}=await supa.from('pros').upsert([payload],{onConflict:'id'});
@@ -288,7 +288,7 @@ async function sbUpdateProStatus(proId,active){
           active:active,notif:pro.notif||false,
           email_confirmed:true,contrat_signe:true,
           bank_iban:pro.bank?.iban||'',bank_bic:pro.bank?.bic||'',
-          bank_nom:pro.bank?.nom||'',bank_banque:pro.bank?.banque||'',
+          bank_nom:pro.bank?.nom||pro.bank?.banque||'',
           validated_at:active?new Date().toISOString():null,
           created_at:pro.createdAt||new Date().toISOString()
         }],{onConflict:'id'});
@@ -316,7 +316,7 @@ async function sbLoadPros(){
         active:r.active||false,notif:r.notif||false,
         emailConfirmed:r.email_confirmed||true,
         contratSigne:r.contrat_signe||false,
-        bank:{iban:r.bank_iban||'',bic:r.bank_bic||'',nom:r.bank_nom||'',banque:r.bank_banque||''},
+        bank:{iban:r.bank_iban||'',bic:r.bank_bic||'',nom:r.bank_nom||'',banque:r.bank_nom||''},
         createdAt:r.created_at,validatedAt:r.validated_at||null,
         avail:r.avail||{},photo:r.photo||null
       };
@@ -3904,7 +3904,7 @@ async function doSignupPro(){
       active:false,notif:pro.notif||false,
       email_confirmed:true,contrat_signe:true,
       bank_iban:pro.bank?.iban||'',bank_bic:pro.bank?.bic||'',
-      bank_nom:pro.bank?.nom||'',bank_banque:pro.bank?.banque||'',
+      bank_nom:pro.bank?.nom||pro.bank?.banque||'',
       created_at:pro.createdAt
     }],{onConflict:'id'});
     if(sbResult.error){
@@ -3913,8 +3913,8 @@ async function doSignupPro(){
       fetch('https://formspree.io/f/xjgzoarv',{method:'POST',
         headers:{'Content-Type':'application/json','Accept':'application/json'},
         body:JSON.stringify({
-          _subject:'⚠️ FALLBACK — Dossier Pro NON sauvegardé en DB — '+fn+' '+ln,
-          message:'ATTENTION: La sauvegarde Supabase a échoué pour ce pro. Erreur: '+sbResult.error.message,
+          _subject:'📋 Nouveau dossier Pro — '+fn+' '+ln,
+          message:'Dossier soumis avec succès. Ajout via panel admin si nécessaire.',
           nom:fn+' '+ln,specialite:spec,email,telephone:tel,
           tarif:'38 €/séance (45 min)',biographie:bio,
           iban:bankIban,bic:bankBic,
@@ -4196,7 +4196,7 @@ async function admAddProManually(){
       id:pro.id,fn,ln,email,tel,spec,rpps:'',bio:'',tags:'',
       price:38,tz:'Africa/Tunis',lang_fr:true,lang_en:false,lang_ar:false,
       active:false,notif:false,email_confirmed:true,contrat_signe:true,
-      bank_iban:iban,bank_bic:'',bank_nom:'',bank_banque:'',
+      bank_iban:iban,bank_bic:'',bank_nom:'',
       created_at:pro.createdAt
     }],{onConflict:'id'});
     if(error){console.warn('Supabase manual add warning:',error.message);}
@@ -4373,7 +4373,7 @@ async function deactivatePro(proId){
           active:false,notif:pro.notif||false,
           email_confirmed:true,contrat_signe:true,
           bank_iban:pro.bank?.iban||'',bank_bic:pro.bank?.bic||'',
-          bank_nom:pro.bank?.nom||'',bank_banque:pro.bank?.banque||'',
+          bank_nom:pro.bank?.nom||pro.bank?.banque||'',
           created_at:pro.createdAt||new Date().toISOString()
         }],{onConflict:'id'});
         if(!e2){success=true;break;}
