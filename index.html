@@ -2445,15 +2445,17 @@ body[data-lang="ar"]{font-family:'Segoe UI',Tahoma,'Arabic Typesetting',sans-ser
     <div class="step-pane" id="bs-step3">
       <div style="text-align:center;padding:1rem 0">
         <div style="width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,var(--teal),var(--teal-l));display:flex;align-items:center;justify-content:center;font-size:1.8rem;margin:0 auto .9rem;box-shadow:0 6px 24px rgba(27,107,97,.25)">✓</div>
-        <h3 style="font-family:'Playfair Display',serif;font-size:1.15rem;font-weight:700;color:var(--ch);margin-bottom:.4rem">Demande de téléconsultation envoyée !</h3>
-        <p style="font-size:.82rem;color:var(--mid);line-height:1.6;margin-bottom:1rem">Finalisez votre réservation en procédant au paiement.</p>
+        <h3 style="font-family:'Playfair Display',serif;font-size:1.15rem;font-weight:700;color:var(--ch);margin-bottom:.4rem">Demande enregistrée ✓</h3>
+        <p style="font-size:.82rem;color:var(--mid);line-height:1.6;margin-bottom:1rem">
+          ⚠️ <strong>Votre RDV ne sera transmis au spécialiste qu'après validation de votre paiement</strong> par l'équipe Psycholab.
+        </p>
         <div style="background:linear-gradient(135deg,#FFF8F0,var(--orange-l));border:1.5px solid var(--orange);border-radius:var(--r-md);padding:1rem;margin-bottom:.9rem;text-align:left">
           <div style="font-size:.82rem;font-weight:700;color:var(--orange);margin-bottom:.6rem">⏳ Étapes suivantes</div>
           <div style="display:flex;flex-direction:column;gap:.45rem">
-            <div style="display:flex;align-items:center;gap:.55rem;font-size:.79rem;color:var(--ch)"><div style="width:20px;height:20px;border-radius:50%;background:var(--orange);color:#fff;display:flex;align-items:center;justify-content:center;font-size:.6rem;font-weight:700;flex-shrink:0">1</div>💳 Payez votre consultation</div>
-            <div style="display:flex;align-items:center;gap:.55rem;font-size:.79rem;color:var(--mid)"><div style="width:20px;height:20px;border-radius:50%;background:var(--soft);color:#fff;display:flex;align-items:center;justify-content:center;font-size:.6rem;font-weight:700;flex-shrink:0">2</div>⚙️ Vérification du paiement par Psycholab (24h)</div>
-            <div style="display:flex;align-items:center;gap:.55rem;font-size:.79rem;color:var(--mid)"><div style="width:20px;height:20px;border-radius:50%;background:var(--soft);color:#fff;display:flex;align-items:center;justify-content:center;font-size:.6rem;font-weight:700;flex-shrink:0">3</div>🩺 Le spécialiste confirme le créneau</div>
-            <div style="display:flex;align-items:center;gap:.55rem;font-size:.79rem;color:var(--mid)"><div style="width:20px;height:20px;border-radius:50%;background:var(--soft);color:#fff;display:flex;align-items:center;justify-content:center;font-size:.6rem;font-weight:700;flex-shrink:0">4</div>📧 Lien Google Meet envoyé par email</div>
+            <div style="display:flex;align-items:center;gap:.55rem;font-size:.79rem;color:var(--ch)"><div style="width:20px;height:20px;border-radius:50%;background:var(--orange);color:#fff;display:flex;align-items:center;justify-content:center;font-size:.6rem;font-weight:700;flex-shrink:0">1</div>💳 Payez votre consultation (maintenant)</div>
+            <div style="display:flex;align-items:center;gap:.55rem;font-size:.79rem;color:var(--mid)"><div style="width:20px;height:20px;border-radius:50%;background:var(--soft);color:#fff;display:flex;align-items:center;justify-content:center;font-size:.6rem;font-weight:700;flex-shrink:0">2</div>⚙️ L'admin Psycholab vérifie votre paiement (24h max)</div>
+            <div style="display:flex;align-items:center;gap:.55rem;font-size:.79rem;color:var(--mid)"><div style="width:20px;height:20px;border-radius:50%;background:var(--soft);color:#fff;display:flex;align-items:center;justify-content:center;font-size:.6rem;font-weight:700;flex-shrink:0">3</div>🩺 Le spécialiste reçoit la demande et confirme le créneau</div>
+            <div style="display:flex;align-items:center;gap:.55rem;font-size:.79rem;color:var(--mid)"><div style="width:20px;height:20px;border-radius:50%;background:var(--soft);color:#fff;display:flex;align-items:center;justify-content:center;font-size:.6rem;font-weight:700;flex-shrink:0">4</div>📧 Lien Google Meet reçu par email</div>
           </div>
         </div>
         <div style="background:var(--sand);border:1.5px solid var(--border);border-radius:var(--r-md);padding:.85rem;text-align:left;margin-bottom:.9rem;font-size:.79rem;line-height:1.8;color:var(--ch)" id="rdv-summary"></div>
@@ -5044,7 +5046,8 @@ function updatePatientDash(session){
       const canCancelFree=hoursUntil>=24;
       const statusMap={
         awaiting_payment:{label:'💳 En attente de paiement',color:'var(--orange)',sub:'Procédez au paiement pour valider votre demande'},
-        pending:{label:'⏳ En attente du spécialiste',color:'var(--blue)',sub:'Le spécialiste va confirmer le créneau'},
+        awaiting_payment_validation:{label:'🔍 Paiement en vérification',color:'var(--orange)',sub:'L\'admin Psycholab vérifie votre justificatif (24h max)'},
+        pending:{label:'⏳ En attente du spécialiste',color:'var(--blue)',sub:'Paiement validé — le spécialiste va confirmer le créneau'},
         confirmed:{label:'✅ Confirmé',color:'var(--green)',sub:isVideo?'Le spécialiste vous enverra le lien Google Meet':'Présentez-vous au cabinet à l\'heure prévue'}
       };
       const st=statusMap[r.status]||statusMap.pending;
@@ -5724,21 +5727,22 @@ function confirmRDV(){
   };
   db.rdvs.push(rdv);saveDB(db);
   sbSaveRdv(rdv);
-  // Notifications internes
-  if(patId) addNotif(patId,'patient','📋 Rendez-vous demandé','Votre demande de RDV avec Dr. '+selSpec.fn+' '+selSpec.ln+' le '+formatDate(selDate.toISOString())+' à '+selSlot+' est en attente de confirmation.');
-  addNotif(selSpec.id,'pro','📋 Nouvelle demande de RDV',patFn+' '+patLn+' souhaite un RDV le '+formatDate(selDate.toISOString())+' à '+selSlot+'.');
-  // Email au pro via Formspree
+  // ── Notification patient uniquement (pas encore le pro) ──
+  if(patId) addNotif(patId,'patient','📋 RDV en attente de paiement',
+    'Votre demande de RDV avec Dr. '+selSpec.fn+' '+selSpec.ln+' le '+formatDate(selDate.toISOString())+' à '+selSlot+
+    ' est enregistrée. Procédez au paiement pour que votre demande soit transmise au spécialiste.');
+  // ── Email à l'ADMIN pour suivi (pas au pro) ──
   sendEmailNotification({
-    _subject:'📋 Nouvelle demande de RDV -- '+patFn+' '+patLn,
-    type:'NOUVELLE_DEMANDE_RDV',
-    destinataire:'Dr. '+selSpec.fn+' '+selSpec.ln,
+    _subject:'🔔 Nouvelle demande RDV (en attente paiement) — '+patFn+' '+patLn,
+    type:'NOUVELLE_DEMANDE_RDV_ADMIN',
+    destinataire:'Administration Psycholab',
     patient:patFn+' '+patLn,
     email_patient:patEmail,
+    praticien:'Dr. '+selSpec.fn+' '+selSpec.ln+' ('+selSpec.spec+')',
     date_rdv:selDate.toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long',year:'numeric'}),
     heure_rdv:selSlot,
-    type_consultation:selType==='video'?'Vidéo sécurisée':'Présentiel',
-    motif:motif||'Non précisé',
-    message:'Un patient vient de demander un rendez-vous. Connectez-vous à votre tableau de bord Psycholab pour accepter ou refuser.'
+    statut:'⏳ EN ATTENTE DE PAIEMENT — Le pro ne sera notifié qu\'après validation du paiement.',
+    message:'Un patient vient de faire une demande de RDV. Elle sera transmise au spécialiste uniquement après validation de son paiement par l\'admin.'
   });
   // Toujours téléconsultation vidéo
   const summaryHtml=`<strong>👨‍⚕️ Spécialiste :</strong> Dr. ${selSpec.fn} ${selSpec.ln} (${selSpec.spec})<br/><strong>📅 Date souhaitée :</strong> ${selDate.toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long'})}<br/><strong>⏰ Heure :</strong> ${selSlot}<br/><strong>📧 Confirmation à :</strong> ${patEmail}<br/><strong>🎯 Type :</strong> 📹 Téléconsultation vidéo`;
