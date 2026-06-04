@@ -2699,7 +2699,51 @@ body[data-lang="ar"]{font-family:'Segoe UI',Tahoma,'Arabic Typesetting',sans-ser
       </div>
 
       <div class="form-section-title">📎 Justificatif de paiement</div>
-      <div class="fgroup"><label>Numéro de transaction / Référence *</label><input id="pay-ref" placeholder="Ex: WU123456789, SWIFT ref., N° chèque…"/></div>
+
+      <!-- MTCN Western Union : 10 cases séparées -->
+      <div id="pay-ref-mtcn" class="fgroup" style="display:none">
+        <label>Numéro MTCN * <span style="font-size:.7rem;color:var(--soft);font-weight:400">(10 chiffres Western Union)</span></label>
+        <div style="display:flex;gap:.35rem;justify-content:space-between;margin-top:.3rem">
+          <input id="mtcn-0" type="tel" maxlength="1" pattern="[0-9]" inputmode="numeric"
+            style="width:10%;aspect-ratio:1;text-align:center;font-size:1.2rem;font-weight:800;font-family:'DM Mono',monospace;border:2px solid var(--border);border-radius:8px;outline:none;background:var(--sand);color:var(--ch);transition:all .15s"
+            oninput="mtcnInput(this,0)" onkeydown="mtcnKey(event,0)" onfocus="this.style.borderColor='var(--teal)';this.style.background='#fff'" onblur="this.style.borderColor='var(--border)';this.style.background='var(--sand)'"/>
+          <input id="mtcn-1" type="tel" maxlength="1" pattern="[0-9]" inputmode="numeric"
+            style="width:10%;aspect-ratio:1;text-align:center;font-size:1.2rem;font-weight:800;font-family:'DM Mono',monospace;border:2px solid var(--border);border-radius:8px;outline:none;background:var(--sand);color:var(--ch);transition:all .15s"
+            oninput="mtcnInput(this,1)" onkeydown="mtcnKey(event,1)" onfocus="this.style.borderColor='var(--teal)';this.style.background='#fff'" onblur="this.style.borderColor='var(--border)';this.style.background='var(--sand)'"/>
+          <input id="mtcn-2" type="tel" maxlength="1" pattern="[0-9]" inputmode="numeric"
+            style="width:10%;aspect-ratio:1;text-align:center;font-size:1.2rem;font-weight:800;font-family:'DM Mono',monospace;border:2px solid var(--border);border-radius:8px;outline:none;background:var(--sand);color:var(--ch);transition:all .15s"
+            oninput="mtcnInput(this,2)" onkeydown="mtcnKey(event,2)" onfocus="this.style.borderColor='var(--teal)';this.style.background='#fff'" onblur="this.style.borderColor='var(--border)';this.style.background='var(--sand)'"/>
+          <input id="mtcn-3" type="tel" maxlength="1" pattern="[0-9]" inputmode="numeric"
+            style="width:10%;aspect-ratio:1;text-align:center;font-size:1.2rem;font-weight:800;font-family:'DM Mono',monospace;border:2px solid var(--border);border-radius:8px;outline:none;background:var(--sand);color:var(--ch);transition:all .15s"
+            oninput="mtcnInput(this,3)" onkeydown="mtcnKey(event,3)" onfocus="this.style.borderColor='var(--teal)';this.style.background='#fff'" onblur="this.style.borderColor='var(--border)';this.style.background='var(--sand)'"/>
+          <input id="mtcn-4" type="tel" maxlength="1" pattern="[0-9]" inputmode="numeric"
+            style="width:10%;aspect-ratio:1;text-align:center;font-size:1.2rem;font-weight:800;font-family:'DM Mono',monospace;border:2px solid var(--border);border-radius:8px;outline:none;background:var(--sand);color:var(--ch);transition:all .15s"
+            oninput="mtcnInput(this,4)" onkeydown="mtcnKey(event,4)" onfocus="this.style.borderColor='var(--teal)';this.style.background='#fff'" onblur="this.style.borderColor='var(--border)';this.style.background='var(--sand)'"/>
+          <input id="mtcn-5" type="tel" maxlength="1" pattern="[0-9]" inputmode="numeric"
+            style="width:10%;aspect-ratio:1;text-align:center;font-size:1.2rem;font-weight:800;font-family:'DM Mono',monospace;border:2px solid var(--border);border-radius:8px;outline:none;background:var(--sand);color:var(--ch);transition:all .15s"
+            oninput="mtcnInput(this,5)" onkeydown="mtcnKey(event,5)" onfocus="this.style.borderColor='var(--teal)';this.style.background='#fff'" onblur="this.style.borderColor='var(--border)';this.style.background='var(--sand)'"/>
+          <input id="mtcn-6" type="tel" maxlength="1" pattern="[0-9]" inputmode="numeric"
+            style="width:10%;aspect-ratio:1;text-align:center;font-size:1.2rem;font-weight:800;font-family:'DM Mono',monospace;border:2px solid var(--border);border-radius:8px;outline:none;background:var(--sand);color:var(--ch);transition:all .15s"
+            oninput="mtcnInput(this,6)" onkeydown="mtcnKey(event,6)" onfocus="this.style.borderColor='var(--teal)';this.style.background='#fff'" onblur="this.style.borderColor='var(--border)';this.style.background='var(--sand)'"/>
+          <input id="mtcn-7" type="tel" maxlength="1" pattern="[0-9]" inputmode="numeric"
+            style="width:10%;aspect-ratio:1;text-align:center;font-size:1.2rem;font-weight:800;font-family:'DM Mono',monospace;border:2px solid var(--border);border-radius:8px;outline:none;background:var(--sand);color:var(--ch);transition:all .15s"
+            oninput="mtcnInput(this,7)" onkeydown="mtcnKey(event,7)" onfocus="this.style.borderColor='var(--teal)';this.style.background='#fff'" onblur="this.style.borderColor='var(--border)';this.style.background='var(--sand)'"/>
+          <input id="mtcn-8" type="tel" maxlength="1" pattern="[0-9]" inputmode="numeric"
+            style="width:10%;aspect-ratio:1;text-align:center;font-size:1.2rem;font-weight:800;font-family:'DM Mono',monospace;border:2px solid var(--border);border-radius:8px;outline:none;background:var(--sand);color:var(--ch);transition:all .15s"
+            oninput="mtcnInput(this,8)" onkeydown="mtcnKey(event,8)" onfocus="this.style.borderColor='var(--teal)';this.style.background='#fff'" onblur="this.style.borderColor='var(--border)';this.style.background='var(--sand)'"/>
+          <input id="mtcn-9" type="tel" maxlength="1" pattern="[0-9]" inputmode="numeric"
+            style="width:10%;aspect-ratio:1;text-align:center;font-size:1.2rem;font-weight:800;font-family:'DM Mono',monospace;border:2px solid var(--border);border-radius:8px;outline:none;background:var(--sand);color:var(--ch);transition:all .15s"
+            oninput="mtcnInput(this,9)" onkeydown="mtcnKey(event,9)" onfocus="this.style.borderColor='var(--teal)';this.style.background='#fff'" onblur="this.style.borderColor='var(--border)';this.style.background='var(--sand)'"/>
+        </div>
+        <div id="mtcn-status" style="margin-top:.4rem;font-size:.72rem;color:var(--soft);text-align:center"></div>
+        <input type="hidden" id="pay-ref"/>
+      </div>
+
+      <!-- Référence standard pour les autres modes -->
+      <div id="pay-ref-standard" class="fgroup">
+        <label>Numéro de transaction / Référence *</label>
+        <input id="pay-ref-std" placeholder="Ex: ID PayPal, référence virement, N° chèque…" style="font-family:'DM Mono',monospace"/>
+      </div>
       <div class="fgroup"><label>Montant envoyé (€) *</label><input type="number" id="pay-montant" placeholder="Ex: 70"/></div>
       <div class="fgroup"><label>Date du paiement *</label><input type="date" id="pay-date"/></div>
       <div class="fgroup"><label>Photo/scan du justificatif</label>
@@ -6364,8 +6408,29 @@ function selectPayMode(mode){
     if(el)el.style.borderColor='var(--border)';
   });
   const map={western_union:'wu',virement:'vir',moneygram:'moneygram',paypal:'paypal',cheque:'cheque'};
-  const el=document.getElementById('pay-opt-'+map[mode]);
-  if(el)el.style.borderColor='var(--teal)';
+  const selEl=document.getElementById('pay-opt-'+(map[mode]||mode));
+  if(selEl)selEl.style.borderColor='var(--teal)';
+
+  // MTCN vs référence standard
+  const mtcnSection=document.getElementById('pay-ref-mtcn');
+  const stdSection=document.getElementById('pay-ref-standard');
+  if(mode==='western_union'){
+    if(mtcnSection)mtcnSection.style.display='block';
+    if(stdSection)stdSection.style.display='none';
+    // Focus sur la première case MTCN
+    setTimeout(()=>{const f=document.getElementById('mtcn-0');if(f)f.focus();},300);
+  } else {
+    if(mtcnSection)mtcnSection.style.display='none';
+    if(stdSection)stdSection.style.display='block';
+    // Mettre à jour le hidden pay-ref depuis std
+    const stdInput=document.getElementById('pay-ref-std');
+    if(stdInput)stdInput.oninput=()=>{
+      const h=document.getElementById('pay-ref');if(h)h.value=stdInput.value;
+    };
+  }
+  // Date par défaut
+  const dateEl=document.getElementById('pay-date');
+  if(dateEl&&!dateEl.value)dateEl.value=new Date().toISOString().split('T')[0];
 }
 
 function handlePayFile(input){
@@ -6381,10 +6446,85 @@ function handlePayFile(input){
   reader.readAsDataURL(file);
 }
 
+// MTCN Western Union — navigation case par case
+function mtcnInput(el, idx){
+  // N'accepter que les chiffres
+  el.value=el.value.replace(/[^0-9]/g,'');
+  if(el.value.length===1 && idx<9){
+    // Avancer automatiquement à la case suivante
+    const next=document.getElementById('mtcn-'+(idx+1));
+    if(next)next.focus();
+  }
+  // Mettre à jour le champ caché pay-ref
+  updateMTCN();
+}
+
+function mtcnKey(e, idx){
+  if(e.key==='Backspace'){
+    const el=document.getElementById('mtcn-'+idx);
+    if(el&&el.value===''){
+      // Retour à la case précédente si vide
+      if(idx>0){
+        const prev=document.getElementById('mtcn-'+(idx-1));
+        if(prev){prev.focus();prev.value='';}
+      }
+    }
+  }
+  if(e.key==='ArrowLeft'&&idx>0){document.getElementById('mtcn-'+(idx-1))?.focus();}
+  if(e.key==='ArrowRight'&&idx<9){document.getElementById('mtcn-'+(idx+1))?.focus();}
+}
+
+function updateMTCN(){
+  const digits=Array.from({length:10},(_,i)=>document.getElementById('mtcn-'+i)?.value||'').join('');
+  const hidden=document.getElementById('pay-ref');
+  if(hidden)hidden.value=digits;
+  const status=document.getElementById('mtcn-status');
+  if(status){
+    const count=digits.replace(/[^0-9]/g,'').length;
+    if(count===10){
+      status.textContent='✅ MTCN complet : '+digits;
+      status.style.color='var(--green)';
+      // Colorer toutes les cases en vert
+      for(let i=0;i<10;i++){
+        const el=document.getElementById('mtcn-'+i);
+        if(el)el.style.borderColor='var(--green)';
+      }
+    } else {
+      status.textContent=count+'/10 chiffres saisis';
+      status.style.color='var(--soft)';
+    }
+  }
+}
+
+function getMTCNValue(){
+  return Array.from({length:10},(_,i)=>document.getElementById('mtcn-'+i)?.value||'').join('');
+}
+
+function resetMTCN(){
+  for(let i=0;i<10;i++){
+    const el=document.getElementById('mtcn-'+i);
+    if(el){el.value='';el.style.borderColor='var(--border)';}
+  }
+  const status=document.getElementById('mtcn-status');
+  if(status){status.textContent='';status.style.color='var(--soft)';}
+  const hidden=document.getElementById('pay-ref');
+  if(hidden)hidden.value='';
+}
+
 function submitPayment(){
   const s=getSession();
   const mode=document.querySelector('input[name="pay-mode"]:checked');
-  const ref=document.getElementById('pay-ref').value.trim();
+  // Lire la référence selon le mode
+  const mode2=document.querySelector('input[name="pay-mode"]:checked');
+  let ref='';
+  if(mode2&&mode2.value==='western_union'){
+    ref=getMTCNValue();
+    if(ref.length!==10||!/^[0-9]{10}$/.test(ref)){
+      errEl.textContent='Le numéro MTCN doit contenir exactement 10 chiffres.';errEl.style.display='block';return;
+    }
+  } else {
+    ref=document.getElementById('pay-ref-std')?.value.trim()||document.getElementById('pay-ref')?.value.trim()||'';
+  }
   const montant=document.getElementById('pay-montant').value;
   const date=document.getElementById('pay-date').value;
   const notes=document.getElementById('pay-notes').value;
