@@ -812,7 +812,7 @@ input,select,textarea{font-family:'DM Sans',sans-serif}
 .ai-response{background:var(--sand);border:1.5px solid var(--border);border-radius:var(--r-md);padding:1rem;font-size:.82rem;color:var(--ch);line-height:1.65;margin-top:.9rem;white-space:pre-wrap}
 
 /* ─── EMAIL MODAL ─── */
-.email-modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:800;align-items:flex-end;justify-content:center;backdrop-filter:blur(3px)}
+.email-modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:800;align-items:flex-end;justify-content:center}
 .email-modal-bg.on{display:flex}
 .email-modal-box{background:var(--white);border-radius:var(--r-lg) var(--r-lg) 0 0;max-height:88vh;overflow-y:auto;width:100%;max-width:560px}
 .em-hdr{background:var(--teal-d);padding:.9rem 1.2rem;color:#fff;display:flex;justify-content:space-between;align-items:center;border-radius:var(--r-lg) var(--r-lg) 0 0}
@@ -3016,7 +3016,7 @@ function renderHome(){
           <div class="price">38 €<small>/ 45 min</small></div>
           <div class="nxt"><span>Fuseau</span><strong>${(p.tz||'').split('/').pop()||'--'}</strong></div>
         </div>
-        <button class="btn-rdv" onclick="event.stopPropagation();handleProfileRDV('${p.id}')">Prendre rendez-vous</button>
+        <button class="btn-rdv" onclick="event.stopPropagation();event.preventDefault();directBooking('${p.id}')">📅 Prendre rendez-vous</button>
       </div>`;
     }).join('')+'</div>';
   }catch(e){
@@ -5337,7 +5337,7 @@ function showSignupWall(){
 
   const m=document.createElement('div');
   m.id='signup-wall-modal';
-  m.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:1200;display:flex;align-items:center;justify-content:center;padding:1rem;backdrop-filter:blur(6px)';
+  m.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:1200;display:flex;align-items:center;justify-content:center;padding:1rem;';
   m.innerHTML=`
     <div style="background:#fff;border-radius:22px;padding:1.8rem 1.5rem;max-width:360px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.25);text-align:center">
       <div style="font-size:2.4rem;margin-bottom:.6rem">🔒</div>
@@ -5487,7 +5487,7 @@ function toggleProfileSection(btn, sectionId){
   if(existing)existing.remove();
   const m=document.createElement('div');
   m.id='profile-zoom-modal';
-  m.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:1500;display:flex;align-items:flex-end;justify-content:center;backdrop-filter:blur(4px)';
+  m.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:1500;display:flex;align-items:flex-end;justify-content:center';
   // Get the section title from previous sibling button's parent
   const titleEl=btn.parentElement.querySelector('[style*="text-transform:uppercase"]');
   const title=titleEl?titleEl.textContent:'Détails';
@@ -5505,25 +5505,12 @@ function toggleProfileSection(btn, sectionId){
 }
 
 function handleProfileRDV(proId){
-  const sess=getSession();
-  // Si non connecté → mur d'inscription
-  if(!sess){
-    closeProProfile();
-    setTimeout(showSignupWall,100);
-    return;
-  }
-  // Admin et pro peuvent aussi tester le booking
-  if(sess.type!=='patient' && sess.type!=='admin' && sess.type!=='pro'){
-    closeProProfile();
-    setTimeout(showSignupWall,100);
-    return;
-  }
-  // Fermer le modal pro-profile immédiatement
+  // Fermer le profil immédiatement
   const pm=document.getElementById('pro-profile-modal');
   if(pm) pm.style.display='none';
   document.body.style.overflow='';
-  // Ouvrir le booking sur le prochain cycle JS (DOM propre)
-  setTimeout(()=>openSheet(proId),10);
+  // Utiliser directBooking pour le reste
+  directBooking(proId);
 }
 
 function closeProProfile(){
@@ -5532,18 +5519,68 @@ function closeProProfile(){
   document.body.style.overflow='';
 }
 
+// Fonction directe RDV - bypass total de tous les modals
+function directBooking(proId){
+  // 1. Supprimer ABSOLUMENT tous les overlays possibles
+  document.querySelectorAll(
+    '#signup-wall-modal, #profile-zoom-modal, #ai-avatar-picker, #pro-profile-modal'
+  ).forEach(el=>{
+    if(el.tagName==='DIV' && el.id==='pro-profile-modal'){
+      el.style.display='none';
+    } else {
+      el.remove();
+    }
+  });
+  document.body.style.overflow='';
+  
+  // 2. Vérifier session
+  const sess=getSession();
+  if(!sess || (sess.type!=='patient' && sess.type!=='admin' && sess.type!=='pro')){
+    // Pas connecté - montrer le mur SANS blur
+    const old=document.getElementById('signup-wall-modal');
+    if(old)old.remove();
+    const m=document.createElement('div');
+    m.id='signup-wall-modal';
+    m.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:9000;display:flex;align-items:center;justify-content:center;padding:1rem;';
+    m.innerHTML=`<div style="background:#fff;border-radius:22px;padding:1.8rem 1.5rem;max-width:340px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.3);text-align:center">
+      <div style="font-size:2.2rem;margin-bottom:.6rem">🔒</div>
+      <div style="font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:700;color:#1B3A35;margin-bottom:.5rem">Connexion requise</div>
+      <div style="font-size:.82rem;color:#6B8C87;line-height:1.6;margin-bottom:1.2rem">Créez un compte gratuit pour prendre rendez-vous avec ce spécialiste.</div>
+      <button onclick="document.getElementById('signup-wall-modal').remove();document.body.style.overflow='';showSignup('patient')"
+        style="background:linear-gradient(135deg,#1B6B61,#2A8A7E);color:#fff;border:none;border-radius:12px;padding:.9rem;font-size:.9rem;font-weight:800;cursor:pointer;width:100%;margin-bottom:.55rem">
+        👤 Créer mon compte gratuit
+      </button>
+      <button onclick="document.getElementById('signup-wall-modal').remove();document.body.style.overflow='';showLogin()"
+        style="background:transparent;color:#1B6B61;border:1.5px solid #1B6B61;border-radius:12px;padding:.75rem;font-size:.85rem;font-weight:600;cursor:pointer;width:100%">
+        🔐 Se connecter
+      </button>
+    </div>`;
+    m.addEventListener('click',e=>{if(e.target===m){m.remove();document.body.style.overflow='';}});
+    document.body.appendChild(m);
+    return;
+  }
+  
+  // 3. Ouvrir directement le booking (aucun délai, aucun modal intermédiaire)
+  openSheet(proId);
+}
+
 function openSheet(proId){
   // Guard: doit être connecté
   const sess=getSession();
-  if(!sess){
+  if(!sess || (sess.type!=='patient' && sess.type!=='admin' && sess.type!=='pro')){
     showSignupWall();
     return;
   }
-  // Patient, admin et pro peuvent ouvrir le booking
-  if(sess.type!=='patient' && sess.type!=='admin' && sess.type!=='pro'){
-    showSignupWall();
-    return;
-  }
+  // ⚠️ CLEANUP RADICAL: supprimer TOUS les overlays avant d'ouvrir le booking
+  ['signup-wall-modal','profile-zoom-modal','ai-avatar-picker'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el)el.remove();
+  });
+  // Fermer le pro-profile-modal
+  const pm=document.getElementById('pro-profile-modal');
+  if(pm){pm.style.display='none';}
+  // Restaurer le scroll
+  document.body.style.overflow='';
   const db=getDB();
   const pro=db.pros.find(p=>p.id===proId);if(!pro)return;
   selSpec=pro;selDate=null;selSlot=null;selType='video';
