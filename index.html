@@ -243,6 +243,7 @@ async function sbSaveUser(user){
       notif:user.notif||false,dob:user.dob||'',
       anon_mode:user.anonMode||'real',
       email_confirmed:user.emailConfirmed||false,
+      confirm_token:user.confirmToken||null,
       created_at:user.createdAt||new Date().toISOString()
     };
     const{error}=await supa.from('users').upsert([payload],{onConflict:'id'});
@@ -599,7 +600,7 @@ input,select,textarea{font-family:'DM Sans',sans-serif}
 .step-num{width:22px;height:22px;border-radius:50%;background:var(--teal);color:#fff;display:flex;align-items:center;justify-content:center;font-size:.63rem;font-weight:700;flex-shrink:0;margin-top:.05rem}
 
 /* ─── BOOKING SHEET ─── */
-.bsheet-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:700;backdrop-filter:blur(3px);align-items:flex-end;justify-content:center}
+.bsheet-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:700;align-items:flex-end;justify-content:center}
 .bsheet-bg.on{display:flex}
 .bsheet{background:#fff;border-radius:var(--r-lg) var(--r-lg) 0 0;max-height:92vh;overflow-y:auto;width:100%;max-width:560px;padding:1.5rem 1.2rem}
 .bsh-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.2rem}
@@ -2701,15 +2702,21 @@ function goHome(){showView('v-home');renderHome()}
 function scrollToSearch(){document.getElementById('search-anchor').scrollIntoView({behavior:'smooth'})}
 function showLogin(){showView('v-login');document.getElementById('login-error').style.display='none';backToLoginStep1();setTimeout(showRecaptchaNotice,100);}
 function showSignup(type){showView(type==='pro'?'v-signup-pro':'v-signup-patient')}
-function goPro(){
+async function goPro(){
   const s=getSession();
   if(!s||s.type!=='pro'){showLogin();return}
-  showView('v-pro');updateProDashboard(s);
+  showView('v-pro');
+  // Sync depuis Supabase pour avoir les derniers RDVs patients
+  try{await sbLoadRdvs();}catch(e){console.warn('goPro sync:',e);}
+  updateProDashboard(s);
 }
-function goPatient(){
+async function goPatient(){
   const s=getSession();
   if(!s||s.type!=='patient'){showLogin();return}
-  showView('v-patient');updatePatientDash(s);
+  showView('v-patient');
+  // Sync RDVs depuis Supabase
+  try{await sbLoadRdvs();}catch(e){console.warn('goPatient sync:',e);}
+  updatePatientDash(s);
   setTimeout(renderPatConfirmations,100);
 }
 
@@ -2867,10 +2874,21 @@ function simulateEmailConfirm(token){
   consumeConfirmToken(token);
 }
 
-function consumeConfirmToken(token){
+async function consumeConfirmToken(token){
   const tokens=JSON.parse(localStorage.getItem('plConfirmTokens')||'{}');
-  const entry=tokens[token];
-  if(!entry){toast('Lien de confirmation invalide ou déjà utilisé.','red');return;}
+  let entry=tokens[token];
+  if(!entry){
+    // Cross-device: chercher dans Supabase
+    try{
+      const{data,error}=await supa.from('users').select('id,email,fn,ln,tel,tz').eq('confirm_token',token).maybeSingle();
+      if(!error&&data){
+        entry={id:data.id,type:'patient',email:data.email,expiry:Date.now()+1000};
+        // Marquer confirmé dans Supabase immédiatement
+        await supa.from('users').update({email_confirmed:true,confirm_token:null}).eq('id',data.id);
+      }
+    }catch(e){console.warn('Supabase confirm:',e);}
+    if(!entry){toast('Lien de confirmation invalide ou déjà utilisé.','red');return;}
+  }
   if(Date.now()>entry.expiry){
     delete tokens[token];localStorage.setItem('plConfirmTokens',JSON.stringify(tokens));
     toast('⏱️ Lien expiré. Veuillez vous réinscrire.','red');return;
@@ -3607,6 +3625,9 @@ async function doSignupPatient(){
   const tokens=JSON.parse(localStorage.getItem('plConfirmTokens')||'{}');
   tokens[confirmToken]={id,type:'patient',email,expiry:Date.now()+48*60*60*1000};
   localStorage.setItem('plConfirmTokens',JSON.stringify(tokens));
+  // Stocker aussi dans l'objet user pour Supabase (cross-device)
+  user.confirmToken=confirmToken;
+  sbSaveUser(user);// re-save avec confirmToken
 
   // Envoyer email de confirmation
   const confirmUrl=window.location.href.split('?')[0]+'?confirm='+confirmToken;
@@ -4052,7 +4073,7 @@ async function admAddProManually(){
   ['adm-manual-fn','adm-manual-ln','adm-manual-email','adm-manual-tel','adm-manual-iban'].forEach(id=>{
     const el=document.getElementById(id);if(el)el.value='';
   });
-  const selSpec=document.getElementById('adm-manual-spec');if(selSpec)selSpec.value='';
+  const specSel=document.getElementById('adm-manual-spec');if(specSel)specSel.value='';
 
   toast('✅ Dossier de Dr. '+fn+' '+ln+' créé — en attente de validation','green');
   renderAdminPanel();
@@ -4410,6 +4431,10 @@ function actRDV(rdvId,status,proId){
   if(!rdv)return;
   rdv.status=status;
   saveDB(db);
+  // Sync statut dans Supabase
+  supa.from('rdvs').update({status}).eq('id',rdvId).then(({error})=>{
+    if(error)console.warn('actRDV Supabase update:',error.message);
+  });
   const s=getSession();const pro=db.pros.find(p=>p.id===proId);
   if(pro){renderRDVList(pro,db);updateProDashboard(s);}
   if(status==='confirmed'){
@@ -5072,7 +5097,7 @@ function openProProfile(proId){
       </div>
 
       <!-- CTA Prendre RDV -->
-      <button onclick="closeProProfile();openSheet('${pro.id}')" style="background:var(--teal-d);color:#fff;border:none;border-radius:14px;padding:1rem;font-size:.95rem;font-weight:800;cursor:pointer;width:100%;letter-spacing:.01em;margin-top:.2rem">
+      <button onclick="closeProProfile();(getSession()&&getSession().type==='patient'?openSheet('${pro.id}'):showSignupWall())" style="background:var(--teal-d);color:#fff;border:none;border-radius:14px;padding:1rem;font-size:.95rem;font-weight:800;cursor:pointer;width:100%;letter-spacing:.01em;margin-top:.2rem">
         📅 Prendre rendez-vous avec Dr. ${escHtml(pro.fn)} ${escHtml(pro.ln)}
       </button>
       <button onclick="closeProProfile()" style="background:transparent;color:var(--soft);border:1.5px solid var(--border);border-radius:14px;padding:.7rem;font-size:.82rem;font-weight:600;cursor:pointer;width:100%">← Retour aux spécialistes</button>
@@ -5093,6 +5118,12 @@ function closeProProfile(){
 }
 
 function openSheet(proId){
+  // Guard: doit être connecté en tant que patient
+  const sess=getSession();
+  if(!sess||sess.type!=='patient'){
+    showSignupWall();
+    return;
+  }
   const db=getDB();
   const pro=db.pros.find(p=>p.id===proId);if(!pro)return;
   selSpec=pro;selDate=null;selSlot=null;selType='video';
@@ -5831,6 +5862,15 @@ function submitPayment(){
   });
   // Notification interne
   if(s)addNotif(s.id,'patient','💳 Justificatif envoyé','Votre justificatif de paiement a été transmis à l\'équipe Psycholab. Votre RDV sera confirmé sous 24h.');
+  // Mettre à jour le statut du RDV
+  if(currentPayRdv){
+    const rdv=db.rdvs.find(r=>r.id===currentPayRdv.id);
+    if(rdv){
+      rdv.status='awaiting_payment_validation';
+      saveDB(db);
+      supa.from('rdvs').update({status:'awaiting_payment_validation'}).eq('id',rdv.id).catch(()=>{});
+    }
+  }
   payFileData=null;
   toast('✅ Justificatif envoyé ! Votre RDV sera confirmé sous 24h.','green');
   setTimeout(()=>goPatient(),2000);
