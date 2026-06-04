@@ -1167,12 +1167,23 @@ body[data-lang="ar"]{font-family:'Segoe UI',Tahoma,'Arabic Typesetting',sans-ser
           Un lien de connexion a été envoyé à<br/>
           <strong style="color:var(--teal-d)" id="magic-sent-email">—</strong>
         </p>
-        <div style="background:var(--sand);border-radius:var(--r-md);padding:.9rem;font-size:.78rem;color:var(--mid);line-height:1.7;margin-bottom:1rem;text-align:left">
-          <div style="font-weight:700;color:var(--ch);margin-bottom:.3rem">📋 Que faire maintenant ?</div>
-          <div>1. Ouvrez votre boîte email</div>
-          <div>2. Cliquez sur le lien dans l'email Psycholab</div>
-          <div>3. Vous serez connecté automatiquement</div>
-          <div style="margin-top:.4rem;color:var(--soft);font-size:.72rem">⏱️ Le lien expire dans 15 minutes · Vérifiez vos spams si besoin</div>
+        <div style="background:var(--sand);border-radius:var(--r-md);padding:1rem;font-size:.82rem;color:var(--mid);line-height:1.85;margin-bottom:1rem;text-align:left">
+          <div style="font-weight:800;color:var(--ch);margin-bottom:.6rem;font-size:.88rem">📋 3 étapes simples :</div>
+          <div style="display:flex;align-items:flex-start;gap:.6rem;margin-bottom:.5rem">
+            <span style="background:var(--teal);color:#fff;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:.72rem;font-weight:800;flex-shrink:0;margin-top:.05rem">1</span>
+            <span>Ouvrez votre <strong>application Gmail / Mail</strong></span>
+          </div>
+          <div style="display:flex;align-items:flex-start;gap:.6rem;margin-bottom:.5rem">
+            <span style="background:var(--teal);color:#fff;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:.72rem;font-weight:800;flex-shrink:0;margin-top:.05rem">2</span>
+            <span>Trouvez l'email <strong>Psycholab</strong> et cliquez sur le lien</span>
+          </div>
+          <div style="display:flex;align-items:flex-start;gap:.6rem;margin-bottom:.8rem">
+            <span style="background:var(--teal);color:#fff;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:.72rem;font-weight:800;flex-shrink:0;margin-top:.05rem">3</span>
+            <span>Allez dans le <strong>Menu ☰</strong> → <strong>Mon espace</strong> pour accéder à votre compte</span>
+          </div>
+          <div style="background:rgba(27,107,97,.08);border-radius:8px;padding:.5rem .7rem;font-size:.72rem;color:var(--teal-d);font-weight:600">
+            ⏱️ Lien valable 15 min &nbsp;·&nbsp; 📂 Vérifiez vos spams si besoin
+          </div>
         </div>
 
         <button onclick="backToLoginStep1()" style="background:none;border:none;color:var(--soft);font-size:.8rem;cursor:pointer;text-decoration:underline">← Changer d'adresse email</button>
@@ -2360,6 +2371,7 @@ body[data-lang="ar"]{font-family:'Segoe UI',Tahoma,'Arabic Typesetting',sans-ser
       <div class="cal-grid" id="cal-grid"></div>
       <p style="font-size:.76rem;font-weight:600;color:var(--mid);margin-bottom:.5rem">Créneaux disponibles</p>
       <div class="slots-wrap" id="slots-wrap"></div>
+      <div id="bs-dual-time" style="display:none;background:linear-gradient(135deg,var(--teal-xl),#E8F4F2);border:1px solid var(--teal);border-radius:8px;padding:.5rem .8rem;font-size:.78rem;color:var(--teal-d);margin-bottom:.6rem;line-height:1.6"></div>
       <div class="bsheet-foot">
         <button class="btn-next" onclick="goStep(2)" id="btn-step2" disabled>Continuer →</button>
       </div>
@@ -2953,7 +2965,7 @@ function renderHome(){
         <div class="card-top">
           ${photoEl}
           <div>
-            <div class="c-name">Dr. ${escHtml(p.fn)} ${escHtml(p.ln)}</div>
+            <div class="c-name">${getProTitle(p.spec)}${escHtml(p.fn)} ${escHtml(p.ln)}</div>
             <div class="c-spec">${escHtml(p.spec)}</div>
             <div class="stars">★★★★★ <span style="color:var(--soft);font-size:.67rem">Nouveau</span></div>
           </div>
@@ -4988,9 +5000,62 @@ function updatePatientDash(session){
 // ================================================
 //  BOOKING SHEET
 // ================================================
+
+const COUNTRY_TZ_MAP={
+  '+216':'Africa/Tunis','+33':'Europe/Paris','+32':'Europe/Brussels',
+  '+41':'Europe/Zurich','+1':'America/New_York','+44':'Europe/London',
+  '+49':'Europe/Berlin','+34':'Europe/Madrid','+39':'Europe/Rome',
+  '+212':'Africa/Casablanca','+213':'Africa/Algiers','+20':'Africa/Cairo',
+  '+966':'Asia/Riyadh','+971':'Asia/Dubai','+974':'Asia/Qatar',
+  '+974':'Asia/Qatar','+352':'Europe/Luxembourg','+31':'Europe/Amsterdam',
+  '+46':'Europe/Stockholm','+47':'Europe/Oslo','+45':'Europe/Copenhagen',
+  '+358':'Europe/Helsinki','+1-CA':'America/Toronto','+61':'Australia/Sydney',
+  '+81':'Asia/Tokyo','+82':'Asia/Seoul','+86':'Asia/Shanghai',
+};
+
+function getPatientTZ(){
+  const s=getSession();
+  if(s&&s.tz&&s.tz!=='Africa/Tunis') return s.tz;
+  // Déduire depuis indicatif téléphone si disponible
+  const db=getDB();
+  const user=s?db.users.find(u=>u.id===s.id):null;
+  if(user&&user.tel){
+    const tel=user.tel;
+    for(const [code,tz] of Object.entries(COUNTRY_TZ_MAP)){
+      if(tel.startsWith(code)) return tz;
+    }
+  }
+  // Fallback: timezone navigateur
+  try{return Intl.DateTimeFormat().resolvedOptions().timeZone;}catch(e){return 'Europe/Paris';}
+}
+
+function formatDualTime(dateStr, slot){
+  const TUNIS_TZ='Africa/Tunis';
+  const patientTZ=getPatientTZ();
+  // Construire la date avec le slot
+  if(!dateStr||!slot) return '';
+  const [h,m]=(slot||'00:00').split(':').map(Number);
+  const base=new Date(dateStr);
+  base.setHours(h,m,0,0);
+  try{
+    const tunisFmt=new Intl.DateTimeFormat('fr-FR',{timeZone:TUNIS_TZ,hour:'2-digit',minute:'2-digit'}).format(base);
+    if(patientTZ===TUNIS_TZ) return tunisFmt+' (Tunisie)';
+    const patFmt=new Intl.DateTimeFormat('fr-FR',{timeZone:patientTZ,hour:'2-digit',minute:'2-digit'}).format(base);
+    const patCity=patientTZ.split('/').pop().replace('_',' ');
+    return tunisFmt+' (🇹🇳 Tunisie) · '+patFmt+' ('+patCity+')';
+  }catch(e){return slot+' (Tunisie)';}
+}
+
 // ================================================
 //  PROFIL PUBLIC DU PROFESSIONNEL
 // ================================================
+
+// Renvoie le titre honorifique selon la spécialité
+function getProTitle(spec){
+  if(!spec) return '';
+  const medicalSpecs=['Psychiatre','Pédopsychiatre','Neuropsychiatre','Psychiatre de liaison','Psychiatre gériatrique'];
+  return medicalSpecs.some(s=>spec.toLowerCase().includes(s.toLowerCase())) ? 'Dr. ' : '';
+}
 
 // Domaines d'intervention & actes par spécialité
 const SPEC_DETAILS = {
@@ -5210,7 +5275,7 @@ function openProProfile(proId){
       <div style="display:flex;align-items:center;gap:1rem;margin-bottom:.8rem">
         ${photoEl}
         <div style="flex:1">
-          <div style="font-size:1.05rem;font-weight:800;line-height:1.2">Dr. ${escHtml(pro.fn)} ${escHtml(pro.ln)}</div>
+          <div style="font-size:1.05rem;font-weight:800;line-height:1.2">${getProTitle(pro.spec)}${escHtml(pro.fn)} ${escHtml(pro.ln)}</div>
           <div style="font-size:.78rem;font-weight:700;opacity:.9;text-transform:uppercase;letter-spacing:.06em;margin-top:.2rem">${det.icon} ${escHtml(pro.spec)}</div>
           <div style="display:flex;align-items:center;gap:.3rem;margin-top:.4rem">
             <span style="color:#FFD700;font-size:.85rem">★★★★★</span>
@@ -5230,10 +5295,15 @@ function openProProfile(proId){
 
     <div style="padding:1.1rem 1.2rem;display:flex;flex-direction:column;gap:1rem">
 
-      <!-- Description spécialité -->
+      <!-- Description spécialité — expandable -->
       <div>
-        <div style="font-size:.72rem;font-weight:700;color:var(--teal-d);text-transform:uppercase;letter-spacing:.08em;margin-bottom:.45rem">${det.icon} À propos de cette spécialité</div>
-        <p style="font-size:.82rem;color:var(--ch);line-height:1.65;margin:0">${det.description}</p>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.45rem">
+          <div style="font-size:.72rem;font-weight:700;color:var(--teal-d);text-transform:uppercase;letter-spacing:.08em">${det.icon} À propos de cette spécialité</div>
+          <button onclick="toggleProfileSection(this,'desc-body-${pro.id}')" style="background:var(--teal);color:#fff;border:none;border-radius:20px;padding:.2rem .65rem;font-size:.68rem;font-weight:700;cursor:pointer;flex-shrink:0">🔍 Agrandir</button>
+        </div>
+        <div id="desc-body-${pro.id}">
+          <p style="font-size:.82rem;color:var(--ch);line-height:1.65;margin:0">${det.description}</p>
+        </div>
       </div>
 
       <!-- Bio perso si renseignée -->
@@ -5242,10 +5312,13 @@ function openProProfile(proId){
         <p style="font-size:.82rem;color:var(--ch);line-height:1.65;margin:0">${escHtml(pro.bio)}</p>
       </div>`:''}
 
-      <!-- Actes & domaines -->
+      <!-- Actes & domaines — expandable -->
       <div>
-        <div style="font-size:.72rem;font-weight:700;color:var(--teal-d);text-transform:uppercase;letter-spacing:.08em;margin-bottom:.55rem">🎯 Actes & domaines d'intervention</div>
-        <div style="display:flex;flex-direction:column;gap:.35rem">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.55rem">
+          <div style="font-size:.72rem;font-weight:700;color:var(--teal-d);text-transform:uppercase;letter-spacing:.08em">🎯 Actes & domaines d'intervention</div>
+          <button onclick="toggleProfileSection(this,'actes-body-${pro.id}')" style="background:var(--teal);color:#fff;border:none;border-radius:20px;padding:.2rem .65rem;font-size:.68rem;font-weight:700;cursor:pointer;flex-shrink:0">🔍 Agrandir</button>
+        </div>
+        <div id="actes-body-${pro.id}" style="display:flex;flex-direction:column;gap:.35rem">
           ${det.actes.map(a=>`<div style="display:flex;align-items:flex-start;gap:.5rem;font-size:.8rem;color:var(--ch);line-height:1.5">
             <span style="flex-shrink:0;margin-top:.05rem">${a.split(' ')[0]}</span>
             <span>${a.split(' ').slice(1).join(' ')}</span>
@@ -5276,13 +5349,13 @@ function openProProfile(proId){
           <div style="font-size:.78rem;color:var(--ch)"><span style="color:var(--soft)">💶 Tarif</span><br/><strong>38 € / séance</strong></div>
           <div style="font-size:.78rem;color:var(--ch)"><span style="color:var(--soft)">⏱️ Durée</span><br/><strong>45 minutes</strong></div>
           <div style="font-size:.78rem;color:var(--ch)"><span style="color:var(--soft)">📹 Format</span><br/><strong>Vidéo (Google Meet)</strong></div>
-          <div style="font-size:.78rem;color:var(--ch)"><span style="color:var(--soft)">🌍 Fuseau</span><br/><strong>${(pro.tz||'Africa/Tunis').split('/').pop()}</strong></div>
+          <div style="font-size:.78rem;color:var(--ch);grid-column:1/-1"><span style="color:var(--soft)">🌍 Fuseau horaire</span><br/><strong style="color:var(--teal-d)">🇹🇳 Tunisie (UTC+1)</strong>${getPatientTZ()!=='Africa/Tunis'?'<br/><span style="color:var(--mid);font-size:.73rem">Votre heure : <strong>'+new Intl.DateTimeFormat('fr-FR',{timeZone:getPatientTZ(),hour:'2-digit',minute:'2-digit'}).format(new Date())+'</strong> ('+getPatientTZ().split('/').pop().replace('_',' ')+')</span>':''}</div>
         </div>
       </div>
 
       <!-- CTA Prendre RDV -->
       <button onclick="closeProProfile();(getSession()&&getSession().type==='patient'?openSheet('${pro.id}'):showSignupWall())" style="background:var(--teal-d);color:#fff;border:none;border-radius:14px;padding:1rem;font-size:.95rem;font-weight:800;cursor:pointer;width:100%;letter-spacing:.01em;margin-top:.2rem">
-        📅 Prendre rendez-vous avec Dr. ${escHtml(pro.fn)} ${escHtml(pro.ln)}
+        📅 Prendre rendez-vous avec ${getProTitle(pro.spec)}${escHtml(pro.fn)} ${escHtml(pro.ln)}
       </button>
       <button onclick="closeProProfile()" style="background:transparent;color:var(--soft);border:1.5px solid var(--border);border-radius:14px;padding:.7rem;font-size:.82rem;font-weight:600;cursor:pointer;width:100%">← Retour aux spécialistes</button>
     </div>
@@ -5291,6 +5364,32 @@ function openProProfile(proId){
   pm.style.visibility='visible';
   pm.style.opacity='1';
   pm.style.overflowY='auto';
+  document.body.style.overflow='hidden';
+}
+
+// Zoom/expand profile section in a full-screen modal
+function toggleProfileSection(btn, sectionId){
+  const section=document.getElementById(sectionId);
+  if(!section) return;
+  // Create fullscreen zoom modal
+  const existing=document.getElementById('profile-zoom-modal');
+  if(existing)existing.remove();
+  const m=document.createElement('div');
+  m.id='profile-zoom-modal';
+  m.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:1500;display:flex;align-items:flex-end;justify-content:center;backdrop-filter:blur(4px)';
+  // Get the section title from previous sibling button's parent
+  const titleEl=btn.parentElement.querySelector('[style*="text-transform:uppercase"]');
+  const title=titleEl?titleEl.textContent:'Détails';
+  m.innerHTML=`
+    <div style="background:#fff;border-radius:20px 20px 0 0;width:100%;max-width:560px;max-height:88vh;overflow-y:auto;padding:1.2rem 1.2rem 2rem">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;padding-bottom:.7rem;border-bottom:1.5px solid var(--border)">
+        <div style="font-size:.85rem;font-weight:800;color:var(--teal-d)">${title}</div>
+        <button onclick="document.getElementById('profile-zoom-modal').remove();document.body.style.overflow=''" style="background:var(--sand);border:1.5px solid var(--border);border-radius:50%;width:30px;height:30px;font-size:.85rem;cursor:pointer;display:flex;align-items:center;justify-content:center">✕</button>
+      </div>
+      <div style="font-size:.95rem;line-height:1.9;color:var(--ch)">${section.innerHTML}</div>
+    </div>`;
+  m.addEventListener('click',e=>{if(e.target===m){m.remove();document.body.style.overflow='';}});
+  document.body.appendChild(m);
   document.body.style.overflow='hidden';
 }
 
@@ -5311,7 +5410,7 @@ function openSheet(proId){
   const db=getDB();
   const pro=db.pros.find(p=>p.id===proId);if(!pro)return;
   selSpec=pro;selDate=null;selSlot=null;selType='video';
-  document.getElementById('bsh-title').textContent='RDV avec Dr. '+pro.fn+' '+pro.ln;
+  document.getElementById('bsh-title').textContent='RDV avec '+getProTitle(pro.spec)+pro.fn+' '+pro.ln;
   document.getElementById('bsheet-bg').classList.add('on');
   document.getElementById('tv').classList.add('on');
   document.getElementById('tpr').classList.remove('on');
@@ -5375,6 +5474,13 @@ function renderSlots(){
 
 function selectSlot(sl,btn){
   selSlot=sl;
+  // Afficher l'heure duale (Tunisie + pays patient)
+  const dualEl=document.getElementById('bs-dual-time');
+  if(dualEl&&selDate){
+    const dualStr=formatDualTime(selDate.toISOString(),sl);
+    dualEl.style.display='block';
+    dualEl.innerHTML='🕐 <strong>'+sl+'</strong> → '+dualStr;
+  }
   document.querySelectorAll('.slot-btn').forEach(b=>b.classList.remove('on'));
   btn.classList.add('on');checkStep1();
 }
