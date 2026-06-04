@@ -3164,7 +3164,8 @@ async function doRequestMagicLink(){
 
   // Vérifier que l'email existe selon le type
   const db=getDB();
-  const isAdmin=(email===ADMIN_EMAIL);
+  // Admin seulement si on est sur l'onglet "Professionnel" (pas patient)
+  const isAdmin=(email===ADMIN_EMAIL && currentLoginTab!=='patient');
 
   // ADMIN — connexion directe sans lien magique
   if(isAdmin){
@@ -3212,9 +3213,27 @@ async function doRequestMagicLink(){
         const db2=getDB();
         const user2=db2.users.find(u=>u.email===email);
         if(!user2){
-          errEl.innerHTML='⚠️ Aucun compte patient trouvé pour cet email.<br/><a onclick="showSignup(\'patient\')" style="color:var(--teal);font-weight:600;cursor:pointer">Créer un compte →</a>';
-          errEl.style.display='block';
-          if(btn){btn.disabled=false;btn.textContent='📧 Envoyer mon lien de connexion';}
+          // Dernière tentative: chercher directement dans Supabase par email
+          supa.from('users').select('id,email,fn,ln,tel,tz,email_confirmed').eq('email',email).maybeSingle().then(({data,error})=>{
+            if(!error&&data){
+              // Compte trouvé dans Supabase — synchroniser et continuer
+              const db3=getDB();
+              const existing=db3.users.findIndex(u=>u.email===email);
+              const syncedUser={id:data.id,fn:data.fn,ln:data.ln,email:data.email,tel:data.tel||'',tz:data.tz||'Africa/Tunis',emailConfirmed:data.email_confirmed||true,createdAt:new Date().toISOString()};
+              if(existing>=0)db3.users[existing]={...db3.users[existing],...syncedUser};
+              else db3.users.push(syncedUser);
+              saveDB(db3);
+              proceedWithMagicLink(email,'patient',btn,errEl);
+            } else {
+              errEl.innerHTML='⚠️ Aucun compte patient trouvé pour cet email.<br/><a onclick="showSignup(\'patient\')" style="color:var(--teal);font-weight:600;cursor:pointer">Créer un compte →</a>';
+              errEl.style.display='block';
+              if(btn){btn.disabled=false;btn.textContent='📧 Envoyer mon lien de connexion';}
+            }
+          }).catch(()=>{
+            errEl.innerHTML='⚠️ Aucun compte patient trouvé pour cet email.<br/><a onclick="showSignup(\'patient\')" style="color:var(--teal);font-weight:600;cursor:pointer">Créer un compte →</a>';
+            errEl.style.display='block';
+            if(btn){btn.disabled=false;btn.textContent='📧 Envoyer mon lien de connexion';}
+          });
         } else {
           proceedWithMagicLink(email,'patient',btn,errEl);
         }
@@ -3396,7 +3415,8 @@ function consumeMagicToken(token){
 
   const db=getDB();
 
-  if(type==='admin'||email===ADMIN_EMAIL){
+  // Connexion admin seulement si le type est explicitement 'admin' (pas si email patient)
+  if(type==='admin'){
     saveSession({id:'admin',type:'admin',email:ADMIN_EMAIL});
     applySession(getSession());
     const now=new Date();
