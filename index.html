@@ -467,6 +467,10 @@ input,select,textarea{font-family:'DM Sans',sans-serif}
 
 /* ─── SEARCH ─── */
 .search-wrap{max-width:820px;margin:-1.5rem auto 2rem;padding:0 1.2rem;position:relative;z-index:10}
+.spec-cb{display:flex;align-items:center;gap:.5rem;font-size:.82rem;color:var(--ch);padding:.3rem .4rem;border-radius:6px;cursor:pointer;transition:background .15s}
+.spec-cb:hover{background:var(--teal-xl)}
+.spec-cb input[type=checkbox]{accent-color:var(--teal);width:15px;height:15px;flex-shrink:0}
+.spec-cb input[type=checkbox]:checked+*{font-weight:700;color:var(--teal-d)}
 .search-box{background:#fff;border:1.5px solid var(--border);border-radius:var(--r-lg);padding:1rem 1.1rem;box-shadow:var(--shadow-md);display:flex;flex-direction:column;gap:.65rem}
 .si{display:flex;align-items:center;gap:.5rem;border-bottom:1.5px solid var(--border);padding-bottom:.65rem}
 .si input{border:none;outline:none;background:none;font-size:.9rem;color:var(--ch);width:100%}
@@ -1281,60 +1285,87 @@ body[data-lang="ar"]{font-family:'Segoe UI',Tahoma,'Arabic Typesetting',sans-ser
         <div class="fgroup"><label>Nom *</label><input id="spro-ln" placeholder="Nom"/></div>
       </div>
       <div class="fgroup"><label>Email *</label><input type="email" id="spro-email" placeholder="votre@email.com"/></div>
-      <div class="fgroup"><label>Téléphone *</label><input type="tel" id="spro-tel" placeholder="+33 6 12 34 56 78"/></div>
 
-      <div class="form-section-title">🎓 Spécialité</div>
-      <div class="fgroup"><label>Votre spécialité *</label>
-        <select id="spro-spec">
-          <option value="">— Sélectionner votre spécialité —</option>
-          <optgroup label="🧠 Médecine psychiatrique">
-            <option>Psychiatre</option>
-            <option>Pédopsychiatre</option>
-            <option>Neuropsychiatre</option>
-            <option>Psychiatre de liaison</option>
-            <option>Psychiatre gériatrique</option>
-          </optgroup>
-          <optgroup label="🛋️ Psychologie">
-            <option>Psychologue clinicien</option>
-            <option>Psychologue du travail</option>
-            <option>Neuropsychologue</option>
-            <option>Psychologue de l'enfant</option>
-            <option>Psychologue scolaire</option>
-            <option>Psychologue social</option>
-            <option>Psychologue de la santé</option>
-            <option>Psychologue criminologue</option>
-          </optgroup>
-          <optgroup label="💬 Psychothérapie">
-            <option>Psychothérapeute TCC</option>
-            <option>Psychanalyste</option>
-            <option>Thérapeute EMDR</option>
-            <option>Thérapeute familiale systémique</option>
-            <option>Thérapeute de couple</option>
-            <option>Thérapeute ACT</option>
-            <option>Hypnothérapeute clinique</option>
-            <option>Art-thérapeute</option>
-            <option>Sophrologue</option>
-          </optgroup>
-          <optgroup label="🤸 Thérapies spécialisées">
-            <option>Psychomotricien</option>
-            <option>Ergothérapeute</option>
-            <option>Orthophoniste</option>
-            <option>Musicothérapeute</option>
-            <option>Psychodramatiste</option>
-          </optgroup>
-          <optgroup label="🌱 Coaching & Bien-être">
-            <option>Coach en développement personnel</option>
-            <option>Consultant en gestion du stress</option>
-            <option>Spécialiste en addictologie</option>
-            <option>Thérapeute en burn-out</option>
-          </optgroup>
-          <optgroup label="👶 Enfance & Adolescence">
-            <option>Psychologue de l'enfant et adolescent</option>
-            <option>Thérapeute autisme et TSA</option>
-            <option>Spécialiste TDAH</option>
-            <option>Thérapeute troubles alimentaires</option>
-          </optgroup>
-        </select>
+      <!-- TÉLÉPHONE avec indicatif pays -->
+      <div class="fgroup">
+        <label>Téléphone *</label>
+        <div style="display:flex;gap:.5rem;align-items:stretch">
+          <select id="spro-tel-country" style="border:1.5px solid var(--border);border-radius:var(--r-sm);padding:.62rem .5rem;font-size:.82rem;background:var(--white);color:var(--ch);flex-shrink:0;max-width:140px;outline:none;font-family:inherit">
+            <option value="+216">🇹🇳 +216</option>
+            <option value="+33">🇫🇷 +33</option>
+            <option value="+32">🇧🇪 +32</option>
+            <option value="+41">🇨🇭 +41</option>
+            <option value="+1">🇺🇸 +1</option>
+            <option value="+44">🇬🇧 +44</option>
+            <option value="+49">🇩🇪 +49</option>
+            <option value="+34">🇪🇸 +34</option>
+            <option value="+39">🇮🇹 +39</option>
+            <option value="+212">🇲🇦 +212</option>
+            <option value="+213">🇩🇿 +213</option>
+            <option value="+20">🇪🇬 +20</option>
+            <option value="+966">🇸🇦 +966</option>
+            <option value="+971">🇦🇪 +971</option>
+            <option value="+974">🇶🇦 +974</option>
+          </select>
+          <input type="tel" id="spro-tel" placeholder="Ex: 27 054 204" style="flex:1"/>
+        </div>
+      </div>
+
+      <div class="form-section-title">🎓 Spécialité(s)</div>
+      <div class="fgroup">
+        <label>Vos spécialités * <span style="font-size:.7rem;color:var(--soft);font-weight:400">(sélectionnez une ou plusieurs)</span></label>
+        <div id="spro-spec-wrap" style="border:1.5px solid var(--border);border-radius:var(--r-sm);background:var(--white);max-height:260px;overflow-y:auto;padding:.5rem .7rem;display:flex;flex-direction:column;gap:.3rem">
+
+          <div style="font-size:.68rem;font-weight:700;color:var(--teal-d);text-transform:uppercase;letter-spacing:.07em;padding:.3rem 0 .1rem;border-bottom:1px solid var(--border);margin-bottom:.2rem">🧠 Médecine psychiatrique</div>
+          <label class="spec-cb"><input type="checkbox" name="spro-spec-cb" value="Psychiatre"/> Psychiatre</label>
+          <label class="spec-cb"><input type="checkbox" name="spro-spec-cb" value="Pédopsychiatre"/> Pédopsychiatre</label>
+          <label class="spec-cb"><input type="checkbox" name="spro-spec-cb" value="Neuropsychiatre"/> Neuropsychiatre</label>
+          <label class="spec-cb"><input type="checkbox" name="spro-spec-cb" value="Psychiatre de liaison"/> Psychiatre de liaison</label>
+          <label class="spec-cb"><input type="checkbox" name="spro-spec-cb" value="Psychiatre gériatrique"/> Psychiatre gériatrique</label>
+
+          <div style="font-size:.68rem;font-weight:700;color:var(--teal-d);text-transform:uppercase;letter-spacing:.07em;padding:.5rem 0 .1rem;border-bottom:1px solid var(--border);margin-bottom:.2rem">🛋️ Psychologie</div>
+          <label class="spec-cb"><input type="checkbox" name="spro-spec-cb" value="Psychologue clinicien"/> Psychologue clinicien</label>
+          <label class="spec-cb"><input type="checkbox" name="spro-spec-cb" value="Neuropsychologue"/> Neuropsychologue</label>
+          <label class="spec-cb"><input type="checkbox" name="spro-spec-cb" value="Psychologue du travail"/> Psychologue du travail</label>
+          <label class="spec-cb"><input type="checkbox" name="spro-spec-cb" value="Psychologue de l'enfant"/> Psychologue de l'enfant</label>
+          <label class="spec-cb"><input type="checkbox" name="spro-spec-cb" value="Psychologue scolaire"/> Psychologue scolaire</label>
+          <label class="spec-cb"><input type="checkbox" name="spro-spec-cb" value="Psychologue social"/> Psychologue social</label>
+          <label class="spec-cb"><input type="checkbox" name="spro-spec-cb" value="Psychologue de la santé"/> Psychologue de la santé</label>
+          <label class="spec-cb"><input type="checkbox" name="spro-spec-cb" value="Psychologue criminologue"/> Psychologue criminologue</label>
+
+          <div style="font-size:.68rem;font-weight:700;color:var(--teal-d);text-transform:uppercase;letter-spacing:.07em;padding:.5rem 0 .1rem;border-bottom:1px solid var(--border);margin-bottom:.2rem">💬 Psychothérapie</div>
+          <label class="spec-cb"><input type="checkbox" name="spro-spec-cb" value="Psychothérapeute TCC"/> Psychothérapeute TCC</label>
+          <label class="spec-cb"><input type="checkbox" name="spro-spec-cb" value="Psychanalyste"/> Psychanalyste</label>
+          <label class="spec-cb"><input type="checkbox" name="spro-spec-cb" value="Thérapeute EMDR"/> Thérapeute EMDR</label>
+          <label class="spec-cb"><input type="checkbox" name="spro-spec-cb" value="Thérapeute familiale systémique"/> Thérapeute familiale systémique</label>
+          <label class="spec-cb"><input type="checkbox" name="spro-spec-cb" value="Thérapeute de couple"/> Thérapeute de couple</label>
+          <label class="spec-cb"><input type="checkbox" name="spro-spec-cb" value="Thérapeute ACT"/> Thérapeute ACT</label>
+          <label class="spec-cb"><input type="checkbox" name="spro-spec-cb" value="Hypnothérapeute clinique"/> Hypnothérapeute clinique</label>
+          <label class="spec-cb"><input type="checkbox" name="spro-spec-cb" value="Art-thérapeute"/> Art-thérapeute</label>
+          <label class="spec-cb"><input type="checkbox" name="spro-spec-cb" value="Sophrologue"/> Sophrologue</label>
+
+          <div style="font-size:.68rem;font-weight:700;color:var(--teal-d);text-transform:uppercase;letter-spacing:.07em;padding:.5rem 0 .1rem;border-bottom:1px solid var(--border);margin-bottom:.2rem">🤸 Thérapies spécialisées</div>
+          <label class="spec-cb"><input type="checkbox" name="spro-spec-cb" value="Psychomotricien"/> Psychomotricien</label>
+          <label class="spec-cb"><input type="checkbox" name="spro-spec-cb" value="Ergothérapeute"/> Ergothérapeute</label>
+          <label class="spec-cb"><input type="checkbox" name="spro-spec-cb" value="Orthophoniste"/> Orthophoniste</label>
+          <label class="spec-cb"><input type="checkbox" name="spro-spec-cb" value="Musicothérapeute"/> Musicothérapeute</label>
+          <label class="spec-cb"><input type="checkbox" name="spro-spec-cb" value="Psychodramatiste"/> Psychodramatiste</label>
+
+          <div style="font-size:.68rem;font-weight:700;color:var(--teal-d);text-transform:uppercase;letter-spacing:.07em;padding:.5rem 0 .1rem;border-bottom:1px solid var(--border);margin-bottom:.2rem">🌱 Coaching & Bien-être</div>
+          <label class="spec-cb"><input type="checkbox" name="spro-spec-cb" value="Coach en développement personnel"/> Coach en développement personnel</label>
+          <label class="spec-cb"><input type="checkbox" name="spro-spec-cb" value="Consultant en gestion du stress"/> Consultant en gestion du stress</label>
+          <label class="spec-cb"><input type="checkbox" name="spro-spec-cb" value="Spécialiste en addictologie"/> Spécialiste en addictologie</label>
+          <label class="spec-cb"><input type="checkbox" name="spro-spec-cb" value="Thérapeute en burn-out"/> Thérapeute en burn-out</label>
+
+          <div style="font-size:.68rem;font-weight:700;color:var(--teal-d);text-transform:uppercase;letter-spacing:.07em;padding:.5rem 0 .1rem;border-bottom:1px solid var(--border);margin-bottom:.2rem">👶 Enfance & Adolescence</div>
+          <label class="spec-cb"><input type="checkbox" name="spro-spec-cb" value="Psychologue de l'enfant et adolescent"/> Psychologue de l'enfant et adolescent</label>
+          <label class="spec-cb"><input type="checkbox" name="spro-spec-cb" value="Thérapeute autisme et TSA"/> Thérapeute autisme et TSA</label>
+          <label class="spec-cb"><input type="checkbox" name="spro-spec-cb" value="Spécialiste TDAH"/> Spécialiste TDAH</label>
+          <label class="spec-cb"><input type="checkbox" name="spro-spec-cb" value="Thérapeute troubles alimentaires"/> Thérapeute troubles alimentaires</label>
+        </div>
+        <!-- Résumé des spécialités sélectionnées -->
+        <div id="spro-spec-selected" style="display:none;margin-top:.5rem;background:var(--teal-xl);border:1px solid var(--teal);border-radius:8px;padding:.5rem .7rem;font-size:.76rem;color:var(--teal-d);font-weight:600;line-height:1.6"></div>
+        <input type="hidden" id="spro-spec"/>
       </div>
 
       <div class="form-section-title">📋 Consultation</div>
@@ -1358,24 +1389,24 @@ body[data-lang="ar"]{font-family:'Segoe UI',Tahoma,'Arabic Typesetting',sans-ser
 
       <div class="form-section-title">📝 Présentation</div>
 
-      <!-- PHOTO DE PROFIL -->
-      <div class="fgroup">
-        <label>📸 Photo de profil professionnelle</label>
-        <div style="display:flex;align-items:flex-start;gap:.9rem;margin-top:.3rem">
-          <!-- Prévisualisation -->
-          <div id="spro-photo-preview" style="width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,var(--teal-xl),var(--teal-mid));display:flex;align-items:center;justify-content:center;font-size:2rem;flex-shrink:0;overflow:hidden;border:3px solid var(--border)">🩺</div>
+      <!-- PHOTO DE PROFIL — en haut -->
+      <div class="fgroup" style="background:linear-gradient(135deg,var(--teal-xl),#E8F4F2);border:1.5px solid var(--teal);border-radius:var(--r-md);padding:1rem;margin-bottom:.9rem">
+        <label style="color:var(--teal-d);font-weight:700">📸 Photo de profil professionnelle</label>
+        <div style="display:flex;align-items:center;gap:1rem;margin-top:.6rem">
+          <!-- Prévisualisation circulaire -->
+          <div id="spro-photo-preview" style="width:90px;height:90px;border-radius:50%;background:linear-gradient(135deg,var(--teal-xl),var(--teal-mid));display:flex;align-items:center;justify-content:center;font-size:2.2rem;flex-shrink:0;overflow:hidden;border:3px solid var(--teal)">🩺</div>
           <!-- Zone upload -->
-          <div style="flex:1">
-            <div onclick="document.getElementById('spro-photo-input').click()" style="border:2px dashed var(--border);border-radius:var(--r-sm);padding:.9rem;text-align:center;background:var(--sand);cursor:pointer;transition:all .2s" onmouseover="this.style.borderColor='var(--teal)';this.style.background='var(--teal-xl)'" onmouseout="this.style.borderColor='var(--border)';this.style.background='var(--sand)'">
-              <div style="font-size:1.3rem;margin-bottom:.3rem">📷</div>
-              <div style="font-size:.8rem;font-weight:600;color:var(--ch)">Cliquez pour ajouter votre photo</div>
-              <div style="font-size:.7rem;color:var(--soft);margin-top:.2rem">JPG, PNG · Max 2MB · Photo professionnelle recommandée</div>
+          <div style="flex:1;display:flex;flex-direction:column;gap:.5rem">
+            <div onclick="document.getElementById('spro-photo-input').click()" style="border:2px dashed var(--teal);border-radius:var(--r-sm);padding:.8rem;text-align:center;background:#fff;cursor:pointer;transition:all .2s" onmouseover="this.style.background='var(--teal-xl)'" onmouseout="this.style.background='#fff'">
+              <div style="font-size:1.2rem;margin-bottom:.25rem">📷</div>
+              <div style="font-size:.82rem;font-weight:700;color:var(--teal-d)">Charger ma photo</div>
+              <div style="font-size:.68rem;color:var(--soft);margin-top:.15rem">JPG, PNG · Max 2MB</div>
             </div>
             <input type="file" id="spro-photo-input" accept="image/*" style="display:none" onchange="handleProPhotoUpload(this)"/>
-            <div id="spro-photo-status" style="display:none;margin-top:.4rem;font-size:.75rem;color:var(--green);font-weight:600">✅ Photo chargée avec succès !</div>
+            <div id="spro-photo-status" style="display:none;background:var(--green);color:#fff;border-radius:8px;padding:.45rem .7rem;font-size:.78rem;font-weight:700;text-align:center">✅ Photo chargée avec succès !</div>
           </div>
         </div>
-        <div style="font-size:.72rem;color:var(--soft);margin-top:.4rem;line-height:1.5">💡 Une photo professionnelle augmente la confiance des patients et votre visibilité sur la plateforme.</div>
+        <div style="font-size:.71rem;color:var(--teal-d);margin-top:.5rem;line-height:1.5;opacity:.8">💡 Une photo professionnelle augmente la confiance des patients et votre visibilité.</div>
       </div>
 
       <div class="fgroup"><label>Biographie *</label><textarea id="spro-bio" placeholder="Décrivez votre approche, vos spécialisations…" style="min-height:90px"></textarea></div>
@@ -1390,19 +1421,69 @@ body[data-lang="ar"]{font-family:'Segoe UI',Tahoma,'Arabic Typesetting',sans-ser
       </div>
       <div class="fgroup"><label>Titulaire du compte *</label><input id="spro-bank-nom" placeholder="Nom et prénom du titulaire"/></div>
       <div class="fgroup"><label>IBAN *</label><input id="spro-bank-iban" placeholder="Ex: FR76 3000 6000 0112 3456 7890 189" style="font-family:'DM Mono',monospace;letter-spacing:.04em"/></div>
-      <div class="fgroup"><label>BIC / SWIFT *</label><input id="spro-bank-bic" placeholder="Ex: BNPAFRPP"/></div>
-      <div class="fgroup"><label>Banque</label><input id="spro-bank-nom-banque" placeholder="Ex: BNP Paribas, Société Générale, CIB…"/></div>
+      <div class="fgroup"><label>BIC / SWIFT <span style="font-size:.7rem;color:var(--soft);font-weight:400">(optionnel)</span></label><input id="spro-bank-bic" placeholder="Ex: BSTBTNTT (optionnel)"/></div>
+      <div class="fgroup">
+        <label>Banque *</label>
+        <select id="spro-bank-nom-banque" style="border:1.5px solid var(--border);border-radius:var(--r-sm);padding:.62rem .9rem;font-size:.86rem;background:var(--white);color:var(--ch);outline:none;font-family:inherit;width:100%">
+          <option value="">— Sélectionner votre banque —</option>
+          <optgroup label="🏦 Banques publiques">
+            <option>STB — Société Tunisienne de Banque</option>
+            <option>BNA — Banque Nationale Agricole</option>
+            <option>BH — Banque de l'Habitat</option>
+            <option>BFT — Banque Franco-Tunisienne</option>
+            <option>BDET — Banque de Développement Économique de Tunisie</option>
+          </optgroup>
+          <optgroup label="🏦 Banques privées tunisiennes">
+            <option>BIAT — Banque Internationale Arabe de Tunisie</option>
+            <option>ATB — Arab Tunisian Bank</option>
+            <option>UIB — Union Internationale de Banques</option>
+            <option>Amen Bank</option>
+            <option>Attijari Bank Tunisie</option>
+            <option>UBCI — Union Bancaire pour le Commerce et l'Industrie</option>
+            <option>BT — Banque de Tunisie</option>
+            <option>ABC — Arab Banking Corporation</option>
+            <option>BTL — Banque Tuniso-Libyenne</option>
+            <option>BTS — Banque Tunisienne de Solidarité</option>
+            <option>BTK — Banque Tuniso-Koweïtienne</option>
+            <option>TQB — Tunis Qatar Bank</option>
+            <option>Al Baraka Bank Tunisie</option>
+            <option>Zitouna Bank</option>
+            <option>Wifak International Bank</option>
+          </optgroup>
+          <optgroup label="🌍 Banques étrangères en Tunisie">
+            <option>Société Générale Tunisie</option>
+            <option>BNP Paribas Tunisie</option>
+            <option>CIB — Citibank Tunisie</option>
+          </optgroup>
+          <optgroup label="🌐 Autre">
+            <option>Autre banque (préciser dans la bio)</option>
+          </optgroup>
+        </select>
+      </div>
 
       <!-- JUSTIFICATIF RIB -->
       <div class="fgroup">
         <label>📎 Joindre votre RIB (PDF ou image) *</label>
-        <div id="spro-rib-zone" onclick="document.getElementById('spro-rib-input').click()" style="border:2px dashed var(--border);border-radius:var(--r-sm);padding:.9rem;text-align:center;background:var(--sand);cursor:pointer;transition:all .2s;margin-top:.3rem" onmouseover="this.style.borderColor='var(--teal)';this.style.background='var(--teal-xl)'" onmouseout="this.style.borderColor='var(--border)';this.style.background='var(--sand)'">
-          <div style="font-size:1.3rem;margin-bottom:.3rem">📄</div>
-          <div style="font-size:.8rem;font-weight:600;color:var(--ch)">Cliquez pour joindre votre RIB</div>
-          <div style="font-size:.7rem;color:var(--soft);margin-top:.2rem">PDF, JPG, PNG · Max 5MB</div>
+        <!-- Zone upload initiale -->
+        <div id="spro-rib-zone" onclick="document.getElementById('spro-rib-input').click()" style="border:2px dashed var(--border);border-radius:var(--r-sm);padding:1rem;text-align:center;background:var(--sand);cursor:pointer;transition:all .2s;margin-top:.3rem" onmouseover="this.style.borderColor='var(--teal)';this.style.background='var(--teal-xl)'" onmouseout="this.style.borderColor='var(--border)';this.style.background='var(--sand)'">
+          <div style="font-size:1.5rem;margin-bottom:.3rem">📄</div>
+          <div style="font-size:.84rem;font-weight:700;color:var(--ch)">Cliquez pour joindre votre RIB</div>
+          <div style="font-size:.71rem;color:var(--soft);margin-top:.2rem">PDF, JPG, PNG · Max 5MB</div>
         </div>
         <input type="file" id="spro-rib-input" accept=".pdf,image/*" style="display:none" onchange="handleRibUpload(this)"/>
-        <div id="spro-rib-status" style="display:none;margin-top:.4rem;font-size:.75rem;color:var(--green);font-weight:600">✅ RIB joint avec succès !</div>
+        <!-- Succès upload RIB — affiché après téléchargement -->
+        <div id="spro-rib-success" style="display:none;margin-top:.5rem;background:#1B6B61;color:#fff;border-radius:10px;padding:.75rem 1rem">
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:.7rem">
+            <div>
+              <div style="font-size:.85rem;font-weight:800">✅ Pièce jointe téléchargée avec succès !</div>
+              <div id="spro-rib-filename" style="font-size:.74rem;opacity:.85;margin-top:.15rem"></div>
+            </div>
+            <button type="button" onclick="document.getElementById('spro-rib-input').click()" style="background:rgba(255,255,255,.2);border:1.5px solid rgba(255,255,255,.5);color:#fff;border-radius:8px;padding:.4rem .75rem;font-size:.74rem;font-weight:700;cursor:pointer;white-space:nowrap;flex-shrink:0">
+              🔄 Changer
+            </button>
+          </div>
+        </div>
+        <div id="spro-rib-status" style="display:none"></div>
       </div>
 
       <!-- CONTRAT DE COLLABORATION -->
@@ -2715,7 +2796,25 @@ function showView(id){document.querySelectorAll('.view').forEach(v=>v.classList.
 function goHome(){showView('v-home');renderHome()}
 function scrollToSearch(){document.getElementById('search-anchor').scrollIntoView({behavior:'smooth'})}
 function showLogin(){showView('v-login');document.getElementById('login-error').style.display='none';backToLoginStep1();setTimeout(showRecaptchaNotice,100);}
-function showSignup(type){showView(type==='pro'?'v-signup-pro':'v-signup-patient')}
+function showSignup(type){
+  showView(type==='pro'?'v-signup-pro':'v-signup-patient');
+  if(type==='pro'){
+    // Attacher les listeners pour preview spécialités
+    setTimeout(()=>{
+      document.querySelectorAll('input[name="spro-spec-cb"]').forEach(cb=>{
+        cb.addEventListener('change',updateSpecPreview);
+      });
+    },100);
+  }
+}
+function updateSpecPreview(){
+  const checked=Array.from(document.querySelectorAll('input[name="spro-spec-cb"]:checked')).map(cb=>cb.value);
+  const previewEl=document.getElementById('spro-spec-selected');
+  if(!previewEl)return;
+  if(checked.length===0){previewEl.style.display='none';return;}
+  previewEl.style.display='block';
+  previewEl.innerHTML='✅ Sélectionné(es) : '+checked.map(s=>`<span style="background:var(--teal);color:#fff;border-radius:12px;padding:.15rem .55rem;font-size:.72rem;margin:.1rem .2rem;display:inline-block">${s}</span>`).join('');
+}
 async function goPro(){
   const s=getSession();
   if(!s||s.type!=='pro'){showLogin();return}
@@ -3675,8 +3774,13 @@ async function doSignupPro(){
   const fn=document.getElementById('spro-fn').value.trim();
   const ln=document.getElementById('spro-ln').value.trim();
   const email=document.getElementById('spro-email').value.trim();
-  const tel=document.getElementById('spro-tel').value.trim();
-  const spec=document.getElementById('spro-spec').value;
+  const telCountry=document.getElementById('spro-tel-country')?.value||'+216';
+  const telNum=document.getElementById('spro-tel').value.trim().replace(/^0/,'');
+  const tel=telNum?(telCountry+' '+telNum):'';
+  // Lire les spécialités cochées (multiples)
+  const specChecked=Array.from(document.querySelectorAll('input[name="spro-spec-cb"]:checked')).map(cb=>cb.value);
+  const spec=specChecked.join(', ');
+  document.getElementById('spro-spec').value=spec;
   const cgu=document.getElementById('spro-cgu').checked;
   const rgpd=document.getElementById('spro-rgpd').checked;
   const bio=document.getElementById('spro-bio').value.trim();
@@ -3703,7 +3807,7 @@ async function doSignupPro(){
   if(!email) addErr('spro-email',"L'adresse email professionnelle est obligatoire");
   else if(!isValidEmail(email)) addErr('spro-email','Email invalide (ex: dr.nom@cabinet.com)');
   if(!tel) addErr('spro-tel','Le numéro de téléphone est obligatoire');
-  if(!spec) addErr('spro-spec','Veuillez sélectionner votre spécialité');
+  if(!spec||spec.length===0) addErr('spro-spec-wrap','Veuillez sélectionner au moins une spécialité');
   if(!bio||bio.length<20) addErr('spro-bio','La biographie est obligatoire (min. 20 caractères)');
   if(!langFr&&!langEn&&!langAr){
     errors.push('Veuillez sélectionner au moins une langue de consultation');
@@ -3714,7 +3818,7 @@ async function doSignupPro(){
   const bankBic=document.getElementById('spro-bank-bic')?.value.trim()||'';
   if(!bankNom) addErr('spro-bank-nom','Le titulaire du compte bancaire est obligatoire');
   if(!bankIban) addErr('spro-bank-iban',"L'IBAN est obligatoire pour recevoir vos paiements");
-  if(!bankBic) addErr('spro-bank-bic','Le BIC/SWIFT est obligatoire');
+  // BIC optionnel
   if(!cgu){errors.push('Vous devez accepter les Conditions Générales');if(!firstErrorId)firstErrorId='spro-cgu';}
   if(!rgpd){errors.push('Vous devez accepter la politique RGPD');if(!firstErrorId)firstErrorId='spro-rgpd';}
   const contrat=document.getElementById('spro-contrat')?.checked;
@@ -3755,15 +3859,31 @@ async function doSignupPro(){
   if(submitBtnPro)submitBtnPro.textContent='📧 Envoi en cours…';
 
   const db=getDB();
-  if(db.pros.find(p=>p.email===email)||db.users.find(u=>u.email===email)){
-    showFieldError('spro-email','Cette adresse email est déjà utilisée sur Psycholab');
+  // Vérifier email existant — autoriser si compte pro inactif (désactivé / refusé)
+  const existingPro=db.pros.find(p=>p.email===email);
+  const existingUser=db.users.find(u=>u.email===email);
+  if(existingPro && existingPro.active===true){
+    showFieldError('spro-email','Cette adresse email est déjà utilisée par un compte professionnel actif sur Psycholab');
     document.getElementById('spro-email').scrollIntoView({behavior:'smooth',block:'center'});
     if(submitBtnPro){submitBtnPro.disabled=false;submitBtnPro.textContent='Soumettre mon dossier →';}
     return;
   }
+  if(!existingPro && existingUser){
+    showFieldError('spro-email','Cette adresse email est déjà utilisée par un compte patient sur Psycholab');
+    document.getElementById('spro-email').scrollIntoView({behavior:'smooth',block:'center'});
+    if(submitBtnPro){submitBtnPro.disabled=false;submitBtnPro.textContent='Soumettre mon dossier →';}
+    return;
+  }
+  // Si pro inactif existant → supprimer l'ancien avant de recréer
+  if(existingPro && existingPro.active===false){
+    const oldIdx=db.pros.findIndex(p=>p.email===email);
+    if(oldIdx>=0)db.pros.splice(oldIdx,1);
+    // Supprimer aussi de Supabase l'ancien enregistrement
+    supa.from('pros').delete().eq('email',email).then(()=>{});
+  }
 
   const id='pro_'+Date.now();
-  const bankBanque2=document.getElementById('spro-bank-nom-banque')?.value.trim()||'';
+  const bankBanque2=document.getElementById('spro-bank-nom-banque')?.value||'';
   const pro={id,fn,ln,email,tel,spec,rpps:'',diplome:'',exp:'',bio,tags,
     price:38,tz:'Africa/Tunis',consVid,consPres,langFr,langEn,langAr,
     emailConfirmed:true,active:false,avail:{},
@@ -7226,9 +7346,15 @@ function handleRibUpload(input){
   const r=new FileReader();
   r.onload=e=>{
     proRibData={name:f.name,type:f.type,data:e.target.result};
-    document.getElementById('spro-rib-status').style.display='block';
-    document.getElementById('spro-rib-zone').style.borderColor='var(--green)';
-    toast('✅ RIB joint !','green');
+    // Masquer zone upload, afficher succès avec nom du fichier
+    const zone=document.getElementById('spro-rib-zone');
+    const success=document.getElementById('spro-rib-success');
+    const fnEl=document.getElementById('spro-rib-filename');
+    if(zone)zone.style.display='none';
+    if(success)success.style.display='block';
+    if(fnEl)fnEl.textContent='📎 '+f.name+' ('+Math.round(f.size/1024)+' Ko)';
+    document.getElementById('spro-rib-status').style.display='none';
+    toast('✅ Pièce jointe téléchargée avec succès !','green');
   };
   r.readAsDataURL(f);
 }
