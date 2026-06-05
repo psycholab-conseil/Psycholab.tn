@@ -941,26 +941,26 @@ body[data-lang="ar"]{font-family:'Segoe UI',Tahoma,'Arabic Typesetting',sans-ser
 <div class="view on" id="v-home">
   <div class="hero">
     <div class="hero-badge">✦ Plateforme de téléconsultation · 100% en ligne · Sécurisée</div>
-    <h1>Votre santé mentale,<br/><em>prise en charge</em><br/>par des experts tunisiens</h1>
-    <p>Spécialistes tunisiens certifiés par le <strong style="color:var(--gold-l)">Ministère de la Santé</strong> — téléconsultations sécurisées exclusivement dédiées aux <strong style="color:var(--gold-l)">Tunisiens expatriés partout dans le monde.</strong></p>
+    <h1 id="hero-title">Votre santé mentale,<br/><em>prise en charge</em><br/>par des experts tunisiens</h1>
+    <p id="hero-sub">Spécialistes tunisiens certifiés par le <strong style="color:var(--gold-l)">Ministère de la Santé</strong> — téléconsultations sécurisées exclusivement dédiées aux <strong style="color:var(--gold-l)">Tunisiens expatriés partout dans le monde.</strong></p>
     <div class="trust-grid">
-      <div class="trust-item">🇹🇳 Spécialistes tunisiens</div>
-      <div class="trust-item">🏥 Certifiés Ministère Santé</div>
-      <div class="trust-item">📹 100% en ligne</div>
-      <div class="trust-item">🌍 Monde entier</div>
+      <div id="hero-badge-specialists" class="trust-item">🇹🇳 Spécialistes tunisiens</div>
+      <div id="hero-badge-certified" class="trust-item">🏅 Certifiés Ministère Santé</div>
+      <div id="hero-badge-online" class="trust-item">📹 100% en ligne</div>
+      <div id="hero-badge-world" class="trust-item">🌍 Monde entier</div>
     </div>
     <!-- CTA inscription visiteur -->
     <div style="position:relative;z-index:1;margin-bottom:.5rem">
-      <button class="hero-btn-p" onclick="showSignup('patient')" style="font-size:.95rem;font-weight:700;padding:.9rem 2rem;border-radius:12px;box-shadow:0 6px 24px rgba(0,0,0,.22);display:inline-flex;align-items:center;gap:.5rem">
+      <button class="hero-btn-p" id="hero-cta-signup" onclick="showSignup('patient')" style="font-size:.95rem;font-weight:700;padding:.9rem 2rem;border-radius:12px;box-shadow:0 6px 24px rgba(0,0,0,.22);display:inline-flex;align-items:center;gap:.5rem">
         👤 Créer mon compte gratuit
       </button>
     </div>
     <div style="position:relative;z-index:1;font-size:.72rem;color:rgba(255,255,255,.65);margin-bottom:1.1rem">
-      Inscription gratuite · 2 minutes · Aucune carte bancaire requise
+      <span id="hero-signup-note">Inscription gratuite · 2 minutes · Aucune carte bancaire requise</span>
     </div>
     <div class="hero-btns">
-      <button class="hero-btn-s" onclick="showLogin()" style="font-size:.82rem">🔐 Déjà inscrit ? Se connecter</button>
-      <button class="hero-btn-s" onclick="showSignup('pro')" style="font-size:.82rem">🩺 Je suis spécialiste</button>
+      <button class="hero-btn-s" id="hero-cta-login" onclick="showLogin()" style="font-size:.82rem">🔐 Déjà inscrit ? Se connecter</button>
+      <button class="hero-btn-s" id="hero-cta-pro" onclick="showSignup('pro')" style="font-size:.82rem">🩺 Je suis spécialiste</button>
     </div>
   </div>
 
@@ -3347,6 +3347,7 @@ function init(){
     // -- Restaurer la langue préférée --
     const savedLang=localStorage.getItem('plLang');
     if(savedLang&&savedLang!=='fr')setLang(savedLang);
+    else applyI18n(); // Apply FR by default too (for data-i18n elements)
   }catch(e){
     console.error('Init error:',e);
     // En cas d'erreur critique, afficher quand même la page d'accueil
@@ -3553,7 +3554,8 @@ function renderHome(){
           </div>
         </div>
         <div class="tags">
-          ${tags.slice(0,3).map(t=>`<span class="tag" style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:inline-block">${escHtml(t)}</span>`).join('')}
+          ${tags.slice(0,2).map(t=>`<span class="tag" style="max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:inline-block">${escHtml(t)}</span>`).join('')}
+          ${tags.length>2?`<span class="tag" style="background:var(--teal-xl);color:var(--teal-d);font-weight:700;cursor:pointer">+${tags.length-2} domaines →</span>`:''})}
           ${langs.map(l=>`<span class="tag la">${l}</span>`).join('')}
           <span class="tag vi">📹 Téléconsultation</span>
         </div>
@@ -5987,15 +5989,10 @@ function openProProfile(proId){
 
     <div style="padding:1.1rem 1.2rem;display:flex;flex-direction:column;gap:1rem">
 
-      <!-- Description spécialité — expandable -->
+      <!-- Description spécialité — TOUT AFFICHÉ -->
       <div>
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.45rem">
-          <div style="font-size:.72rem;font-weight:700;color:var(--teal-d);text-transform:uppercase;letter-spacing:.08em">${det.icon} À propos de cette spécialité</div>
-          <button onclick="toggleProfileSection(this,'desc-body-${pro.id}')" style="background:var(--teal);color:#fff;border:none;border-radius:20px;padding:.2rem .65rem;font-size:.68rem;font-weight:700;cursor:pointer;flex-shrink:0">🔍 Agrandir</button>
-        </div>
-        <div id="desc-body-${pro.id}">
-          <p style="font-size:.82rem;color:var(--ch);line-height:1.65;margin:0">${det.description}</p>
-        </div>
+        <div style="font-size:.72rem;font-weight:700;color:var(--teal-d);text-transform:uppercase;letter-spacing:.08em;margin-bottom:.45rem">${det.icon} À propos de cette spécialité</div>
+        <p style="font-size:.82rem;color:var(--ch);line-height:1.65;margin:0">${det.description}</p>
       </div>
 
       <!-- Bio perso si renseignée -->
@@ -6004,15 +6001,12 @@ function openProProfile(proId){
         <p style="font-size:.82rem;color:var(--ch);line-height:1.65;margin:0">${escHtml(pro.bio)}</p>
       </div>`:''}
 
-      <!-- Actes & domaines — expandable -->
+      <!-- Actes & domaines — TOUT AFFICHÉ -->
       <div>
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.55rem">
-          <div style="font-size:.72rem;font-weight:700;color:var(--teal-d);text-transform:uppercase;letter-spacing:.08em">🎯 Actes & domaines d'intervention</div>
-          <button onclick="toggleProfileSection(this,'actes-body-${pro.id}')" style="background:var(--teal);color:#fff;border:none;border-radius:20px;padding:.2rem .65rem;font-size:.68rem;font-weight:700;cursor:pointer;flex-shrink:0">🔍 Agrandir</button>
-        </div>
-        <div id="actes-body-${pro.id}" style="display:flex;flex-direction:column;gap:.35rem">
-          ${det.actes.map(a=>`<div style="display:flex;align-items:flex-start;gap:.5rem;font-size:.8rem;color:var(--ch);line-height:1.5">
-            <span style="flex-shrink:0;margin-top:.05rem">${a.split(' ')[0]}</span>
+        <div style="font-size:.72rem;font-weight:700;color:var(--teal-d);text-transform:uppercase;letter-spacing:.08em;margin-bottom:.55rem">🎯 Actes & domaines d'intervention</div>
+        <div style="display:flex;flex-direction:column;gap:.4rem">
+          ${det.actes.map(a=>`<div style="display:flex;align-items:flex-start;gap:.5rem;font-size:.82rem;color:var(--ch);line-height:1.55;background:var(--sand);border-radius:8px;padding:.45rem .7rem">
+            <span style="flex-shrink:0">${a.split(' ')[0]}</span>
             <span>${a.split(' ').slice(1).join(' ')}</span>
           </div>`).join('')}
         </div>
@@ -6026,13 +6020,13 @@ function openProProfile(proId){
         </div>
       </div>
 
-      <!-- Tags si renseignés -->
-      ${tags.length?`<div>
-        <div style="font-size:.72rem;font-weight:700;color:var(--teal-d);text-transform:uppercase;letter-spacing:.08em;margin-bottom:.5rem">🏷️ Thématiques</div>
-        <div style="display:flex;flex-wrap:wrap;gap:.35rem">
-          ${tags.map(t=>`<span style="background:var(--sand);color:var(--ch);border-radius:20px;padding:.28rem .7rem;font-size:.74rem;font-weight:600;border:1px solid var(--border)">${escHtml(t)}</span>`).join('')}
+      <!-- Tags si renseignés — TOUS AFFICHÉS -->
+      ${tags.length?`<div style="background:var(--sand);border-radius:12px;padding:.9rem 1rem;border-left:3px solid var(--teal-d)">
+        <div style="font-size:.72rem;font-weight:700;color:var(--teal-d);text-transform:uppercase;letter-spacing:.08em;margin-bottom:.6rem">🏷️ Domaines d'activité personnels</div>
+        <div style="display:flex;flex-wrap:wrap;gap:.4rem">
+          ${tags.map(t=>`<span style="background:var(--teal-xl);color:var(--teal-d);border-radius:20px;padding:.32rem .8rem;font-size:.78rem;font-weight:600;border:1px solid var(--teal)">${escHtml(t)}</span>`).join('')}
         </div>
-      </div>`:''}
+      </div>`:''}:''}
 
       <!-- Infos pratiques -->
       <div style="background:var(--sand);border-radius:12px;padding:.85rem 1rem">
@@ -6175,16 +6169,36 @@ function openSheet(proId){
   document.getElementById('tv').classList.add('on');
   document.getElementById('tpr').classList.remove('on');
   goStep(1);
-  // Double setTimeout garantit que le DOM est rendu avant d'appeler renderCal
-  // requestAnimationFrame seul ne suffit pas sur Chrome Android
+  ensureCalRendered();
+  // Premier rendu rapide
+  renderCal();
+  renderSlots();
+  fillPatientForm();
+  // Second rendu après que le bottom-sheet soit complètement visible
+  // Nécessaire sur Chrome Android où le premier rendu peut être ignoré
   setTimeout(()=>{
     renderCal();
     renderSlots();
-    fillPatientForm();
-  }, 80);
+  }, 150);
 }
 
-function closeBSheet(){document.getElementById('bsheet-bg').classList.remove('on')}
+function closeBSheet(){
+  document.getElementById('bsheet-bg').classList.remove('on');
+  document.body.style.overflow='';
+}
+
+// Observer: si cal-grid est toujours vide 300ms après ouverture du bsheet, re-render
+function ensureCalRendered(){
+  setTimeout(()=>{
+    const grid=document.getElementById('cal-grid');
+    const bsheet=document.getElementById('bsheet-bg');
+    if(bsheet&&bsheet.classList.contains('on')&&grid&&grid.children.length===0){
+      console.log('cal-grid empty, forcing re-render');
+      renderCal();
+      renderSlots();
+    }
+  },300);
+}
 
 function goStep(n){
   [1,2,3].forEach(i=>{
@@ -6288,8 +6302,21 @@ function checkStep1(){
   document.getElementById('btn-step2').disabled=!(selDate&&selSlot);
 }
 
-function prevMonth(){if(cM===0){cM=11;cY--}else cM--;renderCal();renderSlots()}
-function nextMonth(){if(cM===11){cM=0;cY++}else cM++;renderCal();renderSlots()}
+function prevMonth(){
+  if(cM===0){cM=11;cY--}else cM--;
+  renderCal();renderSlots();
+  // Force re-render si grille vide
+  if(!document.getElementById('cal-grid')?.children.length){
+    setTimeout(()=>{renderCal();renderSlots();},100);
+  }
+}
+function nextMonth(){
+  if(cM===11){cM=0;cY++}else cM++;
+  renderCal();renderSlots();
+  if(!document.getElementById('cal-grid')?.children.length){
+    setTimeout(()=>{renderCal();renderSlots();},100);
+  }
+}
 
 function confirmRDV(){
   if(!selDate||!selSlot||!selSpec){toast('Veuillez sélectionner une date et un créneau.','red');return}
@@ -8867,13 +8894,85 @@ function toast(msg,type=''){
 //  LANGUAGE (simplified)
 // ================================================
 let LANG='fr';
-function setLang(l){
-  LANG=l;localStorage.setItem('plLang',l);
-  ['fr','en','ar'].forEach(x=>{const b=document.getElementById('lb-'+x);if(b)b.className='lang-btn'+(x===l?' on':'')});
+// ═══ DICTIONNAIRE I18N ═══
+const I18N={
+fr:{
+  hero_title:'Votre santé mentale,<br/><em>prise en charge</em><br/>par des experts tunisiens',
+  hero_sub:'Spécialistes tunisiens certifiés par le <strong>Ministère de la Santé</strong> — téléconsultations sécurisées exclusivement dédiées aux <strong>Tunisiens expatriés partout dans le monde.</strong>',
+  hero_cta_signup:'👤 Créer mon compte gratuit',hero_cta_login:"🔐 Déjà inscrit ? Se connecter",
+  hero_cta_pro:'🩺 Je suis spécialiste',hero_signup_note:'Inscription gratuite · 2 minutes · Aucune carte bancaire requise',
+  specialists_title:'Spécialistes disponibles',search_placeholder:'Rechercher par nom ou spécialité…',search_btn:'Rechercher',
+  btn_rdv:'📅 Prendre rendez-vous',fuseau:'Fuseau',new_pro:'Nouveau',
+  wall_title:'Accès réservé aux membres',wall_sub:'Créez un compte gratuit pour accéder aux profils et prendre rendez-vous.',
+  wall_signup:'👤 Créer mon compte gratuit',wall_login:"🔐 J'ai déjà un compte",
+  badge_specialists:'🇹🇳 Spécialistes tunisiens',badge_certified:'🏅 Certifiés Ministère Santé',
+  badge_online:'📹 100% en ligne',badge_world:'🌍 Monde entier',cnt_suffix:'résultat',cnt_suffix_p:'résultats',
+},
+en:{
+  hero_title:'Your mental health,<br/><em>taken care of</em><br/>by Tunisian experts',
+  hero_sub:'Tunisian specialists certified by the <strong>Ministry of Health</strong> — secure teleconsultations exclusively for <strong>Tunisian expatriates worldwide.</strong>',
+  hero_cta_signup:'👤 Create my free account',hero_cta_login:'🔐 Already registered? Sign in',
+  hero_cta_pro:'🩺 I am a specialist',hero_signup_note:'Free registration · 2 minutes · No credit card required',
+  specialists_title:'Available specialists',search_placeholder:'Search by name or specialty…',search_btn:'Search',
+  btn_rdv:'📅 Book appointment',fuseau:'Timezone',new_pro:'New',
+  wall_title:'Members only',wall_sub:'Create a free account to access profiles and book appointments.',
+  wall_signup:'👤 Create my free account',wall_login:'🔐 I already have an account',
+  badge_specialists:'🇹🇳 Tunisian specialists',badge_certified:'🏅 Ministry certified',
+  badge_online:'📹 100% online',badge_world:'🌍 Worldwide',cnt_suffix:'result',cnt_suffix_p:'results',
+},
+ar:{
+  hero_title:'صحّتك النفسية،<br/><em>في أيدٍ أمينة</em><br/>بإشراف خبراء تونسيين',
+  hero_sub:'متخصصون تونسيون معتمدون من <strong>وزارة الصحة</strong> — استشارات آمنة عن بُعد للتونسيين <strong>في الخارج حول العالم.</strong>',
+  hero_cta_signup:'👤 إنشاء حساب مجاني',hero_cta_login:'🔐 مسجّل؟ تسجيل الدخول',
+  hero_cta_pro:'🩺 أنا متخصص',hero_signup_note:'تسجيل مجاني · دقيقتان · دون بطاقة بنكية',
+  specialists_title:'المتخصصون المتاحون',search_placeholder:'ابحث بالاسم أو التخصص…',search_btn:'بحث',
+  btn_rdv:'📅 حجز موعد',fuseau:'المنطقة',new_pro:'جديد',
+  wall_title:'للأعضاء فقط',wall_sub:'أنشئ حساباً مجانياً للوصول إلى الملفات وحجز المواعيد.',
+  wall_signup:'👤 إنشاء حساب مجاني',wall_login:'🔐 لديّ حساب',
+  badge_specialists:'🇹🇳 متخصصون تونسيون',badge_certified:'🏅 معتمدون وزارة الصحة',
+  badge_online:'📹 100% إلكتروني',badge_world:'🌍 في كل مكان',cnt_suffix:'نتيجة',cnt_suffix_p:'نتائج',
+},
+};
+function t(key){return (I18N[LANG]||I18N.fr)[key]||(I18N.fr[key]||key);}
+
+function applyI18n(){
+  const l=LANG;
   document.documentElement.dir=l==='ar'?'rtl':'ltr';
   document.body.setAttribute('data-lang',l);
-  if(l==='ar')toast('اللغة العربية مدعومة جزئياً','blue');
-  else if(l==='en')toast('English mode (partial support)','blue');
+  // Éléments avec data-i18n
+  document.querySelectorAll('[data-i18n]').forEach(el=>{
+    const k=el.getAttribute('data-i18n');const v=t(k);
+    if(el.tagName==='INPUT'||el.tagName==='TEXTAREA')el.placeholder=v;else el.innerHTML=v;
+  });
+  // Hero IDs
+  const ids={
+    'hero-title':'hero_title','hero-sub':'hero_sub',
+    'hero-cta-signup':'hero_cta_signup','hero-cta-login':'hero_cta_login',
+    'hero-cta-pro':'hero_cta_pro','hero-signup-note':'hero_signup_note',
+  };
+  Object.entries(ids).forEach(([id,key])=>{
+    const el=document.getElementById(id);if(el){if(el.tagName==='BUTTON')el.innerHTML=t(key);else el.innerHTML=t(key);}
+  });
+  // Badges hero
+  ['specialists','certified','online','world'].forEach(k=>{
+    const el=document.getElementById('hero-badge-'+k);if(el)el.innerHTML=t('badge_'+k);
+  });
+  // Recherche
+  const qEl=document.getElementById('q');if(qEl)qEl.placeholder=t('search_placeholder');
+  const sbEl=document.getElementById('search-submit');if(sbEl)sbEl.textContent=t('search_btn');
+  // Menu
+  const menuBtn=document.querySelector('.menu-btn');if(menuBtn)menuBtn.textContent=t('nav_menu')||'☰ Menu';
+  // Boutons RDV (si déjà rendus)
+  document.querySelectorAll('.btn-rdv').forEach(b=>{b.innerHTML=t('btn_rdv');});
+  // Re-render la home si connecté (pour traduire les cartes)
+  try{const s=getSession();if(s)renderHome();}catch(e){}
+}
+
+function setLang(l){
+  LANG=l;
+  localStorage.setItem('plLang',l);
+  ['fr','en','ar'].forEach(x=>{const b=document.getElementById('lb-'+x);if(b)b.className='lang-btn'+(x===l?' on':'');});
+  applyI18n();
 }
 
 // ================================================
