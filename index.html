@@ -6412,12 +6412,24 @@ function confirmRDV(){
   if(!selDate||!selSlot||!selSpec){toast('Veuillez sélectionner une date et un créneau.','red');return}
   const s=getSession();
   let patFn,patLn,patEmail,patId=null;
-  if(s&&s.type==='patient'){patFn=s.fn;patLn=s.ln;patEmail=s.email;patId=s.id;}
-  else{
-    patFn=document.getElementById('bs-fn').value.trim();
-    patLn=document.getElementById('bs-ln').value.trim();
-    patEmail=document.getElementById('bs-email').value.trim();
-    if(!patFn||!patLn||!patEmail){toast('Veuillez remplir vos informations.','red');return}
+
+  if(s&&(s.type==='patient'||s.type==='admin'||s.type==='pro')){
+    // Connecté — lire les vraies infos depuis la DB
+    const db2=getDB();
+    const user=s.type==='patient'?db2.users.find(u=>u.id===s.id):null;
+    patFn  = user?.fn  || s.fn  || '';
+    patLn  = user?.ln  || s.ln  || '';
+    patEmail = user?.email || s.email || '';
+    patId  = s.id;
+    // Sécurité : si la session n'a pas d'email, bloquer
+    if(!patEmail){toast('Email manquant dans votre profil. Mettez à jour votre compte.','red');return;}
+  } else {
+    // Visiteur non connecté — lire le formulaire guest
+    patFn   = document.getElementById('bs-fn')?.value.trim()||'';
+    patLn   = document.getElementById('bs-ln')?.value.trim()||'';
+    patEmail = document.getElementById('bs-email')?.value.trim()||'';
+    if(!patFn||!patLn){toast('Veuillez indiquer votre prénom et nom.','red');return;}
+    if(!patEmail||!patEmail.includes('@')){toast('Veuillez indiquer une adresse email valide.','red');return;}
   }
   const motif=document.getElementById('bs-motif').value.trim();
   const db=getDB();
