@@ -2508,6 +2508,23 @@ body[data-lang="ar"]{font-family:'Segoe UI',Tahoma,'Arabic Typesetting',sans-ser
     <div style="padding:1.1rem 1.2rem;display:flex;flex-direction:column;gap:.8rem">
       <input type="hidden" id="adm-edit-pro-id"/>
 
+      <!-- PHOTO DE PROFIL -->
+      <div style="font-size:.7rem;font-weight:700;color:#1a3a6b;text-transform:uppercase;letter-spacing:.08em;padding-bottom:.3rem;border-bottom:1.5px solid var(--border)">📸 Photo de profil</div>
+      <div style="display:flex;align-items:center;gap:1rem;background:var(--sand);border-radius:12px;padding:.9rem">
+        <div id="adm-ep-photo-preview" style="width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,var(--teal-xl),var(--teal));display:flex;align-items:center;justify-content:center;font-size:2rem;overflow:hidden;border:3px solid var(--teal);flex-shrink:0">🩺</div>
+        <div style="flex:1;display:flex;flex-direction:column;gap:.4rem">
+          <button type="button" onclick="document.getElementById('adm-ep-photo-input').click()" style="background:#fff;border:1.5px solid var(--teal);border-radius:8px;padding:.5rem .8rem;font-size:.8rem;font-weight:700;color:var(--teal-d);cursor:pointer">
+            📷 Changer la photo
+          </button>
+          <button type="button" onclick="admRemoveProPhoto()" style="background:transparent;border:1.5px solid var(--border);border-radius:8px;padding:.45rem .8rem;font-size:.75rem;color:var(--soft);cursor:pointer">
+            🗑️ Supprimer la photo
+          </button>
+        </div>
+        <input type="file" id="adm-ep-photo-input" accept="image/*" style="display:none" onchange="admHandleProPhoto(this)"/>
+      </div>
+      <div id="adm-ep-photo-status" style="display:none;background:var(--green);color:#fff;border-radius:8px;padding:.4rem .7rem;font-size:.76rem;font-weight:700">✅ Photo mise à jour</div>
+      <input type="hidden" id="adm-ep-photo-data"/>
+
       <!-- Identité -->
       <div style="font-size:.7rem;font-weight:700;color:#1a3a6b;text-transform:uppercase;letter-spacing:.08em;padding-bottom:.3rem;border-bottom:1.5px solid var(--border)">👤 Identité</div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem">
@@ -3270,9 +3287,11 @@ const DAYS_FULL=['Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi','Dimanch
 // ================================================
 // Nettoyage des overlays au chargement de la page
 function cleanAllOverlays(){
-  ['signup-wall-modal','profile-zoom-modal','ai-avatar-picker','adm-edit-pro-modal'].forEach(id=>{
+  ['signup-wall-modal','profile-zoom-modal','ai-avatar-picker'].forEach(id=>{
     const el=document.getElementById(id);if(el)el.remove();
   });
+  // adm-edit-pro-modal: cacher sans supprimer
+  const aem=document.getElementById('adm-edit-pro-modal');if(aem)aem.style.display='none';
   const pm=document.getElementById('pro-profile-modal');
   if(pm){pm.style.display='none';}
   const bsheet=document.getElementById('bsheet-bg');
@@ -6064,9 +6083,11 @@ function closeProProfile(){
 // Fonction directe RDV - bypass total de tous les modals
 function directBooking(proId){
   // 1. Supprimer ABSOLUMENT tous les overlays possibles
-  ['signup-wall-modal','profile-zoom-modal','ai-avatar-picker','adm-edit-pro-modal'].forEach(id=>{
+  ['signup-wall-modal','profile-zoom-modal','ai-avatar-picker'].forEach(id=>{
     const el=document.getElementById(id);if(el)el.remove();
   });
+  // adm-edit-pro-modal: cacher sans supprimer
+  const aem=document.getElementById('adm-edit-pro-modal');if(aem)aem.style.display='none';
   const pm=document.getElementById('pro-profile-modal');
   if(pm)pm.style.display='none';
   document.body.style.overflow='';
@@ -7825,15 +7846,62 @@ function openAdminEditPro(proId){
   document.getElementById('adm-ep-notes').value=p.adminNotes||'';
   document.getElementById('adm-edit-pro-err').style.display='none';
 
+  // Charger la photo existante
+  const photoData=document.getElementById('adm-ep-photo-data');
+  const photoPreview=document.getElementById('adm-ep-photo-preview');
+  const photoStatus=document.getElementById('adm-ep-photo-status');
+  if(photoData)photoData.value=p.photo||'';
+  if(photoStatus)photoStatus.style.display='none';
+  if(photoPreview){
+    if(p.photo){
+      photoPreview.innerHTML=`<img src="${p.photo}" style="width:100%;height:100%;object-fit:cover;" alt="Photo"/>`;
+    } else {
+      photoPreview.innerHTML='🩺';
+    }
+  }
+
   // Fermer le modal profil, ouvrir l'éditeur
   document.getElementById('adm-pro-modal').style.display='none';
   document.getElementById('adm-edit-pro-modal').style.display='block';
   document.body.style.overflow='hidden';
+  // Scroll en haut du modal
+  setTimeout(()=>{document.getElementById('adm-edit-pro-modal').scrollTop=0;},50);
 }
 
 function closeAdminEditPro(){
   document.getElementById('adm-edit-pro-modal').style.display='none';
   document.body.style.overflow='';
+}
+
+function admHandleProPhoto(input){
+  const f=input.files[0];
+  if(!f)return;
+  if(f.size>2*1024*1024){toast('Photo trop lourde (max 2MB)','red');return;}
+  const r=new FileReader();
+  r.onload=e=>{
+    const data=e.target.result;
+    // Mettre à jour preview
+    const preview=document.getElementById('adm-ep-photo-preview');
+    if(preview)preview.innerHTML=`<img src="${data}" style="width:100%;height:100%;object-fit:cover;" alt="Photo"/>`;
+    // Stocker dans le champ caché
+    const photoData=document.getElementById('adm-ep-photo-data');
+    if(photoData)photoData.value=data;
+    // Afficher succès
+    const status=document.getElementById('adm-ep-photo-status');
+    if(status)status.style.display='block';
+    toast('📸 Photo chargée !','green');
+  };
+  r.readAsDataURL(f);
+}
+
+function admRemoveProPhoto(){
+  const preview=document.getElementById('adm-ep-photo-preview');
+  if(preview)preview.innerHTML='🩺';
+  const photoData=document.getElementById('adm-ep-photo-data');
+  if(photoData)photoData.value='';
+  const status=document.getElementById('adm-ep-photo-status');
+  if(status)status.style.display='none';
+  toast('🗑️ Photo supprimée','');
 }
 
 async function saveAdminProEdit(){
@@ -7856,11 +7924,13 @@ async function saveAdminProEdit(){
 
   const wasActive=db.pros[idx].active;
   const nowActive=document.getElementById('adm-ep-active').checked;
+  const photoVal=document.getElementById('adm-ep-photo-data')?.value||db.pros[idx].photo||null;
 
   // Appliquer les modifications
   db.pros[idx]={
     ...db.pros[idx],
     fn,ln,email,
+    photo:photoVal||null,
     tel:document.getElementById('adm-ep-tel').value.trim(),
     spec,
     rpps:document.getElementById('adm-ep-rpps').value.trim(),
