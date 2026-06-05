@@ -6413,33 +6413,44 @@ function confirmRDV(){
   const s=getSession();
   let patFn,patLn,patEmail,patId=null;
 
-  if(s&&(s.type==='patient'||s.type==='admin'||s.type==='pro')){
-    // Connecté — lire les vraies infos depuis la DB
-    const db2=getDB();
-    const user=s.type==='patient'?db2.users.find(u=>u.id===s.id):null;
-    patFn  = user?.fn  || s.fn  || '';
-    patLn  = user?.ln  || s.ln  || '';
-    patEmail = user?.email || s.email || '';
-    patId  = s.id;
-    // Sécurité : si la session n'a pas d'email, bloquer
-    if(!patEmail){toast('Email manquant dans votre profil. Mettez à jour votre compte.','red');return;}
+  if(s && s.type && ['patient','admin','pro'].indexOf(s.type)>=0){
+    // Connecté — récupérer les infos de façon défensive
+    try{
+      var db2=getDB();
+      var user=(s.type==='patient'&&db2.users)?db2.users.filter(function(u){return u.id===s.id;})[0]:null;
+      patFn    = (user&&user.fn)   ? user.fn   : (s.fn||'Patient');
+      patLn    = (user&&user.ln)   ? user.ln   : (s.ln||'');
+      patEmail = (user&&user.email)? user.email: (s.email||'');
+      patId    = s.id;
+    }catch(e){
+      patFn=s.fn||'Patient'; patLn=s.ln||''; patEmail=s.email||''; patId=s.id;
+    }
+    if(!patEmail){
+      toast('Email introuvable. Vérifiez votre profil.','red');return;
+    }
   } else {
-    // Visiteur non connecté — lire le formulaire guest
-    patFn   = document.getElementById('bs-fn')?.value.trim()||'';
-    patLn   = document.getElementById('bs-ln')?.value.trim()||'';
-    patEmail = document.getElementById('bs-email')?.value.trim()||'';
-    if(!patFn||!patLn){toast('Veuillez indiquer votre prénom et nom.','red');return;}
-    if(!patEmail||!patEmail.includes('@')){toast('Veuillez indiquer une adresse email valide.','red');return;}
+    // Visiteur non connecté
+    var bsFn=document.getElementById('bs-fn');
+    var bsLn=document.getElementById('bs-ln');
+    var bsEmail=document.getElementById('bs-email');
+    patFn    = bsFn    ? bsFn.value.trim()    : '';
+    patLn    = bsLn    ? bsLn.value.trim()    : '';
+    patEmail = bsEmail ? bsEmail.value.trim() : '';
+    if(!patFn||!patLn){toast('Prénom et nom requis.','red');return;}
+    if(!patEmail||patEmail.indexOf('@')<0){toast('Email valide requis.','red');return;}
   }
-  const motif=document.getElementById('bs-motif').value.trim();
-  const db=getDB();
-  const rdv={
+  var motifEl=document.getElementById('bs-motif');
+  var motif=motifEl?motifEl.value.trim():'';
+  var db=getDB();
+  if(!db.rdvs)db.rdvs=[];
+  var rdv={
     id:'rdv_'+Date.now(),proId:selSpec.id,proFn:selSpec.fn,proLn:selSpec.ln,
     proEmail:selSpec.email,spec:selSpec.spec,
     patId,patFn,patLn,patEmail,date:selDate.toISOString(),slot:selSlot,type:selType,motif,
     status:'pending',createdAt:new Date().toISOString()
   };
-  db.rdvs.push(rdv);saveDB(db);
+  db.rdvs.push(rdv);
+  try{saveDB(db);}catch(e){console.error('saveDB error:',e);}
   sbSaveRdv(rdv);
   // ── Notification patient uniquement (pas encore le pro) ──
   if(patId) addNotif(patId,'patient','📋 RDV en attente de paiement',
