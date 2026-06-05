@@ -2493,6 +2493,102 @@ body[data-lang="ar"]{font-family:'Segoe UI',Tahoma,'Arabic Typesetting',sans-ser
 </div>
 
 <!-- ══ MODAL PROFIL COMPLET PRO (ADMIN) ══ -->
+<!-- MODAL ÉDITION PRO ADMIN -->
+<div id="adm-edit-pro-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:1100;overflow-y:auto;padding:.5rem" onclick="if(event.target===this)closeAdminEditPro()">
+  <div style="background:var(--white);max-width:520px;margin:1rem auto;border-radius:20px;overflow:hidden;box-shadow:0 24px 60px rgba(0,0,0,.3)">
+    <!-- Header -->
+    <div style="background:linear-gradient(135deg,#1a3a6b,#2255A0);padding:1rem 1.2rem;color:#fff;display:flex;align-items:center;justify-content:space-between">
+      <div>
+        <div style="font-size:.95rem;font-weight:800">✏️ Modifier le profil professionnel</div>
+        <div id="adm-edit-pro-name" style="font-size:.75rem;opacity:.8;margin-top:.15rem"></div>
+      </div>
+      <button onclick="closeAdminEditPro()" style="background:rgba(255,255,255,.2);border:none;border-radius:50%;width:32px;height:32px;color:#fff;font-size:1rem;cursor:pointer">✕</button>
+    </div>
+
+    <div style="padding:1.1rem 1.2rem;display:flex;flex-direction:column;gap:.8rem">
+      <input type="hidden" id="adm-edit-pro-id"/>
+
+      <!-- Identité -->
+      <div style="font-size:.7rem;font-weight:700;color:#1a3a6b;text-transform:uppercase;letter-spacing:.08em;padding-bottom:.3rem;border-bottom:1.5px solid var(--border)">👤 Identité</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem">
+        <div class="fgroup" style="margin:0"><label>Prénom *</label><input id="adm-ep-fn" placeholder="Prénom"/></div>
+        <div class="fgroup" style="margin:0"><label>Nom *</label><input id="adm-ep-ln" placeholder="Nom"/></div>
+      </div>
+      <div class="fgroup" style="margin:0"><label>Email *</label><input type="email" id="adm-ep-email" placeholder="email@exemple.com"/></div>
+      <div class="fgroup" style="margin:0"><label>Téléphone</label><input id="adm-ep-tel" placeholder="+216 XX XXX XXX"/></div>
+
+      <!-- Spécialité & Tarif -->
+      <div style="font-size:.7rem;font-weight:700;color:#1a3a6b;text-transform:uppercase;letter-spacing:.08em;padding-bottom:.3rem;border-bottom:1.5px solid var(--border)">🎓 Spécialité</div>
+      <div class="fgroup" style="margin:0"><label>Spécialité(s) *</label><input id="adm-ep-spec" placeholder="Ex: Neuropsychologue, Psychologue clinicien"/></div>
+      <div class="fgroup" style="margin:0"><label>RPPS / Numéro professionnel</label><input id="adm-ep-rpps" placeholder="Numéro RPPS ou équivalent"/></div>
+      <div class="fgroup" style="margin:0"><label>Tarif (€/séance)</label><input type="number" id="adm-ep-price" placeholder="38" min="0" step="1"/></div>
+
+      <!-- Bio & Tags -->
+      <div style="font-size:.7rem;font-weight:700;color:#1a3a6b;text-transform:uppercase;letter-spacing:.08em;padding-bottom:.3rem;border-bottom:1.5px solid var(--border)">📝 Présentation</div>
+      <div class="fgroup" style="margin:0"><label>Biographie</label><textarea id="adm-ep-bio" placeholder="Présentation professionnelle…" style="min-height:80px"></textarea></div>
+      <div class="fgroup" style="margin:0"><label>Tags / Thématiques <span style="font-size:.7rem;color:var(--soft);font-weight:400">(séparés par virgule)</span></label><input id="adm-ep-tags" placeholder="Ex: TDAH, anxiété, traumatismes"/></div>
+
+      <!-- Langues -->
+      <div style="font-size:.7rem;font-weight:700;color:#1a3a6b;text-transform:uppercase;letter-spacing:.08em;padding-bottom:.3rem;border-bottom:1.5px solid var(--border)">🌍 Langues</div>
+      <div style="display:flex;gap:1.2rem;flex-wrap:wrap;font-size:.84rem">
+        <label style="display:flex;align-items:center;gap:.4rem;cursor:pointer"><input type="checkbox" id="adm-ep-fr" style="accent-color:var(--teal)"/> 🇫🇷 Français</label>
+        <label style="display:flex;align-items:center;gap:.4rem;cursor:pointer"><input type="checkbox" id="adm-ep-ar" style="accent-color:var(--teal)"/> 🇸🇦 Arabe</label>
+        <label style="display:flex;align-items:center;gap:.4rem;cursor:pointer"><input type="checkbox" id="adm-ep-en" style="accent-color:var(--teal)"/> 🇬🇧 Anglais</label>
+      </div>
+
+      <!-- Coordonnées bancaires -->
+      <div style="font-size:.7rem;font-weight:700;color:#1a3a6b;text-transform:uppercase;letter-spacing:.08em;padding-bottom:.3rem;border-bottom:1.5px solid var(--border)">🏦 Coordonnées bancaires</div>
+      <div class="fgroup" style="margin:0"><label>IBAN</label><input id="adm-ep-iban" placeholder="TN59 XXXX XXXX XXXX XXXX XX" style="font-family:'DM Mono',monospace"/></div>
+      <div class="fgroup" style="margin:0"><label>BIC / SWIFT <span style="font-size:.7rem;color:var(--soft)">(optionnel)</span></label><input id="adm-ep-bic" placeholder="Ex: BIATTNTT"/></div>
+      <div class="fgroup" style="margin:0"><label>Banque</label>
+        <select id="adm-ep-banque" style="border:1.5px solid var(--border);border-radius:var(--r-sm);padding:.62rem .9rem;font-size:.86rem;background:var(--white);color:var(--ch);outline:none;font-family:inherit;width:100%">
+          <option value="">— Sélectionner —</option>
+          <option>STB — Société Tunisienne de Banque</option>
+          <option>BNA — Banque Nationale Agricole</option>
+          <option>BH — Banque de l'Habitat</option>
+          <option>BIAT — Banque Internationale Arabe de Tunisie</option>
+          <option>ATB — Arab Tunisian Bank</option>
+          <option>UIB — Union Internationale de Banques</option>
+          <option>Amen Bank</option>
+          <option>Attijari Bank Tunisie</option>
+          <option>UBCI — Union Bancaire pour le Commerce et l'Industrie</option>
+          <option>BT — Banque de Tunisie</option>
+          <option>Zitouna Bank</option>
+          <option>Al Baraka Bank Tunisie</option>
+          <option>Wifak International Bank</option>
+          <option>Société Générale Tunisie</option>
+          <option>Autre banque</option>
+        </select>
+      </div>
+
+      <!-- Statut -->
+      <div style="font-size:.7rem;font-weight:700;color:#1a3a6b;text-transform:uppercase;letter-spacing:.08em;padding-bottom:.3rem;border-bottom:1.5px solid var(--border)">⚙️ Statut du compte</div>
+      <div style="display:flex;gap:1rem;flex-wrap:wrap;font-size:.84rem">
+        <label style="display:flex;align-items:center;gap:.4rem;cursor:pointer"><input type="checkbox" id="adm-ep-active" style="accent-color:var(--teal)"/> ✅ Compte actif (visible publiquement)</label>
+        <label style="display:flex;align-items:center;gap:.4rem;cursor:pointer"><input type="checkbox" id="adm-ep-contrat" style="accent-color:var(--teal)"/> 📋 Contrat signé</label>
+      </div>
+      <div class="fgroup" style="margin:0"><label>Notes admin <span style="font-size:.7rem;color:var(--soft)">(interne)</span></label><textarea id="adm-ep-notes" placeholder="Notes visibles uniquement par l'admin…" style="min-height:60px"></textarea></div>
+
+      <!-- Message erreur -->
+      <div id="adm-edit-pro-err" style="display:none;background:var(--red-l);color:var(--red);border-radius:8px;padding:.6rem .8rem;font-size:.8rem;font-weight:600"></div>
+
+      <!-- Actions -->
+      <div style="display:flex;gap:.6rem;padding-top:.4rem">
+        <button onclick="saveAdminProEdit()" style="flex:2;background:linear-gradient(135deg,#1a3a6b,#2255A0);color:#fff;border:none;border-radius:12px;padding:.85rem;font-size:.88rem;font-weight:800;cursor:pointer">
+          💾 Enregistrer les modifications
+        </button>
+        <button onclick="closeAdminEditPro()" style="flex:1;background:var(--sand);border:1.5px solid var(--border);border-radius:12px;padding:.85rem;font-size:.84rem;font-weight:600;cursor:pointer;color:var(--ch)">
+          Annuler
+        </button>
+      </div>
+      <!-- Bouton suppression -->
+      <button onclick="deleteProAdmin(document.getElementById('adm-edit-pro-id').value)" style="width:100%;background:transparent;border:1.5px solid var(--red);color:var(--red);border-radius:12px;padding:.7rem;font-size:.82rem;font-weight:600;cursor:pointer">
+        🗑️ Supprimer définitivement ce professionnel
+      </button>
+    </div>
+  </div>
+</div>
+
 <div id="adm-pro-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:1000;align-items:flex-start;justify-content:center;padding:.5rem;overflow-y:auto">
   <div style="background:#fff;border-radius:var(--r-lg);padding:1.2rem;max-width:480px;width:100%;margin:1rem auto;box-shadow:0 20px 60px rgba(0,0,0,.3)">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem">
@@ -7671,11 +7767,154 @@ function showAdminProProfile(proId){
       <button onclick="envoyerEmailPro('${p.id}')" style="flex:1;background:var(--teal);color:#fff;border:none;border-radius:10px;padding:.65rem;font-size:.78rem;font-weight:700;cursor:pointer">📧 Contacter</button>
       <button onclick="deactivatePro('${p.id}');document.getElementById('adm-pro-modal').style.display='none'" style="flex:1;background:var(--red-l);color:var(--red);border:1.5px solid var(--red);border-radius:10px;padding:.62rem;font-size:.78rem;font-weight:600;cursor:pointer">🚫 Désactiver</button>
     </div>
+    <!-- Bouton édition -->
+    <button onclick="openAdminEditPro('${p.id}')" style="width:100%;background:linear-gradient(135deg,#1a3a6b,#2255A0);color:#fff;border:none;border-radius:12px;padding:.8rem;font-size:.88rem;font-weight:700;cursor:pointer;margin-top:.5rem">
+      ✏️ Modifier / Compléter le profil manuellement
+    </button>
   `;
 
   const modal=document.getElementById('adm-pro-modal');
   modal.style.display='flex';
   modal.scrollTop=0;
+}
+
+// ═══ ADMIN ÉDITION PROFIL PRO ═══
+
+function openAdminEditPro(proId){
+  const db=getDB();
+  const p=db.pros.find(x=>x.id===proId);
+  if(!p)return;
+
+  // Remplir tous les champs
+  document.getElementById('adm-edit-pro-id').value=proId;
+  document.getElementById('adm-edit-pro-name').textContent='Dr. '+p.fn+' '+p.ln+' — '+p.spec;
+  document.getElementById('adm-ep-fn').value=p.fn||'';
+  document.getElementById('adm-ep-ln').value=p.ln||'';
+  document.getElementById('adm-ep-email').value=p.email||'';
+  document.getElementById('adm-ep-tel').value=p.tel||'';
+  document.getElementById('adm-ep-spec').value=p.spec||'';
+  document.getElementById('adm-ep-rpps').value=p.rpps||'';
+  document.getElementById('adm-ep-price').value=p.price||38;
+  document.getElementById('adm-ep-bio').value=p.bio||'';
+  document.getElementById('adm-ep-tags').value=p.tags||'';
+  document.getElementById('adm-ep-fr').checked=p.langFr||false;
+  document.getElementById('adm-ep-ar').checked=p.langAr||false;
+  document.getElementById('adm-ep-en').checked=p.langEn||false;
+  document.getElementById('adm-ep-iban').value=p.bank?.iban||'';
+  document.getElementById('adm-ep-bic').value=p.bank?.bic||'';
+  document.getElementById('adm-ep-banque').value=p.bank?.banque||'';
+  document.getElementById('adm-ep-active').checked=p.active||false;
+  document.getElementById('adm-ep-contrat').checked=p.contratSigne||false;
+  document.getElementById('adm-ep-notes').value=p.adminNotes||'';
+  document.getElementById('adm-edit-pro-err').style.display='none';
+
+  // Fermer le modal profil, ouvrir l'éditeur
+  document.getElementById('adm-pro-modal').style.display='none';
+  document.getElementById('adm-edit-pro-modal').style.display='block';
+  document.body.style.overflow='hidden';
+}
+
+function closeAdminEditPro(){
+  document.getElementById('adm-edit-pro-modal').style.display='none';
+  document.body.style.overflow='';
+}
+
+async function saveAdminProEdit(){
+  const proId=document.getElementById('adm-edit-pro-id').value;
+  const errEl=document.getElementById('adm-edit-pro-err');
+  errEl.style.display='none';
+
+  const fn=document.getElementById('adm-ep-fn').value.trim();
+  const ln=document.getElementById('adm-ep-ln').value.trim();
+  const email=document.getElementById('adm-ep-email').value.trim();
+  const spec=document.getElementById('adm-ep-spec').value.trim();
+
+  if(!fn||!ln){errEl.textContent='Prénom et nom obligatoires.';errEl.style.display='block';return;}
+  if(!email||!email.includes('@')){errEl.textContent='Email invalide.';errEl.style.display='block';return;}
+  if(!spec){errEl.textContent='Spécialité obligatoire.';errEl.style.display='block';return;}
+
+  const db=getDB();
+  const idx=db.pros.findIndex(x=>x.id===proId);
+  if(idx<0){errEl.textContent='Professionnel introuvable.';errEl.style.display='block';return;}
+
+  const wasActive=db.pros[idx].active;
+  const nowActive=document.getElementById('adm-ep-active').checked;
+
+  // Appliquer les modifications
+  db.pros[idx]={
+    ...db.pros[idx],
+    fn,ln,email,
+    tel:document.getElementById('adm-ep-tel').value.trim(),
+    spec,
+    rpps:document.getElementById('adm-ep-rpps').value.trim(),
+    price:parseFloat(document.getElementById('adm-ep-price').value)||38,
+    bio:document.getElementById('adm-ep-bio').value.trim(),
+    tags:document.getElementById('adm-ep-tags').value.trim(),
+    langFr:document.getElementById('adm-ep-fr').checked,
+    langAr:document.getElementById('adm-ep-ar').checked,
+    langEn:document.getElementById('adm-ep-en').checked,
+    bank:{
+      iban:document.getElementById('adm-ep-iban').value.trim().replace(/\s/g,''),
+      bic:document.getElementById('adm-ep-bic').value.trim(),
+      banque:document.getElementById('adm-ep-banque').value,
+      nom:fn+' '+ln,
+    },
+    active:nowActive,
+    contratSigne:document.getElementById('adm-ep-contrat').checked,
+    adminNotes:document.getElementById('adm-ep-notes').value.trim(),
+    lastEditedByAdmin:new Date().toISOString(),
+  };
+  if(nowActive&&!db.pros[idx].validatedAt) db.pros[idx].validatedAt=new Date().toISOString();
+  if(!nowActive&&wasActive) db.pros[idx].deactivatedAt=new Date().toISOString();
+
+  saveDB(db);
+
+  // Sync Supabase
+  const p=db.pros[idx];
+  try{
+    const{data,error}=await supa.from('pros').upsert([{
+      id:p.id,fn:p.fn,ln:p.ln,email:p.email,tel:p.tel||'',
+      spec:p.spec,rpps:p.rpps||'',bio:p.bio||'',tags:p.tags||'',
+      price:p.price||38,tz:p.tz||'Africa/Tunis',
+      lang_fr:p.langFr||false,lang_en:p.langEn||false,lang_ar:p.langAr||false,
+      active:p.active,notif:p.notif||false,
+      email_confirmed:true,contrat_signe:p.contratSigne||false,
+      bank_iban:p.bank?.iban||'',bank_bic:p.bank?.bic||'',
+      bank_nom:p.bank?.nom||'',
+      validated_at:p.validatedAt||null,
+    }],{onConflict:'id'});
+    if(error)console.warn('Supabase saveAdminProEdit:',error.message);
+    else console.log('✅ Profil pro mis à jour Supabase:',p.email);
+  }catch(e){console.warn('Supabase saveAdminProEdit exception:',e);}
+
+  toast('✅ Profil de Dr. '+fn+' '+ln+' enregistré','green');
+  closeAdminEditPro();
+  renderAdminPanel();
+  renderHome();
+}
+
+function deleteProAdmin(proId){
+  const db=getDB();
+  const p=db.pros.find(x=>x.id===proId);
+  if(!p)return;
+  if(!confirm('⚠️ Supprimer définitivement le compte de Dr. '+p.fn+' '+p.ln+' ?\nCette action est irréversible.'))return;
+
+  // Supprimer localement
+  const idx=db.pros.findIndex(x=>x.id===proId);
+  if(idx>=0)db.pros.splice(idx,1);
+  saveDB(db);
+
+  // Supprimer dans Supabase
+  supa.from('pros').delete().eq('id',proId).then(({error})=>{
+    if(error)console.warn('Supabase delete pro:',error.message);
+    else console.log('✅ Pro supprimé Supabase:',proId);
+  });
+
+  toast('🗑️ Professionnel supprimé','red');
+  closeAdminEditPro();
+  document.getElementById('adm-pro-modal').style.display='none';
+  renderAdminPanel();
+  renderHome();
 }
 
 function modifierCoordPatient(patId){
