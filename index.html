@@ -3545,41 +3545,59 @@ function renderHome(){
         ?`<img src="${p.photo}" style="width:52px;height:52px;border-radius:var(--r-sm);object-fit:cover;flex-shrink:0" alt="Dr. ${escHtml(p.fn)} ${escHtml(p.ln)}"/>`
         :`<div class="av">🩺</div>`;
       return `<div class="scard" onclick="openProProfile('${p.id}')">
-        <!-- En-tête -->
-        <div class="card-top">
+
+        <!-- ══ EN-TÊTE PRO ══ -->
+        <div class="card-top" style="margin-bottom:.7rem">
           ${photoEl}
-          <div>
+          <div style="flex:1;min-width:0">
             <div class="c-name">${getProTitle(p.spec)}${escHtml(p.fn)} ${escHtml(p.ln)}</div>
             <div class="c-spec">${escHtml(p.spec)}</div>
-            <div class="stars">★★★★★ <span style="color:var(--soft);font-size:.67rem">Nouveau</span></div>
+            <div class="stars" style="margin-top:.2rem">★★★★★ <span style="color:var(--soft);font-size:.67rem">Nouveau</span></div>
           </div>
         </div>
 
-        <!-- Bio courte si disponible -->
-        ${p.bio?`<div style="font-size:.78rem;color:var(--mid);line-height:1.55;margin-bottom:.6rem;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">${escHtml(p.bio)}</div>`:''}
+        <!-- ══ BIOGRAPHIE ══ -->
+        ${p.bio?`<div style="background:var(--sand);border-radius:10px;padding:.65rem .8rem;margin-bottom:.65rem;border-left:3px solid var(--teal)">
+          <div style="font-size:.65rem;font-weight:700;color:var(--teal-d);text-transform:uppercase;letter-spacing:.07em;margin-bottom:.25rem">📝 À propos</div>
+          <div style="font-size:.78rem;color:var(--ch);line-height:1.6">${escHtml(p.bio)}</div>
+        </div>`:''}
 
-        <!-- Domaines d'activité — TOUS affichés -->
-        ${tags.length?`<div style="margin-bottom:.5rem">
-          <div style="font-size:.65rem;font-weight:700;color:var(--teal-d);text-transform:uppercase;letter-spacing:.07em;margin-bottom:.35rem">🏷️ Domaines</div>
+        <!-- ══ DOMAINES D'ACTIVITÉ (tags du pro) ══ -->
+        ${tags.length?`<div style="margin-bottom:.65rem">
+          <div style="font-size:.65rem;font-weight:700;color:var(--teal-d);text-transform:uppercase;letter-spacing:.07em;margin-bottom:.35rem">🏷️ Domaines d'activité</div>
           <div style="display:flex;flex-wrap:wrap;gap:.3rem">
-            ${tags.map(t=>`<span style="background:var(--teal-xl);color:var(--teal-d);border-radius:16px;padding:.2rem .6rem;font-size:.72rem;font-weight:600;border:1px solid var(--teal)">${escHtml(t)}</span>`).join('')}
+            ${tags.map(t=>`<span style="background:var(--teal-xl);color:var(--teal-d);border-radius:16px;padding:.22rem .65rem;font-size:.74rem;font-weight:600;border:1px solid var(--teal)">${escHtml(t)}</span>`).join('')}
           </div>
         </div>`:''}
 
-        <!-- Langues + Téléconsultation -->
+        <!-- ══ ACTES & INTERVENTIONS (depuis SPEC_DETAILS) ══ -->
+        ${(()=>{
+          const det=getSpecDetails(p.spec);
+          const actes=det&&det.actes?det.actes:[];
+          return actes.length?`<div style="margin-bottom:.65rem">
+            <div style="font-size:.65rem;font-weight:700;color:var(--teal-d);text-transform:uppercase;letter-spacing:.07em;margin-bottom:.35rem">🎯 Actes & interventions</div>
+            <div style="display:flex;flex-direction:column;gap:.25rem">
+              ${actes.map(a=>`<div style="display:flex;align-items:flex-start;gap:.4rem;font-size:.76rem;color:var(--ch);line-height:1.5">
+                <span style="flex-shrink:0">${a.split(' ')[0]}</span>
+                <span>${a.split(' ').slice(1).join(' ')}</span>
+              </div>`).join('')}
+            </div>
+          </div>`:'';
+        })()}
+
+        <!-- ══ LANGUES + TÉLÉCONSULTATION ══ -->
         <div style="display:flex;flex-wrap:wrap;gap:.3rem;margin-bottom:.6rem">
           ${langs.map(l=>`<span class="tag la">${l}</span>`).join('')}
           <span class="tag vi">📹 Téléconsultation</span>
         </div>
 
-        <hr style="border:none;border-top:1px solid var(--border);margin:.6rem 0"/>
+        <hr style="border:none;border-top:1px solid var(--border);margin:.5rem 0"/>
 
-        <!-- Prix + Fuseau -->
-        <div class="card-foot">
+        <!-- ══ PRIX + FUSEAU + RDV ══ -->
+        <div class="card-foot" style="margin-bottom:.7rem">
           <div class="price">38 €<small>/ 45 min</small></div>
-          <div class="nxt"><span>Fuseau</span><strong>${(p.tz||'').split('/').pop()||'Tunis'}</strong></div>
+          <div class="nxt"><span>Fuseau</span><strong>${(p.tz||'Africa/Tunis').split('/').pop().replace('_',' ')||'Tunis'}</strong></div>
         </div>
-
         <button class="btn-rdv" onclick="event.stopPropagation();event.preventDefault();directBooking('${p.id}')">📅 Prendre rendez-vous</button>
       </div>`;
     }).join('')+'</div>';
