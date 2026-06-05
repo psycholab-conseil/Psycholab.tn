@@ -3540,7 +3540,7 @@ function renderHome(){
     }
     list.innerHTML='<div class="spec-grid">'+pros.map(p=>{
       const langs=[p.langFr&&'🇫🇷 FR',p.langAr&&'🇸🇦 AR',p.langEn&&'🇬🇧 EN'].filter(Boolean);
-      const tags=(p.tags||'').split(',').map(t=>t.trim()).filter(Boolean);
+      const tags=(p.tags||'').split(/[,*·;]+/).map(t=>t.trim().replace(/^[\s*·]+|[\s*·]+$/g,'')).filter(t=>t.length>1);
       const photoEl=p.photo
         ?`<img src="${p.photo}" style="width:52px;height:52px;border-radius:var(--r-sm);object-fit:cover;flex-shrink:0" alt="Dr. ${escHtml(p.fn)} ${escHtml(p.ln)}"/>`
         :`<div class="av">🩺</div>`;
@@ -3554,8 +3554,7 @@ function renderHome(){
           </div>
         </div>
         <div class="tags">
-          ${tags.slice(0,2).map(t=>`<span class="tag" style="max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:inline-block">${escHtml(t)}</span>`).join('')}
-          ${tags.length>2?`<span class="tag" style="background:var(--teal-xl);color:var(--teal-d);font-weight:700;cursor:pointer">+${tags.length-2} domaines →</span>`:''})}
+          ${tags.slice(0,2).map(t=>`<span class="tag" style="max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:inline-block">${escHtml(t)}</span>`).join('')}${tags.length>2?`<span class="tag" style="background:var(--teal-xl);color:var(--teal-d);font-weight:700">+${tags.length-2} →</span>`:''}
           ${langs.map(l=>`<span class="tag la">${l}</span>`).join('')}
           <span class="tag vi">📹 Téléconsultation</span>
         </div>
@@ -5947,18 +5946,14 @@ function openProProfile(proId){
   });
   document.body.style.overflow='';
 
-  // Vérifier si l'utilisateur est connecté
-  const session=getSession();
-  if(!session || (session.type!=='patient' && session.type!=='pro' && session.type!=='admin')){
-    showSignupWall();
-    return;
-  }
+  // Le profil est accessible à TOUS les visiteurs (connectés ou non)
+  // Seul le RDV nécessite un compte
   const db=getDB();
   const pro=db.pros.find(p=>p.id===proId);
   if(!pro) return;
   const det=getSpecDetails(pro.spec);
   const langs=[pro.langFr&&'🇫🇷 Français',pro.langAr&&'🇸🇦 Arabe',pro.langEn&&'🇬🇧 English'].filter(Boolean);
-  const tags=(pro.tags||'').split(',').map(t=>t.trim()).filter(Boolean);
+  const tags=(pro.tags||'').split(/[,*·;]+/).map(t=>t.trim().replace(/^[\s*·]+|[\s*·]+$/g,'')).filter(t=>t.length>1);
   const photoEl=pro.photo
     ?`<img src="${pro.photo}" style="width:72px;height:72px;border-radius:14px;object-fit:cover;border:3px solid rgba(255,255,255,.3)" alt="Dr. ${escHtml(pro.fn)} ${escHtml(pro.ln)}"/>`
     :`<div style="width:72px;height:72px;border-radius:14px;background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-size:2rem;border:3px solid rgba(255,255,255,.3)">🩺</div>`;
@@ -6039,10 +6034,11 @@ function openProProfile(proId){
         </div>
       </div>
 
-      <!-- CTA Prendre RDV -->
+      <!-- CTA Prendre RDV — visible à tous -->
       <button onclick="handleProfileRDV('${pro.id}')" style="background:var(--teal-d);color:#fff;border:none;border-radius:14px;padding:1rem;font-size:.95rem;font-weight:800;cursor:pointer;width:100%;letter-spacing:.01em;margin-top:.2rem">
         📅 Prendre rendez-vous avec ${getProTitle(pro.spec)}${escHtml(pro.fn)} ${escHtml(pro.ln)}
       </button>
+      ${(!getSession()||getSession().type==='visitor')?`<div style="text-align:center;font-size:.74rem;color:var(--soft);margin-top:.4rem">🔒 Un compte gratuit est requis pour réserver — <span onclick="closeProProfile();showSignup('patient')" style="color:var(--teal);font-weight:700;cursor:pointer">Créer mon compte</span></div>`:''}
       <button onclick="closeProProfile()" style="background:transparent;color:var(--soft);border:1.5px solid var(--border);border-radius:14px;padding:.7rem;font-size:.82rem;font-weight:600;cursor:pointer;width:100%">← Retour aux spécialistes</button>
     </div>
   `;
