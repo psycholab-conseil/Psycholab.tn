@@ -3268,8 +3268,22 @@ const DAYS_FULL=['Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi','Dimanch
 // ================================================
 //  INIT
 // ================================================
+// Nettoyage des overlays au chargement de la page
+function cleanAllOverlays(){
+  ['signup-wall-modal','profile-zoom-modal','ai-avatar-picker','adm-edit-pro-modal'].forEach(id=>{
+    const el=document.getElementById(id);if(el)el.remove();
+  });
+  const pm=document.getElementById('pro-profile-modal');
+  if(pm){pm.style.display='none';}
+  const bsheet=document.getElementById('bsheet-bg');
+  if(bsheet){bsheet.classList.remove('on');}
+  document.body.style.overflow='';
+  document.body.style.pointerEvents='';
+}
+
 function init(){
   try{
+    cleanAllOverlays(); // Nettoyer tout overlay résiduel au démarrage
     // -- Toujours afficher la page d'accueil au démarrage --
     const homeView=document.getElementById('v-home');
     if(homeView){
@@ -5888,10 +5902,15 @@ function showSignupWall(){
 }
 
 function openProProfile(proId){
+  // Nettoyer TOUS les overlays résiduels
+  ['signup-wall-modal','profile-zoom-modal','ai-avatar-picker'].forEach(id=>{
+    const el=document.getElementById(id);if(el)el.remove();
+  });
+  document.body.style.overflow='';
+
   // Vérifier si l'utilisateur est connecté
   const session=getSession();
   if(!session || (session.type!=='patient' && session.type!=='pro' && session.type!=='admin')){
-    // Afficher modal d'inscription au lieu du profil
     showSignupWall();
     return;
   }
@@ -6045,16 +6064,13 @@ function closeProProfile(){
 // Fonction directe RDV - bypass total de tous les modals
 function directBooking(proId){
   // 1. Supprimer ABSOLUMENT tous les overlays possibles
-  document.querySelectorAll(
-    '#signup-wall-modal, #profile-zoom-modal, #ai-avatar-picker, #pro-profile-modal'
-  ).forEach(el=>{
-    if(el.tagName==='DIV' && el.id==='pro-profile-modal'){
-      el.style.display='none';
-    } else {
-      el.remove();
-    }
+  ['signup-wall-modal','profile-zoom-modal','ai-avatar-picker','adm-edit-pro-modal'].forEach(id=>{
+    const el=document.getElementById(id);if(el)el.remove();
   });
+  const pm=document.getElementById('pro-profile-modal');
+  if(pm)pm.style.display='none';
   document.body.style.overflow='';
+  document.body.style.pointerEvents=''; // Réactiver les clics si bloqués
   
   // 2. Vérifier session
   const sess=getSession();
@@ -6120,12 +6136,13 @@ function openSheet(proId){
   document.getElementById('tv').classList.add('on');
   document.getElementById('tpr').classList.remove('on');
   goStep(1);
-  // Rendre le calendrier APRÈS que le DOM soit visible (évite le bug de rendu)
-  requestAnimationFrame(()=>{
+  // Double setTimeout garantit que le DOM est rendu avant d'appeler renderCal
+  // requestAnimationFrame seul ne suffit pas sur Chrome Android
+  setTimeout(()=>{
     renderCal();
     renderSlots();
     fillPatientForm();
-  });
+  }, 80);
 }
 
 function closeBSheet(){document.getElementById('bsheet-bg').classList.remove('on')}
