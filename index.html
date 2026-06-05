@@ -3081,7 +3081,30 @@ body[data-lang="ar"]{font-family:'Segoe UI',Tahoma,'Arabic Typesetting',sans-ser
         <label style="color:var(--ch);font-weight:700">🔢 Numéro de référence *</label>
         <input id="pay-ref-std" placeholder="Numéro de chèque, référence D17, autre…" style="font-family:'DM Mono',monospace;letter-spacing:.08em" oninput="document.getElementById('pay-ref').value=this.value"/>
       </div>
-      <div class="fgroup"><label>Montant envoyé (€) *</label><input type="number" id="pay-montant" placeholder="Ex: 70"/></div>
+      <div class="fgroup">
+        <label>Montant à régler *</label>
+        <div style="background:linear-gradient(135deg,var(--teal-d),var(--teal));border-radius:var(--r-md);padding:.9rem 1rem;color:#fff;margin-top:.3rem">
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:.8rem;flex-wrap:wrap">
+            <!-- EUR (fixe) -->
+            <div>
+              <div style="font-size:.68rem;opacity:.8;text-transform:uppercase;letter-spacing:.07em;margin-bottom:.2rem">Montant en euros</div>
+              <div style="font-size:1.6rem;font-weight:900;font-family:'DM Mono',monospace">38 <span style="font-size:1rem">€</span></div>
+              <div style="font-size:.7rem;opacity:.75;margin-top:.1rem">Consultation 45 min</div>
+            </div>
+            <!-- Devise locale (calculée) -->
+            <div id="pay-local-currency" style="display:none;text-align:right;border-left:1px solid rgba(255,255,255,.3);padding-left:.9rem">
+              <div style="font-size:.68rem;opacity:.8;text-transform:uppercase;letter-spacing:.07em;margin-bottom:.2rem" id="pay-local-label">Équivalent local</div>
+              <div style="font-size:1.3rem;font-weight:800;font-family:'DM Mono',monospace;color:#FFD700" id="pay-local-amount">—</div>
+              <div style="font-size:.65rem;opacity:.7;margin-top:.1rem" id="pay-local-note">Taux indicatif</div>
+            </div>
+          </div>
+          <div style="margin-top:.7rem;font-size:.74rem;opacity:.85;background:rgba(255,255,255,.12);border-radius:8px;padding:.4rem .7rem">
+            💡 Envoyez l'équivalent de <strong>38 €</strong> dans votre devise locale selon le taux du jour
+          </div>
+        </div>
+        <!-- Champ caché pour submitPayment -->
+        <input type="hidden" id="pay-montant" value="38"/>
+      </div>
       <div class="fgroup"><label>Date du paiement *</label><input type="date" id="pay-date"/></div>
       <div class="fgroup"><label>Photo/scan du justificatif</label>
         <div style="border:2px dashed var(--border);border-radius:var(--r-sm);padding:1.2rem;text-align:center;background:var(--sand);cursor:pointer" onclick="document.getElementById('pay-file').click()">
@@ -6757,6 +6780,7 @@ function goPaymentFromPatient(rdvId){
   document.getElementById('pay-date').value=new Date().toISOString().split('T')[0];
   document.getElementById('pay-instructions').style.display='none';
   document.getElementById('pay-error').style.display='none';
+  updatePayCurrencyDisplay();
   showView('v-payment');
 }
 
@@ -6877,6 +6901,68 @@ const OPERATORS={
     ben:'📱 <strong>D17 :</strong> +216 XX XXX XXX<br/>👤 <strong>Nom :</strong> Psycholab Conseil<br/>💵 <strong>Montant :</strong> 38 DT équivalent'
   },
 };
+
+// ═══ CONVERSION DEVISES ═══
+// Taux fixes indicatifs (mis à jour manuellement - pas d'API externe)
+const CURRENCY_RATES={
+  EUR:{symbol:'€',rate:1,name:'Euro',flag:'🇪🇺'},
+  USD:{symbol:'$',rate:1.08,name:'Dollar américain',flag:'🇺🇸'},
+  GBP:{symbol:'£',rate:0.85,name:'Livre sterling',flag:'🇬🇧'},
+  CAD:{symbol:'CA$',rate:1.47,name:'Dollar canadien',flag:'🇨🇦'},
+  CHF:{symbol:'CHF',rate:0.96,name:'Franc suisse',flag:'🇨🇭'},
+  TND:{symbol:'DT',rate:3.35,name:'Dinar tunisien',flag:'🇹🇳'},
+  MAD:{symbol:'MAD',rate:10.8,name:'Dirham marocain',flag:'🇲🇦'},
+  DZD:{symbol:'DZD',rate:145,name:'Dinar algérien',flag:'🇩🇿'},
+  EGP:{symbol:'EGP',rate:52,name:'Livre égyptienne',flag:'🇪🇬'},
+  SAR:{symbol:'SR',rate:4.05,name:'Riyal saoudien',flag:'🇸🇦'},
+  AED:{symbol:'AED',rate:3.97,name:'Dirham EAU',flag:'🇦🇪'},
+  QAR:{symbol:'QR',rate:3.93,name:'Riyal qatari',flag:'🇶🇦'},
+  SEK:{symbol:'kr',rate:11.2,name:'Couronne suédoise',flag:'🇸🇪'},
+  NOK:{symbol:'kr',rate:11.5,name:'Couronne norvégienne',flag:'🇳🇴'},
+  DKK:{symbol:'kr',rate:7.46,name:'Couronne danoise',flag:'🇩🇰'},
+  AUD:{symbol:'A$',rate:1.65,name:'Dollar australien',flag:'🇦🇺'},
+};
+
+// Mapping indicatif téléphonique → devise
+const COUNTRY_CURRENCY={
+  '+216':'TND','+33':'EUR','+32':'EUR','+41':'CHF',
+  '+1':'USD','+44':'GBP','+49':'EUR','+34':'EUR',
+  '+39':'EUR','+212':'MAD','+213':'DZD','+20':'EGP',
+  '+966':'SAR','+971':'AED','+974':'QAR',
+  '+46':'SEK','+47':'NOK','+45':'DKK','+61':'AUD',
+  '+1-CA':'CAD',
+};
+
+function getPatientCurrency(){
+  const s=getSession();
+  if(!s) return 'EUR';
+  const db=getDB();
+  const user=db.users.find(u=>u.id===s.id);
+  const tel=user?.tel||s.tel||'';
+  // Chercher l'indicatif le plus long qui correspond
+  let bestMatch='';
+  let bestCode='EUR';
+  for(const [indicator,currency] of Object.entries(COUNTRY_CURRENCY)){
+    if(tel.startsWith(indicator)&&indicator.length>bestMatch.length){
+      bestMatch=indicator;bestCode=currency;
+    }
+  }
+  return bestCode;
+}
+
+function updatePayCurrencyDisplay(){
+  const currencyCode=getPatientCurrency();
+  const curr=CURRENCY_RATES[currencyCode];
+  if(!curr||currencyCode==='EUR'){
+    document.getElementById('pay-local-currency').style.display='none';
+    return;
+  }
+  const localAmount=(38*curr.rate).toFixed(2);
+  document.getElementById('pay-local-currency').style.display='block';
+  document.getElementById('pay-local-label').textContent=curr.flag+' Équivalent en '+curr.name;
+  document.getElementById('pay-local-amount').textContent='≈ '+localAmount+' '+curr.symbol;
+  document.getElementById('pay-local-note').textContent='1 € ≈ '+curr.rate+' '+curr.symbol+' (taux indicatif)';
+}
 
 function selectPayMode(mode){
   const op=OPERATORS[mode];
