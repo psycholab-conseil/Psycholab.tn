@@ -3264,8 +3264,18 @@ function getDB(){
   catch(e){return{users:[],pros:[],rdvs:[],notifs:[]}}
 }
 function saveDB(db){localStorage.setItem('psycholab_db',JSON.stringify(db))}
-function getSession(){try{return JSON.parse(localStorage.getItem('psycholab_session')||'null')}catch(e){return null}}
-function saveSession(s){localStorage.setItem('psycholab_session',JSON.stringify(s))}
+function getSession(){
+  try{
+    const s=JSON.parse(localStorage.getItem('psycholab_session')||'null');
+    if(!s) return null;
+    if(s.createdAt && Date.now()-s.createdAt > 30*24*60*60*1000){
+      localStorage.removeItem('psycholab_session');
+      return null;
+    }
+    return s;
+  }catch(e){return null;}
+}
+function saveSession(s){if(s&&!s.createdAt)s.createdAt=Date.now();localStorage.setItem('psycholab_session',JSON.stringify(s));}
 function clearSession(){localStorage.removeItem('psycholab_session')}
 
 // -- Fonction pour effacer les données de test (appeler depuis console) --
@@ -3869,7 +3879,8 @@ async function doRequestMagicLink(){
     email_dest:email,
     lien_magic:magicUrl,
     expiry:'15 minutes',
-    message:'Cliquez sur ce lien pour vous connecter à Psycholab :\n\n'+magicUrl+'\n\nCe lien est valable 15 minutes et ne peut être utilisé qu\'une seule fois.\n\nSi vous n\'avez pas demandé ce lien, ignorez cet email.'
+    message:'Cliquez sur le bouton ci-dessous pour vous connecter à Psycholab.',
+    lien_html:'<div style="text-align:center;margin:20px 0"><a href="'+magicUrl+'" style="background:#1B6B61;color:#fff;padding:14px 32px;border-radius:10px;text-decoration:none;font-size:16px;font-weight:bold;display:inline-block">🔐 Me connecter à Psycholab</a></div><p style="color:#666;font-size:13px;word-break:break-all">Lien direct : '+magicUrl+'</p><p style="color:#999;font-size:12px">⏱️ Valable 15 min · Usage unique · Ignorez si ce n\'est pas vous</p>'
   });
 
   if(btn){btn.disabled=false;btn.textContent='📧 Envoyer mon lien de connexion';}
@@ -3954,9 +3965,9 @@ function consumeMagicToken(token){
     try{
       // Nettoyer le token — certains clients email encodent les caractères spéciaux
       const cleanToken=token.slice(3)
-        .replace(/%2B/g,'+').replace(/%2F/g,'/')  // URL decode
+        .replace(/%2B/g,'+').replace(/%2F/g,'/').replace(/%3D/g,'=') // URL decode
         .replace(/-/g,'+').replace(/_/g,'/')       // URL-safe base64 → standard
-        .replace(/\s/g,'');                         // Supprimer espaces éventuels
+        .replace(/[\s\r\n\t%20]+/g,'')             // Supprimer TOUS les espaces/retours Gmail
       // Ajouter padding si nécessaire
       const pad=cleanToken.length%4;
       const padded=pad?cleanToken+'='.repeat(4-pad):cleanToken;
@@ -3970,8 +3981,10 @@ function consumeMagicToken(token){
       const tokens=JSON.parse(localStorage.getItem('plMagicTokens')||'{}');
       const entry=tokens[token];
       if(!entry){
-        toast('⚠️ Lien invalide ou expiré. Demandez un nouveau lien de connexion.','red');
-        showView('v-login');return;
+        toast('⚠️ Lien invalide ou expiré. Demandez un nouveau lien.','red');
+        // Proposer de re-demander un lien
+        setTimeout(()=>{showView('v-login');backToLoginStep1?.();},500);
+        return;
       }
       email=entry.email;type=entry.type;expiry=entry.expiry;
     }
@@ -4023,7 +4036,25 @@ function consumeMagicToken(token){
     sbLoadUsers().then(()=>{
       const db2=getDB();
       const user=db2.users.find(u=>u.email===email);
-      if(!user){toast('⚠️ Compte introuvable. Vérifiez votre email ou créez un compte.','red');showView('v-login');return;}
+      if(!user){
+        // Dernier recours : synchroniser depuis Supabase
+        supa.from('users').select('*').eq('email',email).maybeSingle().then(({data})=>{
+          if(data){
+            const db3=getDB();
+            const u={id:data.id,fn:data.fn,ln:data.ln,email:data.email,tel:data.tel||'',
+              tz:data.tz||'Africa/Tunis',emailConfirmed:true,createdAt:data.created_at||new Date().toISOString()};
+            db3.users.push(u);saveDB(db3);
+            saveSession({id:u.id,type:'patient',email:u.email,fn:u.fn,ln:u.ln,tel:u.tel,tz:u.tz});
+            applySession(getSession());
+            toast('✅ Bienvenue '+u.fn+' !','green');
+            goPatient();
+          } else {
+            toast('⚠️ Compte introuvable. Créez un compte patient.','red');
+            showView('v-login');
+          }
+        }).catch(()=>{toast('⚠️ Compte introuvable. Créez un compte.','red');showView('v-login');});
+        return;
+      }
       if(user.emailConfirmed===false){user.emailConfirmed=true;saveDB(db2);}
       saveSession({id:user.id,type:'patient',email:user.email,name:user.fn+' '+user.ln,fn:user.fn,ln:user.ln,tel:user.tel,tz:user.tz});
       applySession(getSession());
@@ -4105,10 +4136,16 @@ function checkMagicTokenOnLoad(){
   const params=new URLSearchParams(window.location.search);
   let token=params.get('magic');
 
-  // Fallback : chercher dans le hash (#magic=TOKEN)
+  // Fallback : chercher dans le hash (#magic=TOKEN ou ?#magic=TOKEN)
   if(!token && window.location.hash){
-    const hashParams=new URLSearchParams(window.location.hash.replace('#',''));
+    const hash=window.location.hash.replace(/^#[?]?/,'');
+    const hashParams=new URLSearchParams(hash);
     token=hashParams.get('magic');
+  }
+  // Fallback : hash direct sans paramètre (rare)
+  if(!token && window.location.hash && window.location.hash.includes('ml_')){
+    const match=window.location.hash.match(/ml_[A-Za-z0-9+/=_-]+/);
+    if(match)token=match[0];
   }
 
   // Fallback : chercher dans l'URL complète (certains clients email encodent différemment)
@@ -4119,12 +4156,14 @@ function checkMagicTokenOnLoad(){
   }
 
   if(token){
+    // Nettoyer le token (Gmail/Outlook ajoutent parfois des sauts de ligne ou espaces)
+    token=token.replace(/[\s\r\n\t%20]+/g,'').replace(/%3D/g,'=');
     // Nettoyer l'URL sans recharger
     try{
       window.history.replaceState({},'',window.location.pathname);
     }catch(e){}
     // Petit délai pour que le DOM soit prêt
-    setTimeout(()=>consumeMagicToken(token), 100);
+    setTimeout(()=>consumeMagicToken(token), 200);
   }
 }
 
