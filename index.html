@@ -654,6 +654,8 @@ input,select,textarea{font-family:'DM Sans',sans-serif}
 .cal-day-lbl{font-size:.62rem;font-weight:600;color:var(--soft);padding:.3rem 0;text-transform:uppercase}
 .cal-cell{border-radius:var(--r-sm);padding:.4rem;font-size:.78rem;font-weight:500;cursor:pointer;transition:all var(--anim);border:1.5px solid transparent;min-height:36px;display:flex;align-items:center;justify-content:center}
 .cal-cell.avail{background:var(--teal-xl);color:var(--teal-d)}
+.cal-cell.today{background:var(--teal);color:#fff;font-weight:800;box-shadow:0 2px 8px rgba(27,107,97,.3)}
+.cal-cell.today strong{color:#fff}
 .cal-cell.avail:hover{background:var(--teal-l);color:#fff}
 .cal-cell.sel{background:var(--teal)!important;color:#fff!important;border-color:var(--teal-d)}
 .cal-cell.empty,.cal-cell.past{background:none;color:var(--soft);cursor:default;opacity:.4}
@@ -6201,17 +6203,69 @@ function openSheet(proId){
   document.getElementById('tv').classList.add('on');
   document.getElementById('tpr').classList.remove('on');
   goStep(1);
-  ensureCalRendered();
-  // Premier rendu rapide
+  fillPatientForm();
+
+  // ─── STRATÉGIE MULTI-COUCHES pour garantir l'affichage du calendrier ───
+  // Couche 1 : rendu immédiat
   renderCal();
   renderSlots();
-  fillPatientForm();
-  // Second rendu après que le bottom-sheet soit complètement visible
-  // Nécessaire sur Chrome Android où le premier rendu peut être ignoré
+
+  // Couche 2 : après animation CSS du bottom-sheet (300ms)
+  setTimeout(()=>{renderCal();renderSlots();}, 300);
+
+  // Couche 3 : MutationObserver — déclenche dès que cal-grid est visible dans le DOM
+  const calGrid=document.getElementById('cal-grid');
+  if(calGrid){
+    const obs=new MutationObserver(()=>{
+      if(calGrid.offsetParent!==null&&calGrid.children.length===0){
+        renderCal();renderSlots();
+      }
+    });
+    obs.observe(calGrid.parentElement||document.body,{childList:true,subtree:true});
+    setTimeout(()=>obs.disconnect(),2000); // Stop après 2s
+  }
+
+  // Couche 4 : Auto-sélectionner aujourd'hui si des créneaux existent
   setTimeout(()=>{
-    renderCal();
-    renderSlots();
-  }, 150);
+    const grid=document.getElementById('cal-grid');
+    if(grid&&grid.children.length===0){renderCal();renderSlots();}
+    // Auto-sélectionner aujourd'hui
+    autoSelectToday();
+  }, 500);
+}
+
+// Auto-sélectionne aujourd'hui si disponible, sinon le premier jour futur
+function autoSelectToday(){
+  const grid=document.getElementById('cal-grid');
+  if(!grid)return;
+
+  // Chercher la cellule d'aujourd'hui
+  const today=new Date();
+  const todayN=today.getDate();
+  const cells=grid.querySelectorAll('.cal-cell.avail');
+  if(!cells.length)return;
+
+  // Trouver la cellule du jour actuel dans le mois courant
+  let todayCell=null;
+  cells.forEach(cell=>{
+    if(parseInt(cell.textContent)===todayN && cM===today.getMonth() && cY===today.getFullYear()){
+      todayCell=cell;
+    }
+  });
+
+  // Si aujourd'hui est disponible, le sélectionner
+  const target=todayCell||cells[0];
+  if(target){
+    // Simuler un clic sur la cellule
+    target.classList.add('sel');
+    const dayNum=parseInt(target.textContent);
+    selectDate(cY,cM,dayNum);
+    // Scroll vers les créneaux
+    setTimeout(()=>{
+      const slotsEl=document.getElementById('slots-wrap');
+      if(slotsEl)slotsEl.scrollIntoView({behavior:'smooth',block:'nearest'});
+    },150);
+  }
 }
 
 function closeBSheet(){
@@ -6221,15 +6275,18 @@ function closeBSheet(){
 
 // Observer: si cal-grid est toujours vide 300ms après ouverture du bsheet, re-render
 function ensureCalRendered(){
-  setTimeout(()=>{
-    const grid=document.getElementById('cal-grid');
-    const bsheet=document.getElementById('bsheet-bg');
-    if(bsheet&&bsheet.classList.contains('on')&&grid&&grid.children.length===0){
-      console.log('cal-grid empty, forcing re-render');
-      renderCal();
-      renderSlots();
-    }
-  },300);
+  // Vérifier à 300ms, 600ms et 1000ms
+  [300,600,1000].forEach(delay=>{
+    setTimeout(()=>{
+      const grid=document.getElementById('cal-grid');
+      const bsheet=document.getElementById('bsheet-bg');
+      if(bsheet&&bsheet.classList.contains('on')&&grid&&grid.children.length===0){
+        renderCal();
+        renderSlots();
+        if(delay===1000) autoSelectToday();
+      }
+    },delay);
+  });
 }
 
 function goStep(n){
@@ -6295,8 +6352,9 @@ function renderCal(){
     const date=new Date(cY,cM,i);
     const isPast=date<today;
     const selStr=selDate&&selDate.getDate()===i&&selDate.getMonth()===cM&&selDate.getFullYear()===cY;
+    const isToday=date.getTime()===today.getTime();
     if(isPast)html+=`<div class="cal-cell past">${i}</div>`;
-    else html+=`<div class="cal-cell avail ${selStr?'sel':''}" onclick="selectDate(${cY},${cM},${i})">${i}</div>`;
+    else html+=`<div class="cal-cell avail ${selStr?'sel':''} ${isToday?'today':''}" onclick="selectDate(${cY},${cM},${i})">${isToday?`<strong>${i}</strong>`:i}</div>`;
   }
   document.getElementById('cal-grid').innerHTML=html;
 }
