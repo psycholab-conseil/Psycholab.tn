@@ -3545,6 +3545,7 @@ function renderHome(){
         ?`<img src="${p.photo}" style="width:52px;height:52px;border-radius:var(--r-sm);object-fit:cover;flex-shrink:0" alt="Dr. ${escHtml(p.fn)} ${escHtml(p.ln)}"/>`
         :`<div class="av">🩺</div>`;
       return `<div class="scard" onclick="openProProfile('${p.id}')">
+        <!-- En-tête -->
         <div class="card-top">
           ${photoEl}
           <div>
@@ -3553,15 +3554,32 @@ function renderHome(){
             <div class="stars">★★★★★ <span style="color:var(--soft);font-size:.67rem">Nouveau</span></div>
           </div>
         </div>
-        <div class="tags">
-          ${tags.slice(0,2).map(t=>`<span class="tag" style="max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:inline-block">${escHtml(t)}</span>`).join('')}${tags.length>2?`<span class="tag" style="background:var(--teal-xl);color:var(--teal-d);font-weight:700">+${tags.length-2} →</span>`:''}
+
+        <!-- Bio courte si disponible -->
+        ${p.bio?`<div style="font-size:.78rem;color:var(--mid);line-height:1.55;margin-bottom:.6rem;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">${escHtml(p.bio)}</div>`:''}
+
+        <!-- Domaines d'activité — TOUS affichés -->
+        ${tags.length?`<div style="margin-bottom:.5rem">
+          <div style="font-size:.65rem;font-weight:700;color:var(--teal-d);text-transform:uppercase;letter-spacing:.07em;margin-bottom:.35rem">🏷️ Domaines</div>
+          <div style="display:flex;flex-wrap:wrap;gap:.3rem">
+            ${tags.map(t=>`<span style="background:var(--teal-xl);color:var(--teal-d);border-radius:16px;padding:.2rem .6rem;font-size:.72rem;font-weight:600;border:1px solid var(--teal)">${escHtml(t)}</span>`).join('')}
+          </div>
+        </div>`:''}
+
+        <!-- Langues + Téléconsultation -->
+        <div style="display:flex;flex-wrap:wrap;gap:.3rem;margin-bottom:.6rem">
           ${langs.map(l=>`<span class="tag la">${l}</span>`).join('')}
           <span class="tag vi">📹 Téléconsultation</span>
         </div>
+
+        <hr style="border:none;border-top:1px solid var(--border);margin:.6rem 0"/>
+
+        <!-- Prix + Fuseau -->
         <div class="card-foot">
           <div class="price">38 €<small>/ 45 min</small></div>
-          <div class="nxt"><span>Fuseau</span><strong>${(p.tz||'').split('/').pop()||'--'}</strong></div>
+          <div class="nxt"><span>Fuseau</span><strong>${(p.tz||'').split('/').pop()||'Tunis'}</strong></div>
         </div>
+
         <button class="btn-rdv" onclick="event.stopPropagation();event.preventDefault();directBooking('${p.id}')">📅 Prendre rendez-vous</button>
       </div>`;
     }).join('')+'</div>';
